@@ -8,7 +8,7 @@ import {
   DialogPortal,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import logoGold from "@/assets/logo-gold.svg";
+import logoEra from "@/assets/logo-era.png";
 
 interface ContactModalProps {
   open: boolean;
@@ -98,9 +98,9 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               <div className="relative px-6 pt-8 pb-6 text-center">
                 <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/10 mb-4 backdrop-blur-sm animate-in zoom-in-50 duration-700 delay-150">
                   <img 
-                    src={logoGold} 
-                    alt="Platinum Construction" 
-                    className="w-16 h-16 object-contain"
+                    src={logoEra} 
+                    alt="ERA Concept Home" 
+                    className="w-20 h-auto object-contain"
                   />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
