@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
-
 const slides = [
   {
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
@@ -41,6 +40,17 @@ const SLIDE_DURATION = 7000; // Longer for Ken Burns effect
 export function Hero() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Parallax effect
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const circleY = useTransform(scrollYProgress, [0, 1], [0, 150]);
+  const circleScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.1]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 50]);
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -52,9 +62,12 @@ export function Hero() {
   }, [nextSlide]);
 
   return (
-    <section className="relative h-screen flex overflow-hidden bg-charcoal">
+    <section ref={sectionRef} className="relative h-screen flex overflow-hidden bg-charcoal">
       {/* Left Content Panel */}
-      <div className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-20 py-24">
+      <motion.div 
+        style={{ y: contentY }}
+        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-20 py-24"
+      >
         <div className="relative z-10 max-w-xl">
           {/* Tagline */}
           <motion.div
@@ -145,22 +158,23 @@ export function Hero() {
             ))}
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Right Panel - Circular Ken Burns Viewer */}
       <div className="hidden lg:flex w-1/2 bg-charcoal items-center justify-center relative">
-        {/* Circular mask container */}
+        {/* Circular mask container with parallax */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.33, 1, 0.68, 1] }}
+          style={{ y: circleY, scale: circleScale }}
           className="relative"
         >
           {/* Outer glow ring */}
-          <div className="absolute -inset-4 rounded-full bg-gradient-to-br from-primary/20 via-transparent to-primary/10 blur-xl" />
+          <div className="absolute -inset-6 rounded-full bg-gradient-to-br from-primary/20 via-transparent to-primary/10 blur-2xl" />
           
-          {/* Main circular viewer */}
-          <div className="relative w-[420px] h-[420px] xl:w-[500px] xl:h-[500px] rounded-full overflow-hidden border border-white/10 shadow-2xl">
+          {/* Main circular viewer - LARGER */}
+          <div className="relative w-[520px] h-[520px] xl:w-[600px] xl:h-[600px] 2xl:w-[680px] 2xl:h-[680px] rounded-full overflow-hidden border border-white/10 shadow-2xl">
             {/* Ken Burns slides */}
             <AnimatePresence mode="wait">
               <motion.div
