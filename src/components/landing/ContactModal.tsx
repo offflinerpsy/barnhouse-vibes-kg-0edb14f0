@@ -96,11 +96,13 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
               {/* Header with company logo */}
               <div className="relative px-6 pt-8 pb-6 text-center">
-                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/10 mb-4 backdrop-blur-sm animate-in zoom-in-50 duration-700 delay-150">
-                  <img 
-                    src={logoEra} 
-                    alt="ERA Concept Home" 
-                    className="w-20 h-auto object-contain"
+                <div className="mx-auto mb-4 w-fit rounded-2xl bg-white/95 p-3 shadow-lg animate-in zoom-in-50 duration-700 delay-150">
+                  <img
+                    src={logoEra}
+                    alt="ERA Concept Home"
+                    className="h-12 md:h-14 w-auto object-contain"
+                    loading="eager"
+                    decoding="async"
                   />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
