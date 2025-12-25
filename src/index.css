@@ -3,10 +3,20 @@
 @tailwind utilities;
 
 /* ERA Concept Home - Design System
-   Brand colors: Gold accent (#C3996B), warm neutrals, clean typography
+   Brand colors: Gold accent (#C3996B), warm neutrals
+   Typography: Rising Sun
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+/* Rising Sun Font */
+@font-face {
+  font-family: 'Rising Sun';
+  src: url('/fonts/risingsun-medium.woff2') format('woff2'),
+       url('/fonts/risingsun-medium.woff') format('woff'),
+       url('/fonts/risingsun-medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
 
 @layer base {
   :root {
@@ -57,10 +67,6 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    /* Typography */
-    --font-display: 'Playfair Display', serif;
-    --font-body: 'Montserrat', sans-serif;
   }
 
   .dark {
@@ -113,22 +119,20 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
-    font-family: var(--font-body);
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Rising Sun', system-ui, sans-serif;
+    line-height: 1.2;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display);
+    font-family: 'Rising Sun', system-ui, sans-serif;
+    line-height: 1.2;
   }
 }
 
 @layer utilities {
-  .font-display {
-    font-family: var(--font-display);
-  }
-
-  .font-body {
-    font-family: var(--font-body);
+  .font-rising {
+    font-family: 'Rising Sun', system-ui, sans-serif;
   }
 
   .text-gradient-gold {
