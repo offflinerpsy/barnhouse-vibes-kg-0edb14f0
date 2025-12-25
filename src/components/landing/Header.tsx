@@ -3,7 +3,7 @@ import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { ContactModal } from "./ContactModal";
-import logoGold from "@/assets/logo-gold.svg";
+import logoEra from "@/assets/logo-era.png";
 
 const navItems = [
   { label: "Каталог", href: "#catalog" },
@@ -82,7 +82,7 @@ export function Header() {
           {/* Logo */}
           <a href="#" className="flex items-center gap-3 flex-shrink-0">
             <img
-              src={logoGold}
+              src={logoEra}
               alt="ERA Concept Home"
               className="h-10 lg:h-12 w-auto"
             />
@@ -133,7 +133,7 @@ export function Header() {
                 {/* Mobile header */}
                 <div className="flex items-center justify-between p-4 border-b border-border">
                   <img
-                    src={logoGold}
+                    src={logoEra}
                     alt="ERA Concept Home"
                     className="h-10 w-auto"
                   />
