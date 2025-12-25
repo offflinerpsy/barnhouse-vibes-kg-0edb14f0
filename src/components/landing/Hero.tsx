@@ -88,7 +88,7 @@ export function Hero() {
           </motion.div>
 
           {/* Animated title */}
-          <h1 className="font-display text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-center mb-8 leading-tight">
+          <h1 className="font-rising text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-center mb-8 leading-tight">
             {titleWords.map((word, index) => (
               <motion.span
                 key={index}
@@ -134,7 +134,7 @@ export function Hero() {
             >
               {/* Animated gradient background */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-primary via-gold-light to-primary"
+                className="absolute inset-0 bg-gradient-to-r from-primary via-gold to-primary"
                 animate={{ x: ["-100%", "100%"] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 style={{ width: "200%" }}
@@ -176,7 +176,7 @@ export function Hero() {
                 className="group text-center p-4 md:p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-primary/30 transition-all duration-300"
               >
                 <stat.icon className="w-6 h-6 md:w-8 md:h-8 text-primary mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <div className="text-2xl md:text-4xl font-bold text-white mb-1 font-display">
+                <div className="text-2xl md:text-4xl font-bold text-white mb-1 font-rising">
                   {stat.value}
                 </div>
                 <div className="text-xs md:text-sm text-white/60">{stat.label}</div>
