@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { X, Phone, Send, MessageCircle, CheckCircle, Sparkles } from "lucide-react";
+import { X, Phone, MessageCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
-  DialogContent,
   DialogPortal,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
+import logoModal from "@/assets/logo-modal.svg";
 
 interface ContactModalProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface ContactModalProps {
 
 const contactMethods = [
   { id: "phone", label: "Телефон", icon: Phone },
-  { id: "telegram", label: "Telegram", icon: Send },
+  { id: "telegram", label: "Telegram", icon: MessageCircle },
   { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
 ];
 
@@ -69,14 +69,14 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
       <DialogPortal>
         {/* Custom gold gradient overlay */}
         <div 
-          className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm animate-in fade-in-0 duration-300"
           onClick={() => onOpenChange(false)}
         />
 
-        {/* Modal content */}
+        {/* Modal content with animation */}
         <div className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-full max-w-lg px-4">
           <div
-            className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl animate-in fade-in-0 zoom-in-95 slide-in-from-left-1/2 slide-in-from-top-[48%] duration-300"
+            className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl animate-in fade-in-0 zoom-in-90 duration-500 ease-out"
             style={{
               boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px",
             }}
@@ -94,12 +94,16 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 <X className="h-5 w-5 text-white" />
               </button>
 
-              {/* Header */}
+              {/* Header with company logo */}
               <div className="relative px-6 pt-8 pb-6 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-4">
-                  <Sparkles className="w-8 h-8 text-white" />
+                <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-white/10 mb-4 backdrop-blur-sm animate-in zoom-in-50 duration-700 delay-150">
+                  <img 
+                    src={logoModal} 
+                    alt="Platinum Construction" 
+                    className="w-16 h-16 object-contain"
+                  />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
                   Оставить заявку
                 </h2>
                 <p className="text-white/80 text-sm">
@@ -110,7 +114,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               {/* Form */}
               <form onSubmit={handleSubmit} className="relative px-6 pb-8">
                 {/* White form container */}
-                <div className="bg-white rounded-xl p-5 space-y-4 shadow-lg">
+                <div className="bg-white rounded-xl p-5 space-y-4 shadow-lg animate-in slide-in-from-bottom-4 duration-500 delay-200">
                   {/* Name input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground/70">
@@ -140,32 +144,45 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                     />
                   </div>
 
-                  {/* Contact method selection */}
+                  {/* Contact method selection with pulse animation */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground/70">
                       Как с вами связаться? <span className="text-primary">*</span>
                     </label>
                     <div className="grid grid-cols-3 gap-2">
-                      {contactMethods.map((method) => {
+                      {contactMethods.map((method, index) => {
                         const isSelected = selectedMethods.includes(method.id);
                         return (
                           <button
                             key={method.id}
                             type="button"
                             onClick={() => toggleMethod(method.id)}
-                            className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all duration-300 ${
+                            className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all duration-300 animate-in fade-in-0 zoom-in-90 ${
                               isSelected
                                 ? "bg-gradient-to-br from-primary to-[hsl(var(--gold-dark))] text-white shadow-lg scale-[1.02]"
                                 : "bg-secondary/50 text-foreground/70 hover:bg-secondary hover:scale-[1.01]"
                             }`}
+                            style={{
+                              animationDelay: `${300 + index * 100}ms`,
+                              animationFillMode: 'backwards'
+                            }}
                           >
+                            {/* Pulse animation ring */}
+                            <span 
+                              className={`absolute inset-0 rounded-xl transition-opacity duration-300 ${
+                                isSelected ? 'opacity-100' : 'opacity-0'
+                              }`}
+                            >
+                              <span className="absolute inset-0 rounded-xl animate-[pulse-ring_2s_ease-out_infinite] bg-primary/30" />
+                            </span>
+                            
                             {isSelected && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md animate-in zoom-in-50 duration-200">
                                 <CheckCircle className="w-4 h-4 text-primary" />
                               </div>
                             )}
-                            <method.icon className="w-5 h-5" />
-                            <span className="text-xs font-medium">{method.label}</span>
+                            <method.icon className={`w-5 h-5 relative z-10 ${isSelected ? 'animate-[subtle-bounce_0.5s_ease-out]' : ''}`} />
+                            <span className="text-xs font-medium relative z-10">{method.label}</span>
                           </button>
                         );
                       })}
@@ -180,18 +197,18 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                     <Textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Расскажите о вашем проекте..."
+                      placeholder="Расскажите какой проект вам больше подходит..."
                       rows={3}
                       className="bg-secondary/30 border-0 font-rising text-foreground placeholder:text-muted-foreground/50 focus:ring-2 focus:ring-primary/30 rounded-lg resize-none"
                     />
                   </div>
                 </div>
 
-                {/* Submit button */}
+                {/* Submit button - text only, no icon */}
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-14 mt-5 bg-white hover:bg-white/90 text-[hsl(var(--gold-dark))] font-bold text-lg rounded-xl shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl disabled:opacity-70 group"
+                  className="w-full h-14 mt-5 bg-white hover:bg-white/90 text-[hsl(var(--gold-dark))] font-rising font-bold text-lg tracking-wide rounded-xl shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl disabled:opacity-70 animate-in slide-in-from-bottom-2 duration-500 delay-300"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
@@ -199,10 +216,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                       Отправляем...
                     </span>
                   ) : (
-                    <span className="flex items-center gap-2">
-                      Отправить заявку
-                      <Send className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                    </span>
+                    <span>Отправить заявку</span>
                   )}
                 </Button>
 
@@ -215,6 +229,32 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
           </div>
         </div>
       </DialogPortal>
+
+      {/* Custom keyframes for pulse animation */}
+      <style>{`
+        @keyframes pulse-ring {
+          0% {
+            transform: scale(1);
+            opacity: 0.4;
+          }
+          50% {
+            transform: scale(1.05);
+            opacity: 0.2;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 0.4;
+          }
+        }
+        @keyframes subtle-bounce {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(-2px);
+          }
+        }
+      `}</style>
     </Dialog>
   );
 }
