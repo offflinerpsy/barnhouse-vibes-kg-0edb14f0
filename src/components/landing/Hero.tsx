@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
 
 const slides = [
@@ -8,63 +8,55 @@ const slides = [
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
     title: "Villa Modern",
     location: "Подмосковье",
+    // Ken Burns: zoom in + move left
+    animation: {
+      initial: { scale: 1, x: 0, y: 0 },
+      animate: { scale: 1.15, x: -30, y: -10 },
+    },
   },
   {
     image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
     title: "Barnhouse Loft",
     location: "Калужская область",
+    // Ken Burns: zoom out + move right-up
+    animation: {
+      initial: { scale: 1.2, x: 20, y: 20 },
+      animate: { scale: 1, x: -20, y: -20 },
+    },
   },
   {
     image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2071&auto=format&fit=crop",
     title: "Scandinavian House",
     location: "Тверская область",
+    // Ken Burns: zoom in + move down
+    animation: {
+      initial: { scale: 1, x: 10, y: -20 },
+      animate: { scale: 1.2, x: -10, y: 20 },
+    },
   },
 ];
+
+const SLIDE_DURATION = 7000; // Longer for Ken Burns effect
 
 export function Hero() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [progress, setProgress] = useState(0);
-
-  const SLIDE_DURATION = 6000;
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
-    setProgress(0);
-  }, []);
-
-  const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-    setProgress(0);
   }, []);
 
   useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          nextSlide();
-          return 0;
-        }
-        return prev + (100 / (SLIDE_DURATION / 50));
-      });
-    }, 50);
-
-    return () => clearInterval(progressInterval);
+    const interval = setInterval(nextSlide, SLIDE_DURATION);
+    return () => clearInterval(interval);
   }, [nextSlide]);
 
   return (
     <section className="relative h-screen flex overflow-hidden bg-charcoal">
       {/* Left Content Panel */}
-      <div className="relative z-20 w-full lg:w-[45%] flex flex-col justify-center px-8 md:px-16 lg:px-20 py-24">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-[0.02]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `repeating-linear-gradient(90deg, hsl(var(--primary)) 0px, hsl(var(--primary)) 1px, transparent 1px, transparent 80px)`,
-          }} />
-        </div>
-
+      <div className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-20 py-24">
         <div className="relative z-10 max-w-xl">
-          {/* Elegant tagline */}
+          {/* Tagline */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
@@ -76,7 +68,7 @@ export function Hero() {
             </span>
           </motion.div>
 
-          {/* Main headline with line reveal */}
+          {/* Main headline */}
           <div className="overflow-hidden mb-6">
             <motion.h1
               initial={{ y: 100 }}
@@ -99,7 +91,7 @@ export function Hero() {
             </motion.h1>
           </div>
 
-          {/* Subtitle with fade */}
+          {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -110,7 +102,7 @@ export function Hero() {
             Скандинавский дизайн, немецкое качество.
           </motion.p>
 
-          {/* Minimal CTA */}
+          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -130,7 +122,7 @@ export function Hero() {
             </button>
           </motion.div>
 
-          {/* Stats row */}
+          {/* Stats */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -155,117 +147,163 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Right Image Panel - Slider */}
-      <div className="hidden lg:block absolute right-0 top-0 w-[60%] h-full">
-        {/* Diagonal overlay for premium feel */}
-        <div 
-          className="absolute inset-0 z-10 pointer-events-none"
-          style={{
-            background: `linear-gradient(105deg, hsl(var(--charcoal)) 0%, transparent 20%)`,
-          }}
-        />
+      {/* Right Panel - Circular Ken Burns Viewer */}
+      <div className="hidden lg:flex w-1/2 bg-charcoal items-center justify-center relative">
+        {/* Circular mask container */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5, ease: [0.33, 1, 0.68, 1] }}
+          className="relative"
+        >
+          {/* Outer glow ring */}
+          <div className="absolute -inset-4 rounded-full bg-gradient-to-br from-primary/20 via-transparent to-primary/10 blur-xl" />
+          
+          {/* Main circular viewer */}
+          <div className="relative w-[420px] h-[420px] xl:w-[500px] xl:h-[500px] rounded-full overflow-hidden border border-white/10 shadow-2xl">
+            {/* Ken Burns slides */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.2 }}
+                className="absolute inset-0"
+              >
+                <motion.div
+                  initial={slides[currentSlide].animation.initial}
+                  animate={slides[currentSlide].animation.animate}
+                  transition={{
+                    duration: SLIDE_DURATION / 1000,
+                    ease: "linear",
+                  }}
+                  className="absolute inset-0"
+                >
+                  <div
+                    className="absolute inset-[-20%] bg-cover bg-center"
+                    style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
+                  />
+                </motion.div>
+                {/* Subtle vignette */}
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/40 via-transparent to-charcoal/20 pointer-events-none" />
+              </motion.div>
+            </AnimatePresence>
 
-        {/* Slides */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ scale: 1.1, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 1.05, opacity: 0 }}
-            transition={{ duration: 1.2, ease: [0.33, 1, 0.68, 1] }}
-            className="absolute inset-0"
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
-            />
-            <div className="absolute inset-0 bg-charcoal/20" />
-          </motion.div>
-        </AnimatePresence>
+            {/* Progress ring */}
+            <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
+              <circle
+                cx="50%"
+                cy="50%"
+                r="49%"
+                fill="none"
+                stroke="rgba(255,255,255,0.1)"
+                strokeWidth="1"
+              />
+              <motion.circle
+                cx="50%"
+                cy="50%"
+                r="49%"
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 49}%`}
+                initial={{ strokeDashoffset: `${2 * Math.PI * 49}%` }}
+                animate={{ strokeDashoffset: "0%" }}
+                transition={{
+                  duration: SLIDE_DURATION / 1000,
+                  ease: "linear",
+                  repeat: Infinity,
+                }}
+                key={currentSlide}
+              />
+            </svg>
+          </div>
 
-        {/* Slide info */}
-        <div className="absolute bottom-12 left-12 z-20">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="text-white/60 text-sm tracking-wider uppercase mb-2">
-                {slides[currentSlide].location}
-              </div>
-              <div className="text-white text-2xl font-rising font-medium">
-                {slides[currentSlide].title}
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        </div>
+          {/* Slide info below circle */}
+          <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 text-center">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentSlide}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="text-white/40 text-xs tracking-[0.2em] uppercase mb-1">
+                  {slides[currentSlide].location}
+                </div>
+                <div className="text-white text-lg font-rising font-medium">
+                  {slides[currentSlide].title}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-        {/* Navigation */}
-        <div className="absolute bottom-12 right-12 z-20 flex items-center gap-6">
-          {/* Progress indicators */}
-          <div className="flex gap-2">
+          {/* Slide indicators */}
+          <div className="absolute -bottom-32 left-1/2 -translate-x-1/2 flex gap-3">
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => {
-                  setCurrentSlide(index);
-                  setProgress(0);
-                }}
-                className="relative h-0.5 w-12 bg-white/20 overflow-hidden rounded-full"
-              >
-                {index === currentSlide && (
-                  <motion.div
-                    className="absolute inset-0 bg-primary origin-left"
-                    style={{ scaleX: progress / 100 }}
-                  />
-                )}
-                {index < currentSlide && (
-                  <div className="absolute inset-0 bg-white/50" />
-                )}
-              </button>
+                onClick={() => setCurrentSlide(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentSlide 
+                    ? "bg-primary w-6" 
+                    : "bg-white/20 hover:bg-white/40"
+                }`}
+              />
             ))}
           </div>
+        </motion.div>
+      </div>
 
-          {/* Arrow buttons */}
-          <div className="flex gap-2">
-            <button
-              onClick={prevSlide}
-              className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition-colors"
+      {/* Mobile: Show circular viewer below content */}
+      <div className="lg:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+        <div className="relative w-48 h-48 rounded-full overflow-hidden border border-white/10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0"
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white/60 hover:text-white hover:border-white/40 transition-colors"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
+              <motion.div
+                initial={slides[currentSlide].animation.initial}
+                animate={slides[currentSlide].animation.animate}
+                transition={{
+                  duration: SLIDE_DURATION / 1000,
+                  ease: "linear",
+                }}
+                className="absolute inset-0"
+              >
+                <div
+                  className="absolute inset-[-20%] bg-cover bg-center"
+                  style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
+                />
+              </motion.div>
+            </motion.div>
+          </AnimatePresence>
         </div>
-
-        {/* Slide counter */}
-        <div className="absolute top-12 right-12 z-20">
-          <span className="text-white font-rising text-lg">
-            {String(currentSlide + 1).padStart(2, '0')}
-          </span>
-          <span className="text-white/30 mx-2">/</span>
-          <span className="text-white/30 font-rising text-lg">
-            {String(slides.length).padStart(2, '0')}
-          </span>
+        
+        {/* Mobile dots */}
+        <div className="flex justify-center gap-2 mt-4">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-1.5 h-1.5 rounded-full transition-all ${
+                index === currentSlide ? "bg-primary w-4" : "bg-white/30"
+              }`}
+            />
+          ))}
         </div>
       </div>
 
       {/* Mobile background */}
-      <div className="lg:hidden absolute inset-0 z-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
-        />
-        <div className="absolute inset-0 bg-charcoal/80" />
-      </div>
+      <div className="lg:hidden absolute inset-0 z-0 bg-charcoal" />
 
       <ContactModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </section>
