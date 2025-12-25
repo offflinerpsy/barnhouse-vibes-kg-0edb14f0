@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Menu, X, Phone, ChevronDown } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { ContactModal } from "./ContactModal";
 import logoGold from "@/assets/logo-gold.svg";
 
 const navItems = [
@@ -15,6 +16,7 @@ const navItems = [
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -111,7 +113,7 @@ export function Header() {
               <span className="text-xs text-muted-foreground">Бесплатная консультация</span>
             </a>
             <Button
-              onClick={() => scrollToSection("#contact")}
+              onClick={() => setIsModalOpen(true)}
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 hidden xl:flex"
             >
@@ -170,7 +172,10 @@ export function Header() {
                     </div>
                   </a>
                   <Button
-                    onClick={() => scrollToSection("#contact")}
+                    onClick={() => {
+                      setIsOpen(false);
+                      setIsModalOpen(true);
+                    }}
                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium h-12"
                   >
                     Оставить заявку
@@ -211,6 +216,8 @@ export function Header() {
           </Sheet>
         </div>
       </div>
+
+      <ContactModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </header>
   );
 }
