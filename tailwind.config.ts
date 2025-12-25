@@ -18,8 +18,21 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ['Playfair Display', 'serif'],
-        body: ['Montserrat', 'sans-serif'],
+        rising: ['"Rising Sun"', 'system-ui', 'sans-serif'],
+        sans: ['"Rising Sun"', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        // Desktop (1920) sizes from Figma
+        'display-xl': ['48px', { lineHeight: '1.2', fontWeight: '500' }],
+        'display-lg': ['36px', { lineHeight: '1.2', fontWeight: '500' }],
+        'display-md': ['32px', { lineHeight: '1.2', fontWeight: '600' }],
+        'heading-lg': ['24px', { lineHeight: '1.2', fontWeight: '500' }],
+        'heading-md': ['20px', { lineHeight: '1.2', fontWeight: '500' }],
+        'heading-sm': ['18px', { lineHeight: '1.2', fontWeight: '500' }],
+        'body-lg': ['18px', { lineHeight: '1.2', fontWeight: '500' }],
+        'body-md': ['16px', { lineHeight: '1.2', fontWeight: '500' }],
+        'body-sm': ['14px', { lineHeight: '1.2', fontWeight: '500' }],
+        'caption': ['12px', { lineHeight: '1.2', fontWeight: '500' }],
       },
       colors: {
         border: "hsl(var(--border))",
