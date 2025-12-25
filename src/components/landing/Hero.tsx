@@ -62,42 +62,42 @@ export function Hero() {
   }, [nextSlide]);
 
   return (
-    <section ref={sectionRef} className="relative h-screen flex overflow-hidden bg-charcoal">
+    <section ref={sectionRef} className="relative min-h-screen flex overflow-hidden bg-charcoal">
       {/* Left Content Panel */}
       <motion.div 
         style={{ y: contentY }}
-        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-20 py-24"
+        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-16 xl:px-24 py-20 md:py-24"
       >
-        <div className="relative z-10 max-w-xl">
+        <div className="relative z-10 max-w-lg xl:max-w-xl">
           {/* Tagline */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="mb-8"
+            className="mb-6 md:mb-8"
           >
-            <span className="text-primary/80 text-sm tracking-[0.3em] uppercase font-medium">
+            <span className="text-primary/80 text-xs sm:text-sm tracking-[0.25em] sm:tracking-[0.3em] uppercase font-medium">
               ERA Concept Home
             </span>
           </motion.div>
 
           {/* Main headline */}
-          <div className="overflow-hidden mb-6">
+          <div className="overflow-hidden mb-3 md:mb-4">
             <motion.h1
               initial={{ y: 100 }}
               animate={{ y: 0 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.33, 1, 0.68, 1] }}
-              className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-rising font-medium text-white leading-[1.1] tracking-tight"
+              className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-rising font-medium text-white leading-[1.05] tracking-tight"
             >
               Архитектура
             </motion.h1>
           </div>
-          <div className="overflow-hidden mb-6">
+          <div className="overflow-hidden mb-8 md:mb-10">
             <motion.h1
               initial={{ y: 100 }}
               animate={{ y: 0 }}
               transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}
-              className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-rising font-medium leading-[1.1] tracking-tight"
+              className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-rising font-medium leading-[1.05] tracking-tight"
             >
               <span className="text-white">для </span>
               <span className="text-primary">жизни</span>
@@ -109,9 +109,9 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
-            className="text-white/50 text-lg md:text-xl leading-relaxed mb-12 max-w-md"
+            className="text-white/60 text-lg sm:text-xl md:text-2xl leading-relaxed mb-10 md:mb-14 max-w-md"
           >
-            Модульные дома премиум-класса с установкой за 14 дней. 
+            Модульные дома премиум-класса с&nbsp;установкой за&nbsp;14&nbsp;дней. 
             Скандинавский дизайн, немецкое качество.
           </motion.p>
 
@@ -123,13 +123,13 @@ export function Hero() {
           >
             <button
               onClick={() => setIsModalOpen(true)}
-              className="group inline-flex items-center gap-4 text-white hover:text-primary transition-colors duration-500"
+              className="group inline-flex items-center gap-4 sm:gap-5 text-white hover:text-primary transition-colors duration-500"
             >
               <span className="relative">
-                <span className="block w-14 h-14 rounded-full border border-white/20 group-hover:border-primary/50 transition-colors duration-500" />
-                <ArrowRight className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 group-hover:translate-x-[-40%] transition-transform duration-500" />
+                <span className="block w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-white/20 group-hover:border-primary/50 transition-colors duration-500" />
+                <ArrowRight className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-[-40%] transition-transform duration-500" />
               </span>
-              <span className="text-sm tracking-[0.15em] uppercase font-medium">
+              <span className="text-sm sm:text-base tracking-[0.12em] sm:tracking-[0.15em] uppercase font-medium">
                 Обсудить проект
               </span>
             </button>
@@ -140,18 +140,18 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 1 }}
-            className="flex gap-12 mt-16 pt-8 border-t border-white/10"
+            className="flex gap-8 sm:gap-10 md:gap-14 mt-12 md:mt-16 pt-8 border-t border-white/10"
           >
             {[
               { value: "150+", label: "проектов" },
               { value: "14", label: "дней монтаж" },
               { value: "10", label: "лет гарантии" },
             ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl md:text-3xl font-rising font-medium text-white mb-1">
+              <div key={index}>
+                <div className="text-2xl sm:text-3xl md:text-4xl font-rising font-medium text-white mb-1">
                   {stat.value}
                 </div>
-                <div className="text-xs text-white/40 uppercase tracking-wider">
+                <div className="text-[10px] sm:text-xs text-white/40 uppercase tracking-wider">
                   {stat.label}
                 </div>
               </div>
@@ -162,19 +162,19 @@ export function Hero() {
 
       {/* Right Panel - Circular Ken Burns Viewer */}
       <div className="hidden lg:flex w-1/2 bg-charcoal items-center justify-center relative">
-        {/* Circular mask container with parallax */}
+        {/* Centered circular mask container with parallax */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 1, delay: 0.5, ease: [0.33, 1, 0.68, 1] }}
           style={{ y: circleY, scale: circleScale }}
-          className="relative"
+          className="relative flex flex-col items-center"
         >
           {/* Outer glow ring */}
-          <div className="absolute -inset-6 rounded-full bg-gradient-to-br from-primary/20 via-transparent to-primary/10 blur-2xl" />
+          <div className="absolute -inset-8 rounded-full bg-gradient-to-br from-primary/20 via-transparent to-primary/10 blur-2xl" />
           
-          {/* Main circular viewer - LARGER */}
-          <div className="relative w-[520px] h-[520px] xl:w-[600px] xl:h-[600px] 2xl:w-[680px] 2xl:h-[680px] rounded-full overflow-hidden border border-white/10 shadow-2xl">
+          {/* Main circular viewer - centered */}
+          <div className="relative w-[480px] h-[480px] xl:w-[560px] xl:h-[560px] 2xl:w-[640px] 2xl:h-[640px] rounded-full overflow-hidden border border-white/10 shadow-2xl">
             {/* Ken Burns slides */}
             <AnimatePresence mode="wait">
               <motion.div
