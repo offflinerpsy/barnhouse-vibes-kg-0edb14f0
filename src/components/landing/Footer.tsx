@@ -11,20 +11,20 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-charcoal text-white pt-24 pb-16">
+    <footer className="relative bg-charcoal text-white pt-12 pb-8">
       {/* Skyline silhouette */}
       <FooterSkyline />
       
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
           {/* Logo & Description */}
           <div className="lg:col-span-2">
             <img
               src={logoWhite}
               alt="ERA Concept Home"
-              className="h-20 md:h-24 w-auto mb-6"
+              className="h-12 lg:h-14 w-auto mb-4"
             />
-            <p className="text-white/70 leading-relaxed max-w-md mb-6 text-base">
+            <p className="text-white/70 leading-relaxed max-w-md mb-4 text-sm">
               ERA Concept Home — ваш надёжный партнёр в создании современного 
               модульного жилья. Мы делаем мечту о собственном доме доступной.
             </p>
@@ -107,7 +107,7 @@ export function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-white/10 mt-12 pt-8 text-center text-white/50 text-sm">
+        <div className="border-t border-white/10 mt-8 pt-6 text-center text-white/50 text-sm">
           <p>© {new Date().getFullYear()} ERA Concept Home. Все права защищены.</p>
         </div>
       </div>
