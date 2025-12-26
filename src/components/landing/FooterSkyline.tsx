@@ -141,7 +141,9 @@ export function FooterSkyline() {
           {/* Central mountain (lower than mosque minaret) */}
           <path d="M600 200 L600 125 L650 95 L700 125 L700 200 Z" />
           
-          {/* Mosque - using actual SVG image, positioned on ground */}
+          {/* Mosque - positioned to sit exactly on ground (y=200 baseline) */}
+          {/* SVG viewBox is 1024x1024, mosque graphic spans ~y=142 to y=882 (740 units height) */}
+          {/* To fit in 100px height and bottom at y=200: top = 200 - 100 = 100 */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('mosque')}
@@ -149,11 +151,11 @@ export function FooterSkyline() {
           >
             <image
               href={mosqueSilhouette}
-              x="715"
-              y="83"
-              width="150"
-              height="117"
-              preserveAspectRatio="xMidYMax slice"
+              x="720"
+              y="100"
+              width="140"
+              height="100"
+              preserveAspectRatio="xMidYMax meet"
             />
           </g>
         </motion.g>
@@ -256,9 +258,10 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'yurt' ? 0.3 : 5, repeat: hoveredBuilding === 'yurt' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Mosque glow - entrance area */}
+          {/* Mosque windows - positioned to match actual mosque architecture */}
+          {/* Main arched entrance (center of main building) */}
           <motion.rect
-            x="775" y="175" width="16" height="22" rx="8"
+            x="778" y="175" width="10" height="16" rx="5"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -267,9 +270,9 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 5, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Mosque minaret windows */}
+          {/* Minaret windows (tower on the right side of mosque) */}
           <motion.rect
-            x="822" y="110" width="5" height="10" rx="2"
+            x="820" y="125" width="4" height="8" rx="2"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -278,7 +281,7 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 4, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut", delay: 0.5 }}
           />
           <motion.rect
-            x="822" y="130" width="5" height="10" rx="2"
+            x="820" y="145" width="4" height="8" rx="2"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
