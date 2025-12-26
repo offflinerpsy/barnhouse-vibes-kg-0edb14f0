@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
-import mosqueSilhouette from "@/assets/mosque-silhouette.png";
+import mosqueSilhouette from "@/assets/mosque-silhouette.svg";
 
 export function FooterSkyline() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,13 +62,13 @@ export function FooterSkyline() {
             </feMerge>
           </filter>
 
-          {/* Color filter to match mosque to charcoal color */}
+          {/* Color filter to match mosque to silhouette color hsl(30 15% 20%) */}
           <filter id="colorize" colorInterpolationFilters="sRGB">
             <feColorMatrix
               type="matrix"
-              values="0.24 0 0 0 0
-                      0.22 0 0 0 0
-                      0.20 0 0 0 0
+              values="0 0 0 0 0.243
+                      0 0 0 0 0.212
+                      0 0 0 0 0.180
                       0 0 0 1 0"
             />
           </filter>
@@ -142,7 +142,7 @@ export function FooterSkyline() {
           <path d="M600 200 L600 100 L650 65 L700 100 L700 200 Z" />
         </motion.g>
 
-        {/* Mosque - using actual image with color filter */}
+        {/* Mosque - using actual SVG image */}
         <motion.g style={{ y: foregroundY }}>
           <g 
             className="pointer-events-auto"
@@ -155,8 +155,8 @@ export function FooterSkyline() {
               y="60"
               width="120"
               height="140"
-              filter="url(#colorize)"
               preserveAspectRatio="xMidYMax meet"
+              style={{ filter: 'brightness(0) saturate(100%) invert(13%) sepia(8%) saturate(1053%) hue-rotate(346deg) brightness(93%) contrast(89%)' }}
             />
           </g>
         </motion.g>
