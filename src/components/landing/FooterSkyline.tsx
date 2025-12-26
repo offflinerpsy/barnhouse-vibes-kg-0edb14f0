@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
+import mosqueSilhouette from "@/assets/mosque-silhouette.png";
 
 export function FooterSkyline() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,12 +61,23 @@ export function FooterSkyline() {
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          {/* Color filter to match mosque to charcoal color */}
+          <filter id="colorize" colorInterpolationFilters="sRGB">
+            <feColorMatrix
+              type="matrix"
+              values="0.24 0 0 0 0
+                      0.22 0 0 0 0
+                      0.20 0 0 0 0
+                      0 0 0 1 0"
+            />
+          </filter>
         </defs>
 
         {/* Background mountains - furthest layer with parallax */}
         <motion.g style={{ y: backgroundY }}>
           <path
-            d="M0 200 L0 120 Q50 100 100 110 L200 80 Q250 60 300 70 L400 40 Q450 20 500 35 L600 60 Q650 45 700 55 L800 30 Q900 10 1000 25 L1100 50 Q1150 40 1200 45 L1300 70 Q1350 60 1400 65 L1440 55 L1440 200 Z"
+            d="M0 200 L0 130 Q50 115 100 120 L200 100 Q250 85 300 90 L400 75 Q450 60 500 70 L600 85 Q650 75 700 80 L800 65 Q900 50 1000 60 L1100 75 Q1150 65 1200 70 L1300 85 Q1350 80 1400 82 L1440 78 L1440 200 Z"
             fill="hsl(30 12% 25%)"
             opacity="0.5"
           />
@@ -74,7 +86,7 @@ export function FooterSkyline() {
         {/* Mid mountains with parallax */}
         <motion.g style={{ y: midY }}>
           <path
-            d="M0 200 L0 140 Q80 110 150 125 L250 95 Q300 75 350 85 L450 110 Q500 95 550 100 L650 75 Q720 55 780 70 L880 95 Q950 80 1020 90 L1120 115 Q1200 100 1280 110 L1380 130 Q1410 120 1440 125 L1440 200 Z"
+            d="M0 200 L0 150 Q80 130 150 140 L250 120 Q300 105 350 115 L450 130 Q500 120 550 125 L650 110 Q720 95 780 105 L880 120 Q950 110 1020 118 L1120 130 Q1200 122 1280 128 L1380 140 Q1410 135 1440 138 L1440 200 Z"
             fill="hsl(30 14% 23%)"
             opacity="0.7"
           />
@@ -82,39 +94,38 @@ export function FooterSkyline() {
 
         {/* Main silhouette layer with slight parallax */}
         <motion.g fill="hsl(30 15% 20%)" style={{ y: foregroundY }}>
-          {/* Left side - Small barnhouse */}
+          {/* Left side - Small barnhouse (smaller, below mosque height) */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('barnhouse1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <path d="M50 200 L50 165 L75 145 L100 165 L100 200 Z" />
+            <path d="M50 200 L50 172 L70 158 L90 172 L90 200 Z" />
           </g>
           
-          {/* Left modular house with pitched roof */}
+          {/* Left modular house with pitched roof (smaller) */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('modular1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <path d="M130 200 L130 150 L155 125 L180 150 L180 200 Z" />
-            <rect x="140" y="160" width="12" height="20" fill="hsl(30 15% 20%)" />
+            <path d="M130 200 L130 165 L150 148 L170 165 L170 200 Z" />
           </g>
           
-          {/* Trees/nature elements */}
-          <ellipse cx="220" cy="185" rx="15" ry="25" opacity="0.8" />
-          <ellipse cx="245" cy="190" rx="12" ry="20" opacity="0.6" />
+          {/* Linden/deciduous trees */}
+          <ellipse cx="210" cy="188" rx="12" ry="18" opacity="0.8" />
+          <ellipse cx="232" cy="190" rx="10" ry="15" opacity="0.7" />
 
-          {/* Mountain peak */}
-          <path d="M280 200 L280 100 L320 50 L360 100 L360 200 Z" />
+          {/* Mountain peak (lower than mosque) */}
+          <path d="M270 200 L270 120 L305 85 L340 120 L340 200 Z" />
           
-          {/* Modern A-frame cabin */}
+          {/* Modern A-frame cabin (smaller) */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('aframe')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <path d="M400 200 L400 160 L440 120 L480 160 L480 200 Z" />
+            <path d="M390 200 L390 168 L420 145 L450 168 L450 200 Z" />
           </g>
           
           {/* Traditional Kyrgyz yurt silhouette */}
@@ -123,101 +134,79 @@ export function FooterSkyline() {
             onMouseEnter={() => setHoveredBuilding('yurt')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <path d="M520 200 L520 175 Q520 155 550 150 Q580 155 580 175 L580 200 Z" />
-            <path d="M535 150 L550 140 L565 150" fill="none" stroke="hsl(30 15% 20%)" strokeWidth="3" />
+            <path d="M500 200 L500 180 Q500 165 525 162 Q550 165 550 180 L550 200 Z" />
+            <path d="M512 162 L525 155 L538 162" fill="none" stroke="hsl(30 15% 20%)" strokeWidth="2" />
           </g>
 
-          {/* Central mountain - tallest peak */}
-          <path d="M620 200 L620 80 L680 20 L740 80 L740 200 Z" />
-          
-          {/* === MOSQUE - EXACT SILHOUETTE FROM REFERENCE === */}
+          {/* Central mountain (lower than mosque minaret) */}
+          <path d="M600 200 L600 100 L650 65 L700 100 L700 200 Z" />
+        </motion.g>
+
+        {/* Mosque - using actual image with color filter */}
+        <motion.g style={{ y: foregroundY }}>
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('mosque')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            {/* Main building base - rectangular with arch entrance */}
-            <rect x="770" y="155" width="70" height="45" />
-            
-            {/* Arch entrance cutout */}
-            <path d="M790 200 L790 172 Q805 155 820 172 L820 200 Z" fill="hsl(38 25% 95%)" />
-            
-            {/* Platform/cornice above base */}
-            <rect x="765" y="148" width="80" height="10" />
-            <rect x="768" y="145" width="74" height="5" />
-            
-            {/* Main dome - large onion-shaped */}
-            <ellipse cx="805" cy="130" rx="32" ry="20" />
-            <path d="M773 130 Q805 85 837 130" fill="hsl(30 15% 20%)" />
-            
-            {/* Crescent moon on top of dome */}
-            <g transform="translate(795, 78)">
-              <path d="M10 0 C16 4 16 14 10 18 C8 14 8 4 10 0 Z" fill="hsl(30 15% 20%)" />
-              <path d="M8 3 C12 6 12 12 8 15 C6 12 6 6 8 3 Z" fill="hsl(38 25% 95%)" />
-            </g>
-            
-            {/* Minaret tower - right side, behind dome */}
-            <rect x="840" y="70" width="22" height="130" />
-            
-            {/* Minaret top dome */}
-            <ellipse cx="851" cy="70" rx="11" ry="7" />
-            <path d="M840 70 Q851 55 862 70" fill="hsl(30 15% 20%)" />
-            
-            {/* Minaret crown with small dome */}
-            <ellipse cx="851" cy="50" rx="7" ry="5" />
-            <path d="M844 50 Q851 40 858 50" fill="hsl(30 15% 20%)" />
-            
-            {/* Minaret finial */}
-            <path d="M849 40 L851 32 L853 40" fill="hsl(30 15% 20%)" />
-            
-            {/* Minaret windows - two arched windows */}
-            <rect x="846" y="85" width="10" height="18" rx="5" fill="hsl(38 25% 95%)" />
-            <rect x="846" y="115" width="10" height="18" rx="5" fill="hsl(38 25% 95%)" />
+            <image
+              href={mosqueSilhouette}
+              x="750"
+              y="60"
+              width="120"
+              height="140"
+              filter="url(#colorize)"
+              preserveAspectRatio="xMidYMax meet"
+            />
           </g>
-          
-          {/* Modern modular house complex */}
+        </motion.g>
+
+        {/* Continue main silhouette layer */}
+        <motion.g fill="hsl(30 15% 20%)" style={{ y: foregroundY }}>
+          {/* Modern modular house complex (smaller) */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('modern1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <rect x="920" y="150" width="60" height="50" />
-            <path d="M915 150 L950 120 L985 150 Z" />
+            <rect x="920" y="165" width="50" height="35" />
+            <path d="M917 165 L945 145 L973 165 Z" />
           </g>
           
-          {/* Another barnhouse */}
+          {/* Another barnhouse (smaller) */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('barnhouse2')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <path d="M1020 200 L1020 155 L1050 130 L1080 155 L1080 200 Z" />
+            <path d="M1020 200 L1020 168 L1045 150 L1070 168 L1070 200 Z" />
           </g>
           
-          {/* Pine trees */}
-          <path d="M1120 200 L1120 170 L1110 170 L1130 145 L1120 145 L1140 120 L1160 145 L1150 145 L1170 170 L1160 170 L1160 200 Z" opacity="0.9" />
+          {/* Cypress tree (instead of pine) - tall narrow shape */}
+          <ellipse cx="1120" cy="165" rx="8" ry="35" opacity="0.9" />
+          <ellipse cx="1140" cy="170" rx="7" ry="30" opacity="0.8" />
           
-          {/* Mountain range right side */}
-          <path d="M1190 200 L1190 130 L1240 90 L1290 130 L1290 200 Z" />
+          {/* Mountain range right side (lower) */}
+          <path d="M1180 200 L1180 140 L1220 110 L1260 140 L1260 200 Z" />
           
-          {/* Final modern house */}
+          {/* Final modern house (smaller) */}
           <g 
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('final')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            <path d="M1340 200 L1340 160 L1380 140 L1420 160 L1420 200 Z" />
+            <path d="M1320 200 L1320 170 L1355 155 L1390 170 L1390 200 Z" />
           </g>
           
           {/* Ending hill */}
-          <path d="M1420 200 L1420 180 Q1430 175 1440 178 L1440 200 Z" />
+          <path d="M1400 200 L1400 185 Q1420 180 1440 182 L1440 200 Z" />
         </motion.g>
 
         {/* Illuminated windows - with glow effect */}
         <motion.g style={{ y: foregroundY }}>
           {/* Left barnhouse windows */}
           <motion.rect
-            x="65" y="170" width="8" height="10"
+            x="62" y="178" width="6" height="8"
             fill={goldenGlow}
             filter={hoveredBuilding === 'barnhouse1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             initial={{ opacity: 0.3 }}
@@ -230,7 +219,7 @@ export function FooterSkyline() {
           
           {/* Modular house windows */}
           <motion.rect
-            x="145" y="165" width="6" height="8"
+            x="142" y="172" width="5" height="7"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modular1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -239,7 +228,7 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'modular1' ? 0.3 : 4, repeat: hoveredBuilding === 'modular1' ? 0 : Infinity, ease: "easeInOut", delay: 0.5 }}
           />
           <motion.rect
-            x="160" y="165" width="6" height="8"
+            x="155" y="172" width="5" height="7"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modular1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -250,7 +239,7 @@ export function FooterSkyline() {
           
           {/* A-frame windows */}
           <motion.rect
-            x="430" y="150" width="10" height="15"
+            x="412" y="160" width="8" height="12"
             fill={goldenGlow}
             filter={hoveredBuilding === 'aframe' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -261,7 +250,7 @@ export function FooterSkyline() {
           
           {/* Yurt door glow */}
           <motion.rect
-            x="543" y="170" width="14" height="18" rx="7"
+            x="518" y="178" width="10" height="14" rx="5"
             fill={goldenGlow}
             filter={hoveredBuilding === 'yurt' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -270,9 +259,9 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'yurt' ? 0.3 : 5, repeat: hoveredBuilding === 'yurt' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Mosque entrance arch glow - GOLDEN */}
-          <motion.path
-            d="M792 198 L792 174 Q805 158 818 174 L818 198 Z"
+          {/* Mosque glow - entrance area */}
+          <motion.rect
+            x="795" y="170" width="18" height="25" rx="9"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -281,9 +270,9 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 5, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Minaret windows - GOLDEN - updated positions */}
+          {/* Mosque minaret windows */}
           <motion.rect
-            x="847" y="86" width="8" height="16" rx="4"
+            x="842" y="100" width="6" height="12" rx="3"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -292,7 +281,7 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 4, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut", delay: 0.5 }}
           />
           <motion.rect
-            x="847" y="116" width="8" height="16" rx="4"
+            x="842" y="125" width="6" height="12" rx="3"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -303,7 +292,7 @@ export function FooterSkyline() {
           
           {/* Modern house windows */}
           <motion.rect
-            x="930" y="160" width="10" height="12"
+            x="932" y="172" width="8" height="10"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modern1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -312,7 +301,7 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'modern1' ? 0.3 : 3, repeat: hoveredBuilding === 'modern1' ? 0 : Infinity, ease: "easeInOut", delay: 0.8 }}
           />
           <motion.rect
-            x="950" y="160" width="10" height="12"
+            x="950" y="172" width="8" height="10"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modern1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -320,19 +309,10 @@ export function FooterSkyline() {
             }}
             transition={{ duration: hoveredBuilding === 'modern1' ? 0.3 : 4, repeat: hoveredBuilding === 'modern1' ? 0 : Infinity, ease: "easeInOut", delay: 1.5 }}
           />
-          <motion.rect
-            x="965" y="175" width="8" height="10"
-            fill={goldenGlow}
-            filter={hoveredBuilding === 'modern1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
-            animate={{ 
-              opacity: hoveredBuilding === 'modern1' ? 1 : [0.6, 0.9, 0.6]
-            }}
-            transition={{ duration: hoveredBuilding === 'modern1' ? 0.3 : 3.5, repeat: hoveredBuilding === 'modern1' ? 0 : Infinity, ease: "easeInOut", delay: 2 }}
-          />
           
           {/* Barnhouse2 window */}
           <motion.rect
-            x="1040" y="160" width="10" height="12"
+            x="1038" y="173" width="8" height="10"
             fill={goldenGlow}
             filter={hoveredBuilding === 'barnhouse2' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -343,7 +323,7 @@ export function FooterSkyline() {
           
           {/* Final house windows */}
           <motion.rect
-            x="1365" y="165" width="8" height="10"
+            x="1345" y="177" width="7" height="9"
             fill={goldenGlow}
             filter={hoveredBuilding === 'final' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -352,7 +332,7 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'final' ? 0.3 : 3, repeat: hoveredBuilding === 'final' ? 0 : Infinity, ease: "easeInOut", delay: 1.2 }}
           />
           <motion.rect
-            x="1390" y="165" width="8" height="10"
+            x="1365" y="177" width="7" height="9"
             fill={goldenGlow}
             filter={hoveredBuilding === 'final' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -367,13 +347,13 @@ export function FooterSkyline() {
           {[
             { cx: 100, cy: 60, delay: 0 },
             { cx: 250, cy: 40, delay: 0.5 },
-            { cx: 400, cy: 70, delay: 1 },
-            { cx: 550, cy: 30, delay: 1.5 },
-            { cx: 750, cy: 50, delay: 2 },
-            { cx: 900, cy: 65, delay: 0.3 },
-            { cx: 1050, cy: 45, delay: 0.8 },
-            { cx: 1200, cy: 55, delay: 1.3 },
-            { cx: 1350, cy: 35, delay: 1.8 },
+            { cx: 400, cy: 55, delay: 1 },
+            { cx: 550, cy: 35, delay: 1.5 },
+            { cx: 720, cy: 45, delay: 2 },
+            { cx: 900, cy: 50, delay: 0.3 },
+            { cx: 1050, cy: 40, delay: 0.8 },
+            { cx: 1200, cy: 48, delay: 1.3 },
+            { cx: 1350, cy: 38, delay: 1.8 },
           ].map((star, i) => (
             <motion.circle
               key={i}
