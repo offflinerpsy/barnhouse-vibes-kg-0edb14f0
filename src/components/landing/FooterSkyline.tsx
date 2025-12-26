@@ -32,7 +32,7 @@ export function FooterSkyline({
   const midY = useTransform(scrollYProgress, [0, 1], [10, -10]);
 
   // Skyline palette
-  const silhouetteFill = "hsl(36 31% 18%)";
+  const silhouetteFill = "hsl(30 15% 20%)"; // matches --charcoal from design system
 
   // Mosque sizing and positioning
   // SVG viewBox is 1024x1024, but the mosque art's bottom edge is at y≈882
