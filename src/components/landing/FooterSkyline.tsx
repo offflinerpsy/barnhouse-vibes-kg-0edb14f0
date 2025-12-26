@@ -40,37 +40,37 @@ export function FooterSkyline({
   const goldenGlow = "hsl(40 60% 65%)";
   const goldenGlowBright = "hsl(40 70% 75%)";
 
-  // Mosque placement helpers (image viewBox is 1024x1024; artwork bottom is ~y=848)
-  const MOSQUE_VIEWBOX_H = 1024;
-  const MOSQUE_ART_BOTTOM = 848;
-  const mosqueW = 165;
-  const mosqueH = 130;
-  const mosqueX = 735;
-  const mosqueY = 200 - mosqueH * (MOSQUE_ART_BOTTOM / MOSQUE_VIEWBOX_H);
+  // Mosque placement - anchor bottom to ground (y=200)
+  const mosqueW = 120;
+  const mosqueH = 95;
+  const mosqueX = 775;
+  const mosqueY = 105; // 200 - mosqueH = 105 → bottom at y=200
 
-  // Mosque window glows (relative to the image box so they stay aligned after resizing)
+  // Mosque window glows:
+  // 1) Central arched entrance (main dome body)
   const mosqueDoor = {
     x: mosqueX + mosqueW * 0.38,
     y: mosqueY + mosqueH * 0.72,
-    w: mosqueW * 0.085,
+    w: mosqueW * 0.14,
     h: mosqueH * 0.20,
-    rx: 7,
+    rx: 10,
   };
 
-  const mosqueMinaretWin1 = {
-    x: mosqueX + mosqueW * 0.80,
-    y: mosqueY + mosqueH * 0.34,
-    w: mosqueW * 0.03,
-    h: mosqueH * 0.11,
-    rx: 3,
+  // 2) Minaret tower windows - two vertical slots side by side
+  const minaretWinLeft = {
+    x: mosqueX + mosqueW * 0.58,
+    y: mosqueY + mosqueH * 0.30,
+    w: mosqueW * 0.05,
+    h: mosqueH * 0.12,
+    rx: 2,
   };
 
-  const mosqueMinaretWin2 = {
-    x: mosqueX + mosqueW * 0.80,
-    y: mosqueY + mosqueH * 0.50,
-    w: mosqueW * 0.03,
-    h: mosqueH * 0.11,
-    rx: 3,
+  const minaretWinRight = {
+    x: mosqueX + mosqueW * 0.66,
+    y: mosqueY + mosqueH * 0.30,
+    w: mosqueW * 0.05,
+    h: mosqueH * 0.12,
+    rx: 2,
   };
 
   return (
@@ -240,9 +240,9 @@ export function FooterSkyline({
 
         {/* Illuminated windows - with glow effect */}
         <motion.g style={{ y: foregroundY }}>
-          {/* Left barnhouse windows */}
+          {/* Left barnhouse window - center of house */}
           <motion.rect
-            x="62" y="178" width="6" height="8"
+            x="63" y="182" width="6" height="8"
             fill={goldenGlow}
             filter={hoveredBuilding === 'barnhouse1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             initial={{ opacity: 0.3 }}
@@ -253,9 +253,9 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'barnhouse1' ? 0.3 : 3, repeat: hoveredBuilding === 'barnhouse1' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Modular house windows */}
+          {/* Modular house windows - centered in house body */}
           <motion.rect
-            x="142" y="172" width="5" height="7"
+            x="143" y="178" width="6" height="8"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modular1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -264,7 +264,7 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'modular1' ? 0.3 : 4, repeat: hoveredBuilding === 'modular1' ? 0 : Infinity, ease: "easeInOut", delay: 0.5 }}
           />
           <motion.rect
-            x="155" y="172" width="5" height="7"
+            x="156" y="178" width="6" height="8"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modular1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -273,9 +273,9 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'modular1' ? 0.3 : 3.5, repeat: hoveredBuilding === 'modular1' ? 0 : Infinity, ease: "easeInOut", delay: 1 }}
           />
           
-          {/* A-frame windows */}
+          {/* A-frame window - centered in cabin */}
           <motion.rect
-            x="412" y="160" width="8" height="12"
+            x="413" y="166" width="10" height="14"
             fill={goldenGlow}
             filter={hoveredBuilding === 'aframe' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -284,9 +284,9 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'aframe' ? 0.3 : 4, repeat: hoveredBuilding === 'aframe' ? 0 : Infinity, ease: "easeInOut", delay: 0.3 }}
           />
           
-          {/* Yurt door glow */}
+          {/* Yurt door glow - centered in yurt */}
           <motion.rect
-            x="518" y="178" width="10" height="14" rx="5"
+            x="518" y="180" width="12" height="14" rx="6"
             fill={goldenGlow}
             filter={hoveredBuilding === 'yurt' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -315,11 +315,11 @@ export function FooterSkyline({
           />
 
           <motion.rect
-            x={mosqueMinaretWin1.x}
-            y={mosqueMinaretWin1.y}
-            width={mosqueMinaretWin1.w}
-            height={mosqueMinaretWin1.h}
-            rx={mosqueMinaretWin1.rx}
+            x={minaretWinLeft.x}
+            y={minaretWinLeft.y}
+            width={minaretWinLeft.w}
+            height={minaretWinLeft.h}
+            rx={minaretWinLeft.rx}
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{
@@ -334,11 +334,11 @@ export function FooterSkyline({
           />
 
           <motion.rect
-            x={mosqueMinaretWin2.x}
-            y={mosqueMinaretWin2.y}
-            width={mosqueMinaretWin2.w}
-            height={mosqueMinaretWin2.h}
-            rx={mosqueMinaretWin2.rx}
+            x={minaretWinRight.x}
+            y={minaretWinRight.y}
+            width={minaretWinRight.w}
+            height={minaretWinRight.h}
+            rx={minaretWinRight.rx}
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{
@@ -352,9 +352,9 @@ export function FooterSkyline({
             }}
           />
           
-          {/* Modern house windows */}
+          {/* Modern house windows - inside rect body */}
           <motion.rect
-            x="932" y="172" width="8" height="10"
+            x="932" y="180" width="8" height="12"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modern1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -363,7 +363,7 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'modern1' ? 0.3 : 3, repeat: hoveredBuilding === 'modern1' ? 0 : Infinity, ease: "easeInOut", delay: 0.8 }}
           />
           <motion.rect
-            x="950" y="172" width="8" height="10"
+            x="948" y="180" width="8" height="12"
             fill={goldenGlow}
             filter={hoveredBuilding === 'modern1' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -372,9 +372,9 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'modern1' ? 0.3 : 4, repeat: hoveredBuilding === 'modern1' ? 0 : Infinity, ease: "easeInOut", delay: 1.5 }}
           />
           
-          {/* Barnhouse2 window */}
+          {/* Barnhouse2 window - centered in body */}
           <motion.rect
-            x="1038" y="173" width="8" height="10"
+            x="1038" y="182" width="8" height="10"
             fill={goldenGlow}
             filter={hoveredBuilding === 'barnhouse2' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -383,9 +383,9 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'barnhouse2' ? 0.3 : 4, repeat: hoveredBuilding === 'barnhouse2' ? 0 : Infinity, ease: "easeInOut", delay: 0.7 }}
           />
           
-          {/* Final house windows */}
+          {/* Final house windows - centered in body */}
           <motion.rect
-            x="1345" y="177" width="7" height="9"
+            x="1348" y="182" width="7" height="9"
             fill={goldenGlow}
             filter={hoveredBuilding === 'final' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -394,7 +394,7 @@ export function FooterSkyline({
             transition={{ duration: hoveredBuilding === 'final' ? 0.3 : 3, repeat: hoveredBuilding === 'final' ? 0 : Infinity, ease: "easeInOut", delay: 1.2 }}
           />
           <motion.rect
-            x="1365" y="177" width="7" height="9"
+            x="1362" y="182" width="7" height="9"
             fill={goldenGlow}
             filter={hoveredBuilding === 'final' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
