@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Send, MessageCircle, Phone, MapPin } from "lucide-react";
+import { MessageCircle, Phone, MapPin, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +31,7 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" className="py-20 md:py-28 pb-32 md:pb-40 bg-secondary/30">
+    <section id="contact" className="py-20 md:py-28 pb-48 md:pb-56 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Left side - Info */}
@@ -172,12 +172,12 @@ export function Contact() {
                 </label>
                 <Textarea
                   id="message"
-                  placeholder="Расскажите о вашем проекте или задайте вопрос"
+                  placeholder="Расскажите о вашем проекте"
                   value={formData.message}
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  rows={4}
+                  rows={2}
                 />
               </div>
               <Button
@@ -187,7 +187,6 @@ export function Contact() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Отправка..." : "Отправить заявку"}
-                <Send className="ml-2 h-5 w-5" />
               </Button>
             </form>
           </div>
