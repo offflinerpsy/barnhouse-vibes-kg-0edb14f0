@@ -72,21 +72,21 @@ const AnimatedNumber = ({ number, isInView }: { number: string; isInView: boolea
   return <span>{displayNumber}</span>;
 };
 
-// Blueprint grid background
+// Blueprint grid background - warm brown theme
 const BlueprintGrid = () => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
-    {/* Base paper texture */}
-    <div className="absolute inset-0 bg-[#1a2332]" />
+    {/* Base paper texture - warm brown */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[hsl(30_15%_18%)] via-[hsl(30_12%_15%)] to-[hsl(30_10%_12%)]" />
     
     {/* Grid pattern - small squares */}
-    <svg className="absolute inset-0 w-full h-full opacity-20">
+    <svg className="absolute inset-0 w-full h-full opacity-15">
       <defs>
         <pattern id="smallGrid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="hsl(200 60% 50%)" strokeWidth="0.5" />
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="hsl(32 42% 59%)" strokeWidth="0.5" />
         </pattern>
         <pattern id="largeGrid" width="100" height="100" patternUnits="userSpaceOnUse">
           <rect width="100" height="100" fill="url(#smallGrid)" />
-          <path d="M 100 0 L 0 0 0 100" fill="none" stroke="hsl(200 60% 50%)" strokeWidth="1" />
+          <path d="M 100 0 L 0 0 0 100" fill="none" stroke="hsl(32 42% 59%)" strokeWidth="1" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#largeGrid)" />
@@ -94,32 +94,32 @@ const BlueprintGrid = () => (
 
     {/* Corner rulers */}
     {/* Top ruler */}
-    <div className="absolute top-0 left-16 right-0 h-8 bg-[#2a3a4a]/80 border-b border-[hsl(200_60%_50%/0.3)] flex items-end">
+    <div className="absolute top-0 left-16 right-0 h-8 bg-[hsl(30_12%_12%)]/80 border-b border-primary/20 flex items-end">
       {Array.from({ length: 40 }).map((_, i) => (
         <div key={i} className="flex flex-col items-center" style={{ width: '50px' }}>
-          <div className="h-3 w-px bg-[hsl(200_60%_50%/0.5)]" />
+          <div className="h-3 w-px bg-primary/40" />
           {i % 2 === 0 && (
-            <span className="text-[8px] text-[hsl(200_60%_50%/0.6)] mt-0.5">{i * 50}</span>
+            <span className="text-[8px] text-primary/50 mt-0.5">{i * 50}</span>
           )}
         </div>
       ))}
     </div>
     
     {/* Left ruler */}
-    <div className="absolute top-8 left-0 w-16 bottom-0 bg-[#2a3a4a]/80 border-r border-[hsl(200_60%_50%/0.3)] flex flex-col">
+    <div className="absolute top-8 left-0 w-16 bottom-0 bg-[hsl(30_12%_12%)]/80 border-r border-primary/20 flex flex-col">
       {Array.from({ length: 30 }).map((_, i) => (
         <div key={i} className="flex items-center" style={{ height: '50px' }}>
-          <div className="w-3 h-px bg-[hsl(200_60%_50%/0.5)] ml-auto" />
+          <div className="w-3 h-px bg-primary/40 ml-auto" />
           {i % 2 === 0 && (
-            <span className="text-[8px] text-[hsl(200_60%_50%/0.6)] ml-1 w-8">{i * 50}</span>
+            <span className="text-[8px] text-primary/50 ml-1 w-8">{i * 50}</span>
           )}
         </div>
       ))}
     </div>
 
     {/* Corner piece */}
-    <div className="absolute top-0 left-0 w-16 h-8 bg-[#2a3a4a] border-r border-b border-[hsl(200_60%_50%/0.3)] flex items-center justify-center">
-      <span className="text-[10px] text-[hsl(200_60%_50%/0.8)] font-mono">mm</span>
+    <div className="absolute top-0 left-0 w-16 h-8 bg-[hsl(30_12%_12%)] border-r border-b border-primary/20 flex items-center justify-center">
+      <span className="text-[10px] text-primary/60 font-mono">mm</span>
     </div>
 
     {/* Decorative elements - compass rose hint */}
@@ -134,7 +134,7 @@ const BlueprintGrid = () => (
     </div>
 
     {/* Stamp/seal in corner */}
-    <div className="absolute bottom-6 right-6 w-24 h-24 opacity-30">
+    <div className="absolute bottom-6 right-6 w-24 h-24 opacity-25">
       <svg viewBox="0 0 100 100" className="w-full h-full">
         <circle cx="50" cy="50" r="45" fill="none" stroke="hsl(32 42% 59%)" strokeWidth="2" />
         <circle cx="50" cy="50" r="38" fill="none" stroke="hsl(32 42% 59%)" strokeWidth="0.5" />
@@ -145,9 +145,10 @@ const BlueprintGrid = () => (
   </div>
 );
 
-// Image carousel component
+// Image carousel component with premium paper hover effect
 const HouseImageCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -157,16 +158,96 @@ const HouseImageCarousel = () => {
   }, []);
 
   return (
-    <div className="relative">
-      {/* Paper/canvas effect */}
-      <div className="absolute -inset-4 bg-[#f5f0e8] rounded-lg shadow-2xl transform rotate-1" />
-      <div className="absolute -inset-4 bg-[#faf8f4] rounded-lg shadow-xl transform -rotate-0.5" />
+    <motion.div 
+      className="relative cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Paper layers with hover effect */}
+      <motion.div 
+        className="absolute -inset-4 bg-[#e8e0d4] rounded-sm"
+        animate={{
+          rotate: isHovered ? 2 : 1,
+          scale: isHovered ? 1.02 : 1,
+          boxShadow: isHovered 
+            ? "0 25px 50px -12px rgba(0,0,0,0.4), 0 12px 24px -8px rgba(0,0,0,0.2)"
+            : "0 10px 30px -10px rgba(0,0,0,0.3)",
+        }}
+        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      />
+      <motion.div 
+        className="absolute -inset-4 bg-[#f5f0e8] rounded-sm"
+        animate={{
+          rotate: isHovered ? -1 : -0.5,
+          scale: isHovered ? 1.01 : 1,
+          boxShadow: isHovered 
+            ? "0 20px 40px -10px rgba(0,0,0,0.35)"
+            : "0 8px 24px -8px rgba(0,0,0,0.25)",
+        }}
+        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      />
       
       {/* Main drawing area */}
-      <div className="relative bg-white rounded-lg overflow-hidden shadow-lg">
+      <motion.div 
+        className="relative bg-[#faf8f4] overflow-hidden"
+        animate={{
+          borderRadius: isHovered ? "8px" : "2px",
+          boxShadow: isHovered 
+            ? "0 15px 35px -8px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(195,153,107,0.2)"
+            : "0 4px 16px -4px rgba(0,0,0,0.2)",
+        }}
+        transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         {/* Tape effect corners */}
-        <div className="absolute -top-2 -left-2 w-12 h-6 bg-[#f0e6c8]/80 transform -rotate-45 z-10" />
-        <div className="absolute -top-2 -right-2 w-12 h-6 bg-[#f0e6c8]/80 transform rotate-45 z-10" />
+        <motion.div 
+          className="absolute -top-1 left-4 w-16 h-5 bg-gradient-to-b from-[#f0e6c8]/90 to-[#e8dcc0]/80 z-10"
+          style={{ 
+            clipPath: "polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)",
+          }}
+          animate={{
+            y: isHovered ? -2 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+        />
+        <motion.div 
+          className="absolute -top-1 right-4 w-16 h-5 bg-gradient-to-b from-[#f0e6c8]/90 to-[#e8dcc0]/80 z-10"
+          style={{ 
+            clipPath: "polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)",
+          }}
+          animate={{
+            y: isHovered ? -2 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+        />
+        
+        {/* Paper curl effect on hover */}
+        <motion.div
+          className="absolute bottom-0 right-0 w-16 h-16 z-20 pointer-events-none"
+          animate={{
+            opacity: isHovered ? 1 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+        >
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            <defs>
+              <linearGradient id="curlGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#faf8f4" />
+                <stop offset="50%" stopColor="#e8e0d4" />
+                <stop offset="100%" stopColor="#d4ccc0" />
+              </linearGradient>
+            </defs>
+            <path 
+              d="M100 100 L100 60 Q80 70, 70 90 Q65 95, 60 100 Z" 
+              fill="url(#curlGradient)"
+            />
+            <path 
+              d="M100 60 Q80 70, 70 90" 
+              fill="none" 
+              stroke="rgba(0,0,0,0.1)" 
+              strokeWidth="1"
+            />
+          </svg>
+        </motion.div>
         
         <div className="aspect-[4/3] relative overflow-hidden">
           <AnimatePresence mode="wait">
@@ -174,7 +255,7 @@ const HouseImageCarousel = () => {
               key={currentIndex}
               src={houseImages[currentIndex].src}
               alt={houseImages[currentIndex].label}
-              className="w-full h-full object-contain bg-white"
+              className="w-full h-full object-contain bg-[#faf8f4]"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
@@ -182,38 +263,46 @@ const HouseImageCarousel = () => {
             />
           </AnimatePresence>
           
-          {/* Pencil sketch overlay effect */}
-          <div className="absolute inset-0 mix-blend-multiply pointer-events-none bg-gradient-to-br from-transparent via-transparent to-[#d4c5a9]/10" />
+          {/* Subtle vignette effect */}
+          <div className="absolute inset-0 pointer-events-none" 
+            style={{
+              background: "radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.05) 100%)"
+            }}
+          />
         </div>
 
         {/* Label */}
         <motion.div 
-          className="absolute bottom-3 left-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-2 rounded border border-warm-gray/20"
+          className="absolute bottom-3 left-3 right-3 bg-[#faf8f4]/95 backdrop-blur-sm px-3 py-2 border border-primary/20"
           initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          animate={{ 
+            opacity: 1, 
+            y: 0,
+            borderRadius: isHovered ? "6px" : "2px",
+          }}
+          transition={{ delay: 0.3, duration: 0.3 }}
         >
           <p className="text-xs text-charcoal font-medium text-center">
             {houseImages[currentIndex].label}
           </p>
         </motion.div>
-      </div>
+      </motion.div>
 
       {/* Navigation dots */}
-      <div className="flex justify-center gap-2 mt-4">
+      <div className="flex justify-center gap-2 mt-6">
         {houseImages.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            className={`h-2 rounded-full transition-all duration-300 ${
               index === currentIndex 
                 ? 'bg-primary w-6' 
-                : 'bg-[hsl(200_60%_50%/0.4)] hover:bg-primary/50'
+                : 'bg-primary/30 w-2 hover:bg-primary/50'
             }`}
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -236,9 +325,9 @@ export function Advantages() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-block border-2 border-[hsl(200_60%_50%/0.4)] p-4 bg-[#1a2332]/80 backdrop-blur-sm">
+          <div className="inline-block border-2 border-primary/30 p-4 bg-[hsl(30_12%_12%)]/80 backdrop-blur-sm">
             <motion.span 
-              className="block text-[hsl(200_60%_50%)] font-mono text-xs uppercase tracking-[0.3em] mb-2"
+              className="block text-primary/80 font-mono text-xs uppercase tracking-[0.3em] mb-2"
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
@@ -268,13 +357,13 @@ export function Advantages() {
               
               {/* Technical note */}
               <motion.div 
-                className="mt-6 p-3 border border-[hsl(200_60%_50%/0.3)] bg-[#1a2332]/60 backdrop-blur-sm"
+                className="mt-6 p-3 border border-primary/20 bg-[hsl(30_12%_12%)]/60 backdrop-blur-sm rounded-sm"
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.4 }}
               >
-                <p className="text-[hsl(200_60%_50%/0.8)] text-xs font-mono leading-relaxed">
+                <p className="text-primary/70 text-xs font-mono leading-relaxed">
                   <span className="text-primary">ПРИМЕЧАНИЕ:</span> Модульные дома ERA Concept проектируются индивидуально под каждый участок. Представленные чертежи — примеры возможных конфигураций.
                 </p>
               </motion.div>
@@ -293,7 +382,7 @@ export function Advantages() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
                 <motion.div
-                  className="relative bg-[#1a2332]/80 backdrop-blur-sm rounded-none p-5 md:p-6 border border-[hsl(200_60%_50%/0.3)] overflow-hidden h-full"
+                  className="relative bg-[hsl(30_12%_14%)]/90 backdrop-blur-sm rounded-sm p-5 md:p-6 border border-primary/20 overflow-hidden h-full"
                   whileHover={{ 
                     borderColor: "hsl(32 42% 59% / 0.5)",
                     y: -4,
@@ -304,7 +393,7 @@ export function Advantages() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="relative">
                       <motion.div
-                        className="text-4xl md:text-5xl font-bold text-[hsl(200_60%_50%/0.3)] font-mono"
+                        className="text-4xl md:text-5xl font-bold text-primary/25 font-mono"
                         animate={isInView ? {
                           opacity: [0.2, 0.4, 0.2],
                         } : {}}
@@ -321,7 +410,7 @@ export function Advantages() {
                     
                     {/* Highlight badge */}
                     <motion.span
-                      className="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 border border-primary/30"
+                      className="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 border border-primary/30 rounded-sm"
                       initial={{ opacity: 0, x: 20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -343,7 +432,7 @@ export function Advantages() {
                   </motion.h3>
                   
                   <motion.p
-                    className="text-[hsl(200_60%_50%/0.7)] leading-relaxed text-xs md:text-sm"
+                    className="text-primary/60 leading-relaxed text-xs md:text-sm"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -353,7 +442,7 @@ export function Advantages() {
                   </motion.p>
 
                   {/* Corner technical mark */}
-                  <div className="absolute bottom-2 right-2 text-[8px] font-mono text-[hsl(200_60%_50%/0.4)]">
+                  <div className="absolute bottom-2 right-2 text-[8px] font-mono text-primary/30">
                     [{item.number}]
                   </div>
 
@@ -378,9 +467,9 @@ export function Advantages() {
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          <div className="h-px flex-1 max-w-20 bg-[hsl(200_60%_50%/0.3)]" />
-          <span className="text-[hsl(200_60%_50%/0.6)] text-xs font-mono">ERA CONCEPT © 2024</span>
-          <div className="h-px flex-1 max-w-20 bg-[hsl(200_60%_50%/0.3)]" />
+          <div className="h-px flex-1 max-w-20 bg-primary/25" />
+          <span className="text-primary/50 text-xs font-mono">ERA CONCEPT © 2024</span>
+          <div className="h-px flex-1 max-w-20 bg-primary/25" />
         </motion.div>
       </div>
     </section>
