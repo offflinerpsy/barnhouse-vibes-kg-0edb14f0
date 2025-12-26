@@ -2,13 +2,30 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useState } from "react";
 import mosqueSilhouette from "@/assets/mosque-silhouette.svg";
 
-export function FooterSkyline() {
+type FooterSkylineVariant = "attached" | "standalone";
+
+export function FooterSkyline({
+  variant = "attached",
+}: {
+  variant?: FooterSkylineVariant;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBuilding, setHoveredBuilding] = useState<string | null>(null);
-  
+
+  const containerClassName =
+    variant === "attached"
+      ? "absolute inset-x-0 bottom-full w-full overflow-hidden pointer-events-none"
+      : "relative w-full overflow-hidden pointer-events-none";
+
+  const containerStyle =
+    variant === "attached" ? { marginBottom: "-1px" } : undefined;
+
+  const svgClassName =
+    variant === "attached" ? "w-full h-auto block" : "w-full h-full block";
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start end", "end start"]
+    offset: ["start end", "end start"],
   });
 
   // Parallax transforms for different layers
@@ -23,52 +40,48 @@ export function FooterSkyline() {
   const goldenGlow = "hsl(40 60% 65%)";
   const goldenGlowBright = "hsl(40 70% 75%)";
 
-  // Mosque placement helpers (image viewBox is 1024x1024; artwork bottom is ~y=882)
+  // Mosque placement helpers (image viewBox is 1024x1024; artwork bottom is ~y=848)
   const MOSQUE_VIEWBOX_H = 1024;
-  const MOSQUE_ART_BOTTOM = 882;
-  const mosqueW = 150;
-  const mosqueH = 120;
-  const mosqueX = 760;
+  const MOSQUE_ART_BOTTOM = 848;
+  const mosqueW = 165;
+  const mosqueH = 130;
+  const mosqueX = 735;
   const mosqueY = 200 - mosqueH * (MOSQUE_ART_BOTTOM / MOSQUE_VIEWBOX_H);
 
   // Mosque window glows (relative to the image box so they stay aligned after resizing)
   const mosqueDoor = {
-    x: mosqueX + mosqueW * 0.42,
-    y: mosqueY + mosqueH * 0.70,
-    w: mosqueW * 0.075,
-    h: mosqueH * 0.18,
-    rx: 6,
+    x: mosqueX + mosqueW * 0.38,
+    y: mosqueY + mosqueH * 0.72,
+    w: mosqueW * 0.085,
+    h: mosqueH * 0.20,
+    rx: 7,
   };
 
   const mosqueMinaretWin1 = {
-    x: mosqueX + mosqueW * 0.72,
-    y: mosqueY + mosqueH * 0.32,
-    w: mosqueW * 0.028,
-    h: mosqueH * 0.10,
+    x: mosqueX + mosqueW * 0.80,
+    y: mosqueY + mosqueH * 0.34,
+    w: mosqueW * 0.03,
+    h: mosqueH * 0.11,
     rx: 3,
   };
 
   const mosqueMinaretWin2 = {
-    x: mosqueX + mosqueW * 0.72,
-    y: mosqueY + mosqueH * 0.46,
-    w: mosqueW * 0.028,
-    h: mosqueH * 0.10,
+    x: mosqueX + mosqueW * 0.80,
+    y: mosqueY + mosqueH * 0.50,
+    w: mosqueW * 0.03,
+    h: mosqueH * 0.11,
     rx: 3,
   };
 
   return (
-    <div 
-      ref={containerRef}
-      className="absolute inset-x-0 bottom-full w-full overflow-hidden pointer-events-none"
-      style={{ marginBottom: '-1px' }}
-    >
+    <div ref={containerRef} className={containerClassName} style={containerStyle}>
       <svg
         viewBox="0 0 1440 200"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-auto block"
+        className={svgClassName}
         preserveAspectRatio="xMidYMax slice"
-        style={{ display: 'block' }}
+        style={{ display: "block" }}
       >
         <defs>
           {/* Window glow */}
@@ -435,8 +448,15 @@ export function FooterSkyline() {
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
 
-        {/* Bottom fill to prevent gap */}
-        <rect x="0" y="199" width="1440" height="10" fill={silhouetteFill} />
+        {/* Bottom fill to prevent gap (moves with foreground parallax) */}
+        <motion.rect
+          x="0"
+          y="199"
+          width="1440"
+          height="10"
+          fill={silhouetteFill}
+          style={{ y: foregroundY }}
+        />
       </svg>
     </div>
   );
