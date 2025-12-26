@@ -27,19 +27,23 @@ export function FooterSkyline({
     offset: ["start end", "end start"],
   });
 
-  // Parallax transforms for different layers
-  const backgroundY = useTransform(scrollYProgress, [0, 1], [30, -30]);
-  const midY = useTransform(scrollYProgress, [0, 1], [20, -20]);
-  const foregroundY = useTransform(scrollYProgress, [0, 1], [10, -10]);
+  // Parallax transforms for background layers only
+  const backgroundY = useTransform(scrollYProgress, [0, 1], [20, -20]);
+  const midY = useTransform(scrollYProgress, [0, 1], [10, -10]);
 
   // Skyline palette
   const silhouetteFill = "hsl(36 31% 18%)";
 
-  // Mosque - large and ALWAYS centered (x = 720 - mosqueW/2)
-  const mosqueW = 180;
-  const mosqueH = 140;
-  const mosqueX = 720 - mosqueW / 2; // Always centered at x=720 (center of 1440 viewBox)
-  const mosqueY = 200 - mosqueH; // Bottom aligned to ground
+  // Mosque sizing and positioning
+  // SVG viewBox is 1024x1024, but the mosque art's bottom edge is at y≈882
+  // So the actual art height from top (142) to bottom (882) is about 740px
+  // We scale the mosque to be the DOMINANT element in the skyline
+  const mosqueW = 260;
+  const mosqueH = 203;
+  const mosqueX = 720 - mosqueW / 2; // Always centered at x=720
+  // The mosque SVG has ~14% empty space at the bottom (882/1024 ≈ 0.86)
+  // So we need to shift it down to compensate: mosqueH * 0.14 ≈ 28
+  const mosqueY = 200 - mosqueH + 28;
 
   return (
     <div ref={containerRef} className={containerClassName} style={containerStyle}>
@@ -80,8 +84,8 @@ export function FooterSkyline({
           />
         </motion.g>
 
-        {/* Main silhouette layer with slight parallax */}
-        <motion.g fill={silhouetteFill} style={{ y: foregroundY }}>
+        {/* Main silhouette layer - STATIC, no parallax for stability */}
+        <g fill={silhouetteFill}>
           {/* Left side - Small barnhouse */}
           <path d="M50 200 L50 178 L70 168 L90 178 L90 200 Z" />
 
@@ -95,12 +99,12 @@ export function FooterSkyline({
           {/* Peak left */}
           <path d="M270 200 L270 155 L305 130 L340 155 L340 200 Z" />
 
-          {/* Modern A-frame cabin */}
-          <path d="M390 200 L390 175 L420 158 L450 175 L450 200 Z" />
+          {/* Modern A-frame cabin - moved left to make room for mosque */}
+          <path d="M380 200 L380 175 L410 158 L440 175 L440 200 Z" />
 
-          {/* Traditional Kyrgyz yurt silhouette */}
-          <path d="M500 200 L500 185 Q500 175 525 172 Q550 175 550 185 L550 200 Z" />
-          <path d="M512 172 L525 166 L538 172" fill="none" stroke={silhouetteFill} strokeWidth="2" />
+          {/* Traditional Kyrgyz yurt silhouette - moved left */}
+          <path d="M480 200 L480 185 Q480 175 505 172 Q530 175 530 185 L530 200 Z" />
+          <path d="M492 172 L505 166 L518 172" fill="none" stroke={silhouetteFill} strokeWidth="2" />
 
           {/* MOSQUE - Centered and dominant */}
           <image
@@ -112,8 +116,8 @@ export function FooterSkyline({
             preserveAspectRatio="xMidYMax meet"
           />
 
-          {/* Peak right of mosque */}
-          <path d="M900 200 L900 155 L935 130 L970 155 L970 200 Z" />
+          {/* Peak right of mosque - moved right to make room */}
+          <path d="M920 200 L920 155 L955 130 L990 155 L990 200 Z" />
 
           {/* Modern modular house complex */}
           <rect x="1020" y="175" width="45" height="25" />
@@ -131,7 +135,10 @@ export function FooterSkyline({
 
           {/* Final modern house */}
           <path d="M1380 200 L1380 178 L1410 168 L1440 178 L1440 200 Z" />
-        </motion.g>
+        </g>
+
+        {/* Bottom fill to prevent gap - STATIC */}
+        <rect x="0" y="199" width="1440" height="5" fill={silhouetteFill} />
 
         {/* Stars in the sky area */}
         <g>
@@ -174,16 +181,6 @@ export function FooterSkyline({
           initial={{ opacity: 0.7 }}
           animate={{ opacity: [0.7, 0.9, 0.7] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        {/* Bottom fill to prevent gap */}
-        <motion.rect
-          x="0"
-          y="199"
-          width="1440"
-          height="5"
-          fill={silhouetteFill}
-          style={{ y: foregroundY }}
         />
       </svg>
     </div>
