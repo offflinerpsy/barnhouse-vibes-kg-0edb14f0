@@ -84,7 +84,7 @@ export function FooterSkyline() {
         <motion.g fill="hsl(30 15% 20%)" style={{ y: foregroundY }}>
           {/* Left side - Small barnhouse */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('barnhouse1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -93,7 +93,7 @@ export function FooterSkyline() {
           
           {/* Left modular house with pitched roof */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('modular1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -110,7 +110,7 @@ export function FooterSkyline() {
           
           {/* Modern A-frame cabin */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('aframe')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -119,7 +119,7 @@ export function FooterSkyline() {
           
           {/* Traditional Kyrgyz yurt silhouette */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('yurt')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -130,35 +130,54 @@ export function FooterSkyline() {
           {/* Central mountain - tallest peak */}
           <path d="M620 200 L620 80 L680 20 L740 80 L740 200 Z" />
           
-          {/* === MOSQUE === */}
+          {/* === MOSQUE - EXACT SILHOUETTE FROM REFERENCE === */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('mosque')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
-            {/* Main building base */}
-            <rect x="780" y="155" width="70" height="45" />
-            {/* Dome base platform */}
-            <rect x="778" y="150" width="74" height="8" />
-            {/* Main dome */}
-            <ellipse cx="815" cy="140" rx="30" ry="22" />
-            <path d="M785 140 Q815 100 845 140" fill="hsl(30 15% 20%)" />
-            {/* Crescent moon on dome */}
-            <g transform="translate(805, 105)">
-              <path d="M8 0 Q14 6 8 14 Q4 10 4 7 Q4 3 8 0 Z" fill="hsl(30 15% 20%)" />
+            {/* Main building base - rectangular with arch entrance */}
+            <rect x="770" y="155" width="70" height="45" />
+            
+            {/* Arch entrance cutout */}
+            <path d="M790 200 L790 172 Q805 155 820 172 L820 200 Z" fill="hsl(38 25% 95%)" />
+            
+            {/* Platform/cornice above base */}
+            <rect x="765" y="148" width="80" height="10" />
+            <rect x="768" y="145" width="74" height="5" />
+            
+            {/* Main dome - large onion-shaped */}
+            <ellipse cx="805" cy="130" rx="32" ry="20" />
+            <path d="M773 130 Q805 85 837 130" fill="hsl(30 15% 20%)" />
+            
+            {/* Crescent moon on top of dome */}
+            <g transform="translate(795, 78)">
+              <path d="M10 0 C16 4 16 14 10 18 C8 14 8 4 10 0 Z" fill="hsl(30 15% 20%)" />
+              <path d="M8 3 C12 6 12 12 8 15 C6 12 6 6 8 3 Z" fill="hsl(38 25% 95%)" />
             </g>
-            {/* Minaret tower */}
-            <rect x="855" y="95" width="18" height="105" />
-            <ellipse cx="864" cy="95" rx="9" ry="6" />
-            <path d="M855 95 Q864 80 873 95" fill="hsl(30 15% 20%)" />
-            <ellipse cx="864" cy="75" rx="5" ry="4" />
-            <path d="M859 75 Q864 65 869 75" fill="hsl(30 15% 20%)" />
-            <circle cx="864" cy="62" r="3" />
+            
+            {/* Minaret tower - right side, behind dome */}
+            <rect x="840" y="70" width="22" height="130" />
+            
+            {/* Minaret top dome */}
+            <ellipse cx="851" cy="70" rx="11" ry="7" />
+            <path d="M840 70 Q851 55 862 70" fill="hsl(30 15% 20%)" />
+            
+            {/* Minaret crown with small dome */}
+            <ellipse cx="851" cy="50" rx="7" ry="5" />
+            <path d="M844 50 Q851 40 858 50" fill="hsl(30 15% 20%)" />
+            
+            {/* Minaret finial */}
+            <path d="M849 40 L851 32 L853 40" fill="hsl(30 15% 20%)" />
+            
+            {/* Minaret windows - two arched windows */}
+            <rect x="846" y="85" width="10" height="18" rx="5" fill="hsl(38 25% 95%)" />
+            <rect x="846" y="115" width="10" height="18" rx="5" fill="hsl(38 25% 95%)" />
           </g>
           
           {/* Modern modular house complex */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('modern1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -168,7 +187,7 @@ export function FooterSkyline() {
           
           {/* Another barnhouse */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('barnhouse2')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -183,7 +202,7 @@ export function FooterSkyline() {
           
           {/* Final modern house */}
           <g 
-            className="pointer-events-auto cursor-pointer"
+            className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('final')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
@@ -253,7 +272,7 @@ export function FooterSkyline() {
           
           {/* Mosque entrance arch glow - GOLDEN */}
           <motion.path
-            d="M802 198 L802 172 Q815 158 828 172 L828 198 Z"
+            d="M792 198 L792 174 Q805 158 818 174 L818 198 Z"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -262,9 +281,9 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 5, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Minaret windows - GOLDEN (fixed from white) */}
+          {/* Minaret windows - GOLDEN - updated positions */}
           <motion.rect
-            x="860" y="110" width="8" height="15" rx="4"
+            x="847" y="86" width="8" height="16" rx="4"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
@@ -273,7 +292,7 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 4, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut", delay: 0.5 }}
           />
           <motion.rect
-            x="860" y="135" width="8" height="15" rx="4"
+            x="847" y="116" width="8" height="16" rx="4"
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
             animate={{ 
