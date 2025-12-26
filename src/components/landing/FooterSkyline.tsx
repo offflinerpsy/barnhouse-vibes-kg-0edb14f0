@@ -76,28 +76,40 @@ export function FooterSkyline() {
           {/* Central mountain - tallest peak (like Pobeda/Khan Tengri) */}
           <path d="M620 200 L620 80 L680 20 L740 80 L740 200 Z" />
           
-          {/* Minaret/Tower silhouette */}
-          <path d="M790 200 L790 130 L795 125 L800 115 L805 125 L810 130 L810 200 Z" />
-          <circle cx="800" cy="108" r="6" />
+          {/* Mosque with dome and minarets - proper Islamic architecture */}
+          {/* Left minaret */}
+          <path d="M765 200 L765 120 L768 115 L771 110 L774 115 L777 120 L777 200 Z" />
+          <circle cx="771" cy="105" r="4" />
+          {/* Main dome */}
+          <path d="M785 200 L785 160 Q785 130 815 115 Q845 130 845 160 L845 200 Z" />
+          {/* Crescent on dome */}
+          <path d="M815 108 Q820 102 815 96 Q812 99 812 104 Q812 107 815 108 Z" fill="hsl(30 15% 20%)" />
+          {/* Main building base */}
+          <rect x="780" y="160" width="70" height="40" />
+          {/* Entrance arch */}
+          <path d="M805 200 L805 175 Q815 165 825 175 L825 200 Z" />
+          {/* Right minaret */}
+          <path d="M853 200 L853 120 L856 115 L859 110 L862 115 L865 120 L865 200 Z" />
+          <circle cx="859" cy="105" r="4" />
           
           {/* Modern modular house complex */}
-          <rect x="850" y="150" width="60" height="50" />
-          <path d="M845 150 L880 120 L915 150 Z" />
+          <rect x="900" y="150" width="60" height="50" />
+          <path d="M895 150 L930 120 L965 150 Z" />
           
           {/* Another barnhouse */}
-          <path d="M950 200 L950 155 L980 130 L1010 155 L1010 200 Z" />
+          <path d="M1000 200 L1000 155 L1030 130 L1060 155 L1060 200 Z" />
           
           {/* Pine trees */}
-          <path d="M1050 200 L1050 170 L1040 170 L1060 145 L1050 145 L1070 120 L1090 145 L1080 145 L1100 170 L1090 170 L1090 200 Z" opacity="0.9" />
+          <path d="M1100 200 L1100 170 L1090 170 L1110 145 L1100 145 L1120 120 L1140 145 L1130 145 L1150 170 L1140 170 L1140 200 Z" opacity="0.9" />
           
           {/* Mountain range right side */}
-          <path d="M1120 200 L1120 130 L1170 90 L1220 130 L1220 200 Z" />
+          <path d="M1170 200 L1170 130 L1220 90 L1270 130 L1270 200 Z" />
           
           {/* Final modern house */}
-          <path d="M1280 200 L1280 160 L1320 140 L1360 160 L1360 200 Z" />
+          <path d="M1320 200 L1320 160 L1360 140 L1400 160 L1400 200 Z" />
           
           {/* Ending hill */}
-          <path d="M1380 200 L1380 170 Q1410 160 1440 165 L1440 200 Z" />
+          <path d="M1400 200 L1400 175 Q1420 165 1440 170 L1440 200 Z" />
         </g>
 
         {/* Illuminated windows - with glow effect */}
@@ -145,48 +157,57 @@ export function FooterSkyline() {
             transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
           />
           
-          {/* Modern house windows */}
+          {/* Mosque windows - warm glow from inside */}
+          <motion.path
+            d="M805 195 L805 180 Q815 172 825 180 L825 195 Z"
+            fill="hsl(35 50% 55%)"
+            initial={{ opacity: 0.5 }}
+            animate={{ opacity: [0.5, 0.8, 0.5] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          
+          {/* Modern house windows - adjusted positions */}
           <motion.rect
-            x="860" y="160" width="10" height="12"
+            x="910" y="160" width="10" height="12"
             fill="hsl(40 60% 70%)"
             initial={{ opacity: 0.7 }}
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
           />
           <motion.rect
-            x="880" y="160" width="10" height="12"
+            x="930" y="160" width="10" height="12"
             fill="hsl(40 60% 70%)"
             initial={{ opacity: 0.5 }}
             animate={{ opacity: [0.5, 0.85, 0.5] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
           />
           <motion.rect
-            x="895" y="175" width="8" height="10"
+            x="945" y="175" width="8" height="10"
             fill="hsl(40 60% 70%)"
             initial={{ opacity: 0.6 }}
             animate={{ opacity: [0.6, 0.9, 0.6] }}
             transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           />
           
-          {/* Barnhouse window */}
+          {/* Barnhouse window - adjusted */}
           <motion.rect
-            x="970" y="160" width="10" height="12"
+            x="1020" y="160" width="10" height="12"
             fill="hsl(40 60% 70%)"
             initial={{ opacity: 0.65 }}
             animate={{ opacity: [0.65, 0.95, 0.65] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.7 }}
           />
           
-          {/* Final house windows */}
+          {/* Final house windows - adjusted */}
           <motion.rect
-            x="1300" y="165" width="8" height="10"
+            x="1345" y="165" width="8" height="10"
             fill="hsl(40 60% 70%)"
             initial={{ opacity: 0.6 }}
             animate={{ opacity: [0.6, 0.9, 0.6] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
           />
           <motion.rect
-            x="1330" y="165" width="8" height="10"
+            x="1370" y="165" width="8" height="10"
             fill="hsl(40 60% 70%)"
             initial={{ opacity: 0.5 }}
             animate={{ opacity: [0.5, 0.8, 0.5] }}

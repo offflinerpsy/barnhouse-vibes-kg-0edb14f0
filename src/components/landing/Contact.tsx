@@ -31,7 +31,7 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" className="py-20 md:py-28 bg-secondary/30">
+    <section id="contact" className="py-20 md:py-28 pb-32 md:pb-40 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
           {/* Left side - Info */}
