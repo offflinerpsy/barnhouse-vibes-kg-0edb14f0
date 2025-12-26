@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ERA Concept Home - Design System
-   Brand colors: Gold accent (#C3996B), warm neutrals
+   Brand colors: Gold accent (#C3996B), warm sandy neutrals
    Typography: Rising Sun
 */
 
@@ -20,23 +20,24 @@
 
 @layer base {
   :root {
-    --background: 40 20% 98%;
+    /* Warm sandy background instead of pure white */
+    --background: 38 25% 95%;
     --foreground: 30 10% 15%;
 
-    --card: 40 25% 97%;
+    --card: 38 22% 93%;
     --card-foreground: 30 10% 15%;
 
-    --popover: 0 0% 100%;
+    --popover: 38 25% 95%;
     --popover-foreground: 30 10% 15%;
 
     /* Gold/Bronze brand color */
     --primary: 32 42% 59%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 15% 92%;
+    --secondary: 38 20% 90%;
     --secondary-foreground: 30 10% 25%;
 
-    --muted: 40 10% 94%;
+    --muted: 38 18% 91%;
     --muted-foreground: 30 8% 45%;
 
     --accent: 32 42% 59%;
@@ -45,8 +46,8 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 35 15% 88%;
-    --input: 35 15% 88%;
+    --border: 35 18% 85%;
+    --input: 35 18% 85%;
     --ring: 32 42% 59%;
 
     --radius: 0.75rem;
@@ -55,17 +56,17 @@
     --gold: 32 42% 59%;
     --gold-light: 35 45% 75%;
     --gold-dark: 30 40% 45%;
-    --warm-white: 40 30% 98%;
+    --warm-white: 38 25% 95%;
     --warm-gray: 35 10% 60%;
     --charcoal: 30 15% 20%;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 38 25% 95%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 38 20% 90%;
     --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 35 18% 85%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
