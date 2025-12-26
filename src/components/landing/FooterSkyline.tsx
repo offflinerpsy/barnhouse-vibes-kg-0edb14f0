@@ -16,9 +16,45 @@ export function FooterSkyline() {
   const midY = useTransform(scrollYProgress, [0, 1], [20, -20]);
   const foregroundY = useTransform(scrollYProgress, [0, 1], [10, -10]);
 
-  // Golden glow color
+  // Skyline palette
+  const silhouetteFill = "hsl(36 31% 18%)"; // matches mosque SVG fill
+
+  // Window glow color
   const goldenGlow = "hsl(40 60% 65%)";
   const goldenGlowBright = "hsl(40 70% 75%)";
+
+  // Mosque placement helpers (image viewBox is 1024x1024; artwork bottom is ~y=882)
+  const MOSQUE_VIEWBOX_H = 1024;
+  const MOSQUE_ART_BOTTOM = 882;
+  const mosqueW = 150;
+  const mosqueH = 120;
+  const mosqueX = 760;
+  const mosqueY = 200 - mosqueH * (MOSQUE_ART_BOTTOM / MOSQUE_VIEWBOX_H);
+
+  // Mosque window glows (relative to the image box so they stay aligned after resizing)
+  const mosqueDoor = {
+    x: mosqueX + mosqueW * 0.42,
+    y: mosqueY + mosqueH * 0.70,
+    w: mosqueW * 0.075,
+    h: mosqueH * 0.18,
+    rx: 6,
+  };
+
+  const mosqueMinaretWin1 = {
+    x: mosqueX + mosqueW * 0.72,
+    y: mosqueY + mosqueH * 0.32,
+    w: mosqueW * 0.028,
+    h: mosqueH * 0.10,
+    rx: 3,
+  };
+
+  const mosqueMinaretWin2 = {
+    x: mosqueX + mosqueW * 0.72,
+    y: mosqueY + mosqueH * 0.46,
+    w: mosqueW * 0.028,
+    h: mosqueH * 0.10,
+    rx: 3,
+  };
 
   return (
     <div 
@@ -62,16 +98,6 @@ export function FooterSkyline() {
             </feMerge>
           </filter>
 
-          {/* Color filter to match mosque to silhouette color hsl(30 15% 20%) */}
-          <filter id="colorize" colorInterpolationFilters="sRGB">
-            <feColorMatrix
-              type="matrix"
-              values="0 0 0 0 0.243
-                      0 0 0 0 0.212
-                      0 0 0 0 0.180
-                      0 0 0 1 0"
-            />
-          </filter>
         </defs>
 
         {/* Background mountains - furthest layer with parallax */}
@@ -93,77 +119,75 @@ export function FooterSkyline() {
         </motion.g>
 
         {/* Main silhouette layer with slight parallax */}
-        <motion.g fill="hsl(30 15% 20%)" style={{ y: foregroundY }}>
+        <motion.g fill={silhouetteFill} style={{ y: foregroundY }}>
           {/* Left side - Small barnhouse (small, stays below mosque) */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('barnhouse1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <path d="M50 200 L50 178 L70 168 L90 178 L90 200 Z" />
           </g>
-          
+
           {/* Left modular house with pitched roof (small) */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('modular1')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <path d="M130 200 L130 175 L150 162 L170 175 L170 200 Z" />
           </g>
-          
+
           {/* Linden/deciduous trees */}
           <ellipse cx="210" cy="190" rx="10" ry="14" opacity="0.8" />
           <ellipse cx="230" cy="192" rx="8" ry="12" opacity="0.7" />
 
-          {/* Mountain peak (lower than mosque) */}
-          <path d="M270 200 L270 135 L305 110 L340 135 L340 200 Z" />
-          
+          {/* Peak (kept below mosque) */}
+          <path d="M270 200 L270 155 L305 130 L340 155 L340 200 Z" />
+
           {/* Modern A-frame cabin (small) */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('aframe')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <path d="M390 200 L390 175 L420 158 L450 175 L450 200 Z" />
           </g>
-          
+
           {/* Traditional Kyrgyz yurt silhouette */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('yurt')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <path d="M500 200 L500 185 Q500 175 525 172 Q550 175 550 185 L550 200 Z" />
-            <path d="M512 172 L525 166 L538 172" fill="none" stroke="hsl(30 15% 20%)" strokeWidth="2" />
+            <path d="M512 172 L525 166 L538 172" fill="none" stroke={silhouetteFill} strokeWidth="2" />
           </g>
 
-          {/* Central mountain (lower than mosque minaret) */}
-          <path d="M600 200 L600 125 L650 95 L700 125 L700 200 Z" />
-          
-          {/* Mosque - positioned to sit exactly on ground (y=200 baseline) */}
-          {/* SVG viewBox is 1024x1024, mosque graphic spans ~y=142 to y=882 (740 units height) */}
-          {/* To fit in 100px height and bottom at y=200: top = 200 - 100 = 100 */}
-          <g 
+          {/* Central peak (kept below mosque) */}
+          <path d="M600 200 L600 145 L650 125 L700 145 L700 200 Z" />
+
+          {/* Mosque - anchored to ground (baseline y=200) */}
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('mosque')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <image
               href={mosqueSilhouette}
-              x="720"
-              y="100"
-              width="140"
-              height="100"
+              x={mosqueX}
+              y={mosqueY}
+              width={mosqueW}
+              height={mosqueH}
               preserveAspectRatio="xMidYMax meet"
             />
           </g>
         </motion.g>
 
         {/* Continue main silhouette layer */}
-        <motion.g fill="hsl(30 15% 20%)" style={{ y: foregroundY }}>
+        <motion.g fill={silhouetteFill} style={{ y: foregroundY }}>
           {/* Modern modular house complex (small, lower than mosque) */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('modern1')}
             onMouseLeave={() => setHoveredBuilding(null)}
@@ -171,32 +195,32 @@ export function FooterSkyline() {
             <rect x="920" y="175" width="45" height="25" />
             <path d="M918 175 L942 160 L968 175 Z" />
           </g>
-          
+
           {/* Another barnhouse (small) */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('barnhouse2')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <path d="M1020 200 L1020 178 L1045 165 L1070 178 L1070 200 Z" />
           </g>
-          
+
           {/* Cypress trees - tall narrow shape */}
           <ellipse cx="1120" cy="175" rx="6" ry="25" opacity="0.9" />
           <ellipse cx="1138" cy="178" rx="5" ry="22" opacity="0.8" />
-          
-          {/* Mountain range right side (lower than mosque) */}
-          <path d="M1175 200 L1175 145 L1215 120 L1255 145 L1255 200 Z" />
-          
+
+          {/* Peak right side (kept below mosque) */}
+          <path d="M1175 200 L1175 160 L1215 140 L1255 160 L1255 200 Z" />
+
           {/* Final modern house (small) */}
-          <g 
+          <g
             className="pointer-events-auto"
             onMouseEnter={() => setHoveredBuilding('final')}
             onMouseLeave={() => setHoveredBuilding(null)}
           >
             <path d="M1320 200 L1320 178 L1355 165 L1390 178 L1390 200 Z" />
           </g>
-          
+
           {/* Ending hill */}
           <path d="M1400 200 L1400 188 Q1420 183 1440 185 L1440 200 Z" />
         </motion.g>
@@ -258,36 +282,61 @@ export function FooterSkyline() {
             transition={{ duration: hoveredBuilding === 'yurt' ? 0.3 : 5, repeat: hoveredBuilding === 'yurt' ? 0 : Infinity, ease: "easeInOut" }}
           />
           
-          {/* Mosque windows - positioned to match actual mosque architecture */}
-          {/* Main arched entrance (center of main building) */}
+          {/* Mosque windows - aligned to the mosque image box */}
           <motion.rect
-            x="778" y="175" width="10" height="16" rx="5"
+            x={mosqueDoor.x}
+            y={mosqueDoor.y}
+            width={mosqueDoor.w}
+            height={mosqueDoor.h}
+            rx={mosqueDoor.rx}
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
-            animate={{ 
-              opacity: hoveredBuilding === 'mosque' ? 1 : [0.4, 0.7, 0.4]
+            animate={{
+              opacity: hoveredBuilding === 'mosque' ? 1 : [0.4, 0.7, 0.4],
             }}
-            transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 5, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut" }}
+            transition={{
+              duration: hoveredBuilding === 'mosque' ? 0.3 : 5,
+              repeat: hoveredBuilding === 'mosque' ? 0 : Infinity,
+              ease: "easeInOut",
+            }}
           />
-          
-          {/* Minaret windows (tower on the right side of mosque) */}
+
           <motion.rect
-            x="820" y="125" width="4" height="8" rx="2"
+            x={mosqueMinaretWin1.x}
+            y={mosqueMinaretWin1.y}
+            width={mosqueMinaretWin1.w}
+            height={mosqueMinaretWin1.h}
+            rx={mosqueMinaretWin1.rx}
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
-            animate={{ 
-              opacity: hoveredBuilding === 'mosque' ? 1 : [0.5, 0.8, 0.5]
+            animate={{
+              opacity: hoveredBuilding === 'mosque' ? 1 : [0.5, 0.8, 0.5],
             }}
-            transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 4, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut", delay: 0.5 }}
+            transition={{
+              duration: hoveredBuilding === 'mosque' ? 0.3 : 4,
+              repeat: hoveredBuilding === 'mosque' ? 0 : Infinity,
+              ease: "easeInOut",
+              delay: 0.5,
+            }}
           />
+
           <motion.rect
-            x="820" y="145" width="4" height="8" rx="2"
+            x={mosqueMinaretWin2.x}
+            y={mosqueMinaretWin2.y}
+            width={mosqueMinaretWin2.w}
+            height={mosqueMinaretWin2.h}
+            rx={mosqueMinaretWin2.rx}
             fill={goldenGlow}
             filter={hoveredBuilding === 'mosque' ? "url(#hoverGlow)" : "url(#windowGlow)"}
-            animate={{ 
-              opacity: hoveredBuilding === 'mosque' ? 1 : [0.4, 0.7, 0.4]
+            animate={{
+              opacity: hoveredBuilding === 'mosque' ? 1 : [0.4, 0.7, 0.4],
             }}
-            transition={{ duration: hoveredBuilding === 'mosque' ? 0.3 : 4.5, repeat: hoveredBuilding === 'mosque' ? 0 : Infinity, ease: "easeInOut", delay: 1 }}
+            transition={{
+              duration: hoveredBuilding === 'mosque' ? 0.3 : 4.5,
+              repeat: hoveredBuilding === 'mosque' ? 0 : Infinity,
+              ease: "easeInOut",
+              delay: 1,
+            }}
           />
           
           {/* Modern house windows */}
@@ -387,7 +436,7 @@ export function FooterSkyline() {
         />
 
         {/* Bottom fill to prevent gap */}
-        <rect x="0" y="199" width="1440" height="10" fill="hsl(30 15% 20%)" />
+        <rect x="0" y="199" width="1440" height="10" fill={silhouetteFill} />
       </svg>
     </div>
   );

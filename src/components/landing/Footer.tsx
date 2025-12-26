@@ -11,7 +11,7 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative bg-charcoal text-white pt-12 pb-8">
+    <footer id="footer" className="relative bg-charcoal text-white pt-12 pb-8">
       {/* Skyline silhouette */}
       <FooterSkyline />
       
