@@ -1481,6 +1481,285 @@ export function Catalog() {
                 </div>
               </motion.div>
             ))}
+            
+            {/* Custom Project CTA Card - inside the grid */}
+            <motion.div
+              key="custom-project-cta"
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: filteredHouses.length * 0.05 }}
+              className="group cursor-pointer"
+              onClick={() => setShowCustomModal(true)}
+            >
+              <div className="relative h-full bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-shadow duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(195,153,107,0.25)]">
+                {/* Animated House Container */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[hsl(var(--charcoal))] via-[hsl(30,12%,15%)] to-[hsl(var(--charcoal))]">
+                  {/* Decorative background elements */}
+                  <div className="absolute inset-0">
+                    <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-[hsl(var(--gold))]/5 rounded-full blur-3xl" />
+                    <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-[hsl(var(--gold))]/3 rounded-full blur-2xl" />
+                  </div>
+                  
+                  {/* Animated Barn House SVG */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.svg
+                      viewBox="0 0 200 160"
+                      className="w-40 h-32 md:w-48 md:h-40"
+                      initial="hidden"
+                      whileInView="visible"
+                      viewport={{ once: true, margin: "-50px" }}
+                    >
+                      {/* Ground line */}
+                      <motion.line
+                        x1="20" y1="140" x2="180" y2="140"
+                        stroke="hsl(38, 35%, 55%)"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 0.3, transition: { duration: 0.8, delay: 0 } }
+                        }}
+                      />
+                      
+                      {/* Left wall */}
+                      <motion.line
+                        x1="40" y1="140" x2="40" y2="80"
+                        stroke="hsl(38, 35%, 65%)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.5, delay: 0.3 } }
+                        }}
+                      />
+                      
+                      {/* Right wall */}
+                      <motion.line
+                        x1="160" y1="140" x2="160" y2="80"
+                        stroke="hsl(38, 35%, 65%)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.5, delay: 0.4 } }
+                        }}
+                      />
+                      
+                      {/* Bottom wall */}
+                      <motion.line
+                        x1="40" y1="140" x2="160" y2="140"
+                        stroke="hsl(38, 35%, 65%)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.5, delay: 0.5 } }
+                        }}
+                      />
+                      
+                      {/* Barn roof - left slope */}
+                      <motion.line
+                        x1="35" y1="80" x2="100" y2="35"
+                        stroke="hsl(38, 35%, 70%)"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.6, delay: 0.7 } }
+                        }}
+                      />
+                      
+                      {/* Barn roof - right slope */}
+                      <motion.line
+                        x1="100" y1="35" x2="165" y2="80"
+                        stroke="hsl(38, 35%, 70%)"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.6, delay: 0.9 } }
+                        }}
+                      />
+                      
+                      {/* Roof horizontal */}
+                      <motion.line
+                        x1="35" y1="80" x2="165" y2="80"
+                        stroke="hsl(38, 35%, 65%)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.4, delay: 1.1 } }
+                        }}
+                      />
+                      
+                      {/* Door */}
+                      <motion.rect
+                        x="85" y="100" width="30" height="40"
+                        fill="none"
+                        stroke="hsl(38, 35%, 55%)"
+                        strokeWidth="1.5"
+                        rx="1"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.5, delay: 1.3 } }
+                        }}
+                      />
+                      
+                      {/* Door handle */}
+                      <motion.circle
+                        cx="108" cy="120" r="2"
+                        fill="hsl(38, 35%, 60%)"
+                        variants={{
+                          hidden: { scale: 0, opacity: 0 },
+                          visible: { scale: 1, opacity: 1, transition: { duration: 0.2, delay: 1.6 } }
+                        }}
+                      />
+                      
+                      {/* Left window */}
+                      <motion.rect
+                        x="50" y="95" width="20" height="25"
+                        fill="none"
+                        stroke="hsl(38, 35%, 55%)"
+                        strokeWidth="1.5"
+                        rx="1"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.4, delay: 1.4 } }
+                        }}
+                      />
+                      
+                      {/* Left window cross */}
+                      <motion.g
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: { opacity: 1, transition: { duration: 0.3, delay: 1.5 } }
+                        }}
+                      >
+                        <line x1="60" y1="95" x2="60" y2="120" stroke="hsl(38, 35%, 50%)" strokeWidth="1" />
+                        <line x1="50" y1="107.5" x2="70" y2="107.5" stroke="hsl(38, 35%, 50%)" strokeWidth="1" />
+                      </motion.g>
+                      
+                      {/* Right window */}
+                      <motion.rect
+                        x="130" y="95" width="20" height="25"
+                        fill="none"
+                        stroke="hsl(38, 35%, 55%)"
+                        strokeWidth="1.5"
+                        rx="1"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.4, delay: 1.45 } }
+                        }}
+                      />
+                      
+                      {/* Right window cross */}
+                      <motion.g
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: { opacity: 1, transition: { duration: 0.3, delay: 1.55 } }
+                        }}
+                      >
+                        <line x1="140" y1="95" x2="140" y2="120" stroke="hsl(38, 35%, 50%)" strokeWidth="1" />
+                        <line x1="130" y1="107.5" x2="150" y2="107.5" stroke="hsl(38, 35%, 50%)" strokeWidth="1" />
+                      </motion.g>
+                      
+                      {/* Chimney */}
+                      <motion.rect
+                        x="120" y="40" width="12" height="25"
+                        fill="none"
+                        stroke="hsl(38, 35%, 55%)"
+                        strokeWidth="1.5"
+                        variants={{
+                          hidden: { pathLength: 0, opacity: 0 },
+                          visible: { pathLength: 1, opacity: 1, transition: { duration: 0.4, delay: 1.7 } }
+                        }}
+                      />
+                      
+                      {/* Smoke particles */}
+                      <motion.circle
+                        cx="126" cy="32" r="3"
+                        fill="none"
+                        stroke="hsl(38, 35%, 50%)"
+                        strokeWidth="1"
+                        variants={{
+                          hidden: { opacity: 0, y: 5 },
+                          visible: { 
+                            opacity: [0, 0.5, 0], 
+                            y: [-5, -15, -25],
+                            transition: { duration: 2, delay: 2, repeat: Infinity, repeatDelay: 1 }
+                          }
+                        }}
+                      />
+                      <motion.circle
+                        cx="126" cy="28" r="2"
+                        fill="none"
+                        stroke="hsl(38, 35%, 45%)"
+                        strokeWidth="1"
+                        variants={{
+                          hidden: { opacity: 0, y: 5 },
+                          visible: { 
+                            opacity: [0, 0.4, 0], 
+                            y: [-5, -18, -30],
+                            transition: { duration: 2.5, delay: 2.3, repeat: Infinity, repeatDelay: 1.2 }
+                          }
+                        }}
+                      />
+                      
+                      {/* Plus sign in center */}
+                      <motion.g
+                        variants={{
+                          hidden: { scale: 0, opacity: 0 },
+                          visible: { scale: 1, opacity: 1, transition: { duration: 0.4, delay: 1.9, type: "spring" } }
+                        }}
+                      >
+                        <circle cx="100" cy="60" r="12" fill="hsl(38, 35%, 65%)" opacity="0.2" />
+                        <line x1="95" y1="60" x2="105" y2="60" stroke="hsl(38, 35%, 70%)" strokeWidth="2" strokeLinecap="round" />
+                        <line x1="100" y1="55" x2="100" y2="65" stroke="hsl(38, 35%, 70%)" strokeWidth="2" strokeLinecap="round" />
+                      </motion.g>
+                    </motion.svg>
+                  </div>
+                  
+                  {/* Premium hover overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--charcoal))]/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                  
+                  {/* Golden glow effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--gold))]/0 via-transparent to-[hsl(var(--gold))]/0 group-hover:from-[hsl(var(--gold))]/10 group-hover:to-[hsl(var(--gold))]/5 transition-all duration-500" />
+                  
+                  {/* Badge */}
+                  <Badge className="absolute top-3 left-3 bg-[hsl(var(--gold))]/90 backdrop-blur-md text-white border border-white/20 font-medium">
+                    Индивидуальный
+                  </Badge>
+
+                  {/* View button on hover */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <div className="bg-white/95 backdrop-blur-sm text-[hsl(var(--charcoal))] px-6 py-3 rounded-full font-semibold text-sm shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                      Заказать проект
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
+                  <h3 className="font-display text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
+                    Не нашли подходящий?
+                  </h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-3">
+                    Создадим дом вашей мечты
+                  </p>
+                  
+                  {/* CTA hint */}
+                  <div className="flex items-center gap-2 text-primary font-medium text-sm">
+                    <PenTool className="h-4 w-4" />
+                    <span>Заказать проект</span>
+                  </div>
+                </div>
+
+                {/* Premium bottom accent */}
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[hsl(var(--gold))] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              </div>
+            </motion.div>
           </AnimatePresence>
         </div>
 
@@ -1506,70 +1785,6 @@ export function Catalog() {
             </Button>
           </motion.div>
         )}
-
-        {/* Custom Project CTA Block - Premium Design */}
-        <motion.div
-          className="mt-16 md:mt-24"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl">
-            {/* Background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--charcoal))] via-[hsl(30,12%,18%)] to-[hsl(var(--charcoal))]" />
-            
-            {/* Gold accent elements */}
-            <div className="absolute top-0 right-0 w-80 h-80 bg-[hsl(var(--gold))]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-            <div className="absolute bottom-0 left-0 w-60 h-60 bg-[hsl(var(--gold))]/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/3" />
-            
-            {/* Decorative lines */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold))]/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold))]/30 to-transparent" />
-            
-            <div className="relative px-6 py-12 md:px-16 md:py-16">
-              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
-                {/* Left side - Icon with glow */}
-                <div className="flex-shrink-0">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-[hsl(var(--gold))]/20 rounded-2xl blur-xl" />
-                    <div className="relative w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl flex items-center justify-center shadow-2xl">
-                      <PenTool className="h-10 w-10 md:h-14 md:w-14 text-white" />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Right side - Content */}
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="font-display text-2xl md:text-4xl font-bold text-white mb-4">
-                    Создадим дом{" "}
-                    <span className="text-gradient-gold">вашей мечты</span>
-                  </h3>
-                  <p className="text-white/70 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
-                    Не нашли идеальный вариант? Наши архитекторы разработают уникальный проект 
-                    с учётом всех ваших пожеланий — от планировки до мельчайших деталей.
-                  </p>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <Button
-                      onClick={() => setShowCustomModal(true)}
-                      className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] hover:from-[hsl(var(--gold-dark))] hover:to-[hsl(var(--gold))] text-white border-0 px-8 py-6 text-base font-semibold shadow-xl shadow-[hsl(var(--gold))]/20 transition-all duration-300 hover:shadow-[hsl(var(--gold))]/30"
-                    >
-                      Заказать индивидуальный проект
-                    </Button>
-                    <a 
-                      href="#contact"
-                      className="inline-flex items-center justify-center gap-2 px-6 py-4 text-white/80 hover:text-white border border-white/20 hover:border-white/40 rounded-lg transition-all duration-300 font-medium"
-                    >
-                      <Phone className="h-4 w-4" />
-                      Позвонить
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </div>
 
       {/* House Modal */}
