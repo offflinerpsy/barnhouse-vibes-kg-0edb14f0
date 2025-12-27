@@ -12,6 +12,7 @@
  * =============================================================================
  */
 
+import { motion } from "framer-motion";
 import {
   Accordion,
   AccordionContent,
@@ -58,37 +59,73 @@ const faqItems = [
   },
 ];
 
+// Анимации
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 },
+  },
+};
+
 export function FAQ() {
   return (
     <section id="faq" className="py-20 md:py-28">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
           <span className="text-primary font-medium text-sm uppercase tracking-wider">
             Ответы на вопросы
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3">
             Частые вопросы
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="max-w-3xl mx-auto">
+        {/* Accordion */}
+        <motion.div
+          className="max-w-3xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
           <Accordion type="single" collapsible className="space-y-4">
             {faqItems.map((item, index) => (
-              <AccordionItem
-                key={index}
-                value={`item-${index}`}
-                className="bg-card rounded-xl px-6 border border-border"
-              >
-                <AccordionTrigger className="text-left font-display font-semibold hover:text-primary hover:no-underline py-5">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
-                  {item.answer}
-                </AccordionContent>
-              </AccordionItem>
+              <motion.div key={index} variants={itemVariants}>
+                <AccordionItem
+                  value={`item-${index}`}
+                  className="bg-card rounded-xl px-6 border border-border"
+                >
+                  <AccordionTrigger className="text-left font-display font-semibold hover:text-primary hover:no-underline py-5">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
+                    {item.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              </motion.div>
             ))}
           </Accordion>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -21,6 +21,7 @@
  */
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { ArrowRight, BedDouble, Maximize, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -199,17 +200,30 @@ export function Catalog() {
   return (
     <section id="catalog" className="py-20 md:py-28">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
           <span className="text-primary font-medium text-sm uppercase tracking-wider">
             Наши проекты
           </span>
           <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3">
             Каталог домов
           </h2>
-        </div>
+        </motion.div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12">
+        <motion.div
+          className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
           {categories.map((cat) => (
             <Button
               key={cat.value}
@@ -225,14 +239,18 @@ export function Catalog() {
               {cat.label}
             </Button>
           ))}
-        </div>
+        </motion.div>
 
         {/* Houses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredHouses.map((house) => (
-            <div
+          {filteredHouses.map((house, index) => (
+            <motion.div
               key={house.id}
               className="group bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img
@@ -276,7 +294,7 @@ export function Catalog() {
                   </Button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
