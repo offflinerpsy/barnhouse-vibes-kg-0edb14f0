@@ -6,22 +6,23 @@
  * ID: #faq
  * 
  * Содержит:
- * - Аккордеон с 7 вопросами и ответами
- * - Темы: сроки, планировка, материалы, доставка, гарантия, фундамент, проживание
+ * - Кастомный аккордеон с иконками Plus/Minus
+ * - 7 вопросов и ответов
+ * - CTA кнопка "Связаться с нами"
  * 
  * =============================================================================
  */
 
-import { motion } from "framer-motion";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Minus } from "lucide-react";
 
-// Данные FAQ - вопросы и ответы
-const faqItems = [
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+const faqData: FAQItem[] = [
   {
     question: "Сколько времени занимает производство модульного дома?",
     answer:
@@ -59,7 +60,6 @@ const faqItems = [
   },
 ];
 
-// Анимации
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -72,60 +72,106 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5 },
+    transition: { duration: 0.5, ease: "easeOut" },
   },
 };
 
-export function FAQ() {
+function FAQAccordionItem({
+  item,
+  isOpen,
+  onToggle,
+}: {
+  item: FAQItem;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
   return (
-    <section id="faq" className="py-20 md:py-28">
-      <div className="container mx-auto px-4">
-        {/* Header */}
+    <motion.div
+      variants={itemVariants}
+      className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 hover:border-primary/50"
+    >
+      <button
+        onClick={onToggle}
+        className="w-full px-6 py-5 flex items-start justify-between gap-4 text-left transition-colors duration-300 group"
+        aria-expanded={isOpen}
+      >
+        <span className="text-base md:text-lg font-semibold text-foreground group-hover:text-primary transition-colors duration-300 leading-tight flex-1">
+          {item.question}
+        </span>
+        <span
+          className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 mt-0.5 ${
+            isOpen
+              ? "bg-primary text-primary-foreground rotate-0"
+              : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
+          }`}
+        >
+          {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="px-6 pb-6 pt-0">
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{item.answer}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+export function FAQ() {
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const handleToggle = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
+  return (
+    <section id="faq" className="py-20 md:py-28 bg-secondary/30">
+      <div className="container mx-auto px-4 max-w-4xl">
         <motion.div
-          className="text-center mb-12"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
+          className="text-center mb-12 md:mb-16"
         >
-          <span className="text-primary font-medium text-sm uppercase tracking-wider">
+          <span className="inline-block text-primary font-medium text-sm md:text-base uppercase tracking-wider mb-3 md:mb-4">
             Ответы на вопросы
           </span>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mt-3">
+          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
             Частые вопросы
           </h2>
         </motion.div>
 
-        {/* Accordion */}
         <motion.div
-          className="max-w-3xl mx-auto"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          viewport={{ once: true, margin: "-100px" }}
+          className="space-y-4"
         >
-          <Accordion type="single" collapsible className="space-y-4">
-            {faqItems.map((item, index) => (
-              <motion.div key={index} variants={itemVariants}>
-                <AccordionItem
-                  value={`item-${index}`}
-                  className="bg-card rounded-xl px-6 border border-border"
-                >
-                  <AccordionTrigger className="text-left font-display font-semibold hover:text-primary hover:no-underline py-5">
-                    {item.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-5 leading-relaxed">
-                    {item.answer}
-                  </AccordionContent>
-                </AccordionItem>
-              </motion.div>
-            ))}
-          </Accordion>
+          {faqData.map((item, index) => (
+            <FAQAccordionItem
+              key={index}
+              item={item}
+              isOpen={openIndex === index}
+              onToggle={() => handleToggle(index)}
+            />
+          ))}
         </motion.div>
+
       </div>
     </section>
   );
