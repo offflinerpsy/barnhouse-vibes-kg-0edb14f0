@@ -84,7 +84,7 @@ export function Hero() {
       {/* Left Content Panel */}
       <motion.div 
         style={{ y: contentY }}
-        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-16 xl:px-24 py-20 md:py-24"
+        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-16 xl:px-24 py-24 pb-72 md:py-24 md:pb-24 lg:pb-24"
       >
         <div className="relative z-10 max-w-lg xl:max-w-xl">
           {/* Tagline */}
@@ -291,8 +291,8 @@ export function Hero() {
       </div>
 
       {/* Mobile: Show circular viewer below content */}
-      <div className="lg:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
-        <div className="relative w-48 h-48 rounded-full overflow-hidden border border-white/10">
+      <div className="lg:hidden absolute bottom-12 left-1/2 -translate-x-1/2 z-10">
+        <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border border-white/10 shadow-2xl">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
