@@ -1,204 +1,829 @@
 /**
  * =============================================================================
- * CATALOG SECTION - Каталог домов
+ * CATALOG SECTION - Каталог домов ERA
  * =============================================================================
  * 
  * ID: #catalog
  * 
- * Содержит:
- * - Фильтр по категориям (Мини, Стандарт, Большие, Премиум)
- * - Сетка карточек домов (8 моделей)
- * - Модальное окно с деталями дома
- * - Карусель изображений в модалке
+ * Структура:
+ * - Проекты (Barn House, Country, Hi-Tech, и т.д.)
+ * - В каждом проекте модели с разным метражом
+ * - Атрибуты: комнаты, спальни, санузлы, веранда
  * 
- * Категории:
- * - mini: до 35м²
- * - standard: 35-60м²
- * - large: 60-100м²
- * - premium: 100м²+
+ * Фильтрация:
+ * - По типу проекта
+ * - По метражу внутри проекта
  * 
  * =============================================================================
  */
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, BedDouble, Maximize, Grid } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  BedDouble, 
+  Maximize, 
+  Bath, 
+  Trees, 
+  DoorOpen,
+  X,
+  Phone,
+  MessageCircle,
+  Send,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Hand
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Input } from "@/components/ui/input";
 
-// Типы категорий домов
-type Category = "all" | "mini" | "standard" | "large" | "premium";
+// Типы проектов
+type ProjectType = "all" | "barn-house" | "country" | "hi-tech" | "classic" | "minimalist";
 
 // Интерфейс модели дома
 interface HouseModel {
   id: string;
   name: string;
-  category: Exclude<Category, "all">;
+  projectType: Exclude<ProjectType, "all">;
+  projectLabel: string;
   area: number;
   rooms: number;
+  bedrooms: number;
+  bathrooms: number;
+  hasVeranda: boolean;
+  verandaArea?: number;
   price: string;
   images: string[];
-  description: string;
-  features: string[];
 }
 
-// Список категорий для фильтра
+// Список проектов для фильтра
+const projects: { value: ProjectType; label: string }[] = [
+  { value: "all", label: "Все проекты" },
+  { value: "barn-house", label: "Barn House" },
+  { value: "country", label: "Country" },
+  { value: "hi-tech", label: "Hi-Tech" },
+  { value: "classic", label: "Классика" },
+  { value: "minimalist", label: "Минимализм" },
+];
 
-const categories: { value: Category; label: string }[] = [
-  { value: "all", label: "Все" },
-  { value: "mini", label: "Мини (до 35м²)" },
-  { value: "standard", label: "Стандарт (35-60м²)" },
-  { value: "large", label: "Большие (60-100м²)" },
-  { value: "premium", label: "Премиум (100м²+)" },
+// Диапазоны метража для подфильтра
+const areaRanges = [
+  { value: "all", label: "Все метражи" },
+  { value: "small", label: "до 50м²", min: 0, max: 50 },
+  { value: "medium", label: "50-100м²", min: 50, max: 100 },
+  { value: "large", label: "100-150м²", min: 100, max: 150 },
+  { value: "xlarge", label: "150м²+", min: 150, max: Infinity },
 ];
 
 const houses: HouseModel[] = [
+  // Barn House
   {
-    id: "1",
-    name: "ERA Mini Studio",
-    category: "mini",
-    area: 25,
-    rooms: 1,
-    price: "от $12 000",
+    id: "bh-45",
+    name: "Barn House 45",
+    projectType: "barn-house",
+    projectLabel: "Barn House",
+    area: 45,
+    rooms: 2,
+    bedrooms: 1,
+    bathrooms: 1,
+    hasVeranda: true,
+    verandaArea: 12,
+    price: "от $24 000",
     images: [
       "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?q=80&w=2070&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=2080&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
     ],
-    description: "Компактный модульный дом для дачи или гостевого домика",
-    features: ["Спальня-гостиная", "Мини-кухня", "Санузел", "Терраса 8м²"],
   },
   {
-    id: "2",
-    name: "ERA Compact",
-    category: "mini",
-    area: 32,
-    rooms: 1,
-    price: "от $15 000",
+    id: "bh-75",
+    name: "Barn House 75",
+    projectType: "barn-house",
+    projectLabel: "Barn House",
+    area: 75,
+    rooms: 3,
+    bedrooms: 2,
+    bathrooms: 1,
+    hasVeranda: true,
+    verandaArea: 18,
+    price: "от $42 000",
     images: [
       "https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=2080&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
     ],
-    description: "Уютный дом для постоянного проживания одного-двух человек",
-    features: ["Спальня", "Гостиная-кухня", "Санузел", "Терраса 10м²"],
   },
   {
-    id: "3",
-    name: "ERA Standard 45",
-    category: "standard",
-    area: 45,
-    rooms: 2,
-    price: "от $22 000",
+    id: "bh-120",
+    name: "Barn House 120",
+    projectType: "barn-house",
+    projectLabel: "Barn House",
+    area: 120,
+    rooms: 4,
+    bedrooms: 3,
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 25,
+    price: "от $68 000",
     images: [
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
     ],
-    description: "Оптимальный выбор для небольшой семьи или пары",
-    features: ["2 спальни", "Гостиная", "Кухня", "Санузел", "Терраса"],
   },
+  // Country
   {
-    id: "4",
-    name: "ERA Standard 55",
-    category: "standard",
+    id: "cnt-55",
+    name: "Country 55",
+    projectType: "country",
+    projectLabel: "Country",
     area: 55,
-    rooms: 2,
+    rooms: 3,
+    bedrooms: 2,
+    bathrooms: 1,
+    hasVeranda: true,
+    verandaArea: 15,
     price: "от $28 000",
     images: [
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1600210492493-0946911123ea?q=80&w=2074&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
     ],
-    description: "Просторный дом с продуманной планировкой",
-    features: ["2 спальни", "Гостиная", "Кухня-столовая", "Санузел", "Терраса 15м²"],
   },
   {
-    id: "5",
-    name: "ERA Family 75",
-    category: "large",
-    area: 75,
-    rooms: 3,
-    price: "от $38 000",
+    id: "cnt-85",
+    name: "Country 85",
+    projectType: "country",
+    projectLabel: "Country",
+    area: 85,
+    rooms: 4,
+    bedrooms: 3,
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 20,
+    price: "от $46 000",
     images: [
       "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
     ],
-    description: "Комфортный семейный дом с тремя спальнями",
-    features: ["3 спальни", "Гостиная", "Кухня-столовая", "2 санузла", "Терраса"],
   },
   {
-    id: "6",
-    name: "ERA Family 90",
-    category: "large",
-    area: 90,
-    rooms: 4,
-    price: "от $45 000",
+    id: "cnt-140",
+    name: "Country 140",
+    projectType: "country",
+    projectLabel: "Country",
+    area: 140,
+    rooms: 5,
+    bedrooms: 4,
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 30,
+    price: "от $78 000",
     images: [
       "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1600573472556-e636c2acda88?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=2070&auto=format&fit=crop",
     ],
-    description: "Большой дом для семьи с детьми",
-    features: ["4 спальни", "Гостиная", "Кухня-столовая", "2 санузла", "Терраса 20м²"],
   },
+  // Hi-Tech
   {
-    id: "7",
-    name: "ERA Premium 120",
-    category: "premium",
-    area: 120,
-    rooms: 4,
-    price: "от $65 000",
+    id: "ht-60",
+    name: "Hi-Tech 60",
+    projectType: "hi-tech",
+    projectLabel: "Hi-Tech",
+    area: 60,
+    rooms: 2,
+    bedrooms: 1,
+    bathrooms: 1,
+    hasVeranda: false,
+    price: "от $38 000",
     images: [
       "https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=2070&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2070&auto=format&fit=crop",
-    ],
-    description: "Премиальный дом с панорамными окнами и высокими потолками",
-    features: ["4 спальни", "Гостиная 35м²", "Кухня-столовая", "2 санузла", "Терраса 25м²", "Гараж"],
-  },
-  {
-    id: "8",
-    name: "ERA Premium 150",
-    category: "premium",
-    area: 150,
-    rooms: 5,
-    price: "от $85 000",
-    images: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
     ],
-    description: "Эксклюзивный дом премиум-класса для требовательных клиентов",
-    features: ["5 спален", "Гостиная 45м²", "Кухня-столовая", "3 санузла", "Терраса 30м²", "Гараж на 2 авто"],
+  },
+  {
+    id: "ht-100",
+    name: "Hi-Tech 100",
+    projectType: "hi-tech",
+    projectLabel: "Hi-Tech",
+    area: 100,
+    rooms: 3,
+    bedrooms: 2,
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 15,
+    price: "от $62 000",
+    images: [
+      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
+    ],
+  },
+  {
+    id: "ht-160",
+    name: "Hi-Tech 160",
+    projectType: "hi-tech",
+    projectLabel: "Hi-Tech",
+    area: 160,
+    rooms: 5,
+    bedrooms: 3,
+    bathrooms: 3,
+    hasVeranda: true,
+    verandaArea: 35,
+    price: "от $98 000",
+    images: [
+      "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
+    ],
+  },
+  // Classic
+  {
+    id: "cls-70",
+    name: "Классика 70",
+    projectType: "classic",
+    projectLabel: "Классика",
+    area: 70,
+    rooms: 3,
+    bedrooms: 2,
+    bathrooms: 1,
+    hasVeranda: true,
+    verandaArea: 14,
+    price: "от $36 000",
+    images: [
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
+    ],
+  },
+  {
+    id: "cls-110",
+    name: "Классика 110",
+    projectType: "classic",
+    projectLabel: "Классика",
+    area: 110,
+    rooms: 4,
+    bedrooms: 3,
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 22,
+    price: "от $58 000",
+    images: [
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600210492493-0946911123ea?q=80&w=2074&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
+    ],
+  },
+  // Minimalist
+  {
+    id: "min-40",
+    name: "Минимал 40",
+    projectType: "minimalist",
+    projectLabel: "Минимализм",
+    area: 40,
+    rooms: 1,
+    bedrooms: 1,
+    bathrooms: 1,
+    hasVeranda: false,
+    price: "от $22 000",
+    images: [
+      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
+    ],
+  },
+  {
+    id: "min-65",
+    name: "Минимал 65",
+    projectType: "minimalist",
+    projectLabel: "Минимализм",
+    area: 65,
+    rooms: 2,
+    bedrooms: 1,
+    bathrooms: 1,
+    hasVeranda: true,
+    verandaArea: 10,
+    price: "от $35 000",
+    images: [
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1600573472556-e636c2acda88?q=80&w=2070&auto=format&fit=crop",
+    ],
   },
 ];
 
-export function Catalog() {
-  const [activeCategory, setActiveCategory] = useState<Category>("all");
-  const [selectedHouse, setSelectedHouse] = useState<HouseModel | null>(null);
+// Компонент индикатора свайпа
+function SwipeIndicator() {
+  return (
+    <motion.div 
+      className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-charcoal/70 backdrop-blur-sm px-4 py-2 rounded-full z-10"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+    >
+      <motion.div
+        animate={{ x: [0, -8, 8, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
+      >
+        <Hand className="h-5 w-5 text-white" />
+      </motion.div>
+      <span className="text-white text-sm font-medium">Листайте</span>
+      <motion.div 
+        className="flex gap-1"
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      >
+        <span className="w-1.5 h-1.5 bg-primary rounded-full" />
+        <span className="w-1.5 h-1.5 bg-white/50 rounded-full" />
+        <span className="w-1.5 h-1.5 bg-white/50 rounded-full" />
+      </motion.div>
+    </motion.div>
+  );
+}
 
-  const filteredHouses =
-    activeCategory === "all"
-      ? houses
-      : houses.filter((house) => house.category === activeCategory);
+// Компонент формы консультации
+interface ConsultationFormProps {
+  houseName: string;
+  onBack: () => void;
+  onSuccess: () => void;
+}
 
-  const scrollToContact = () => {
-    const element = document.querySelector("#contact");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-    setSelectedHouse(null);
+function ConsultationForm({ houseName, onBack, onSuccess }: ConsultationFormProps) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactMethods, setContactMethods] = useState<string[]>(["phone"]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const toggleContactMethod = (method: string) => {
+    setContactMethods(prev => 
+      prev.includes(method) 
+        ? prev.filter(m => m !== method)
+        : [...prev, method]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim() || !phone.trim()) return;
+    
+    setIsSubmitting(true);
+    
+    // Имитация отправки
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log("Form submitted:", { name, phone, contactMethods, houseName });
+    
+    setIsSubmitting(false);
+    onSuccess();
   };
 
   return (
-    <section id="catalog" className="py-20 md:py-28">
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="h-full flex flex-col"
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <button 
+          onClick={onBack}
+          className="p-2 hover:bg-muted rounded-lg transition-colors"
+        >
+          <ChevronLeft className="h-5 w-5 text-foreground" />
+        </button>
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">Получить консультацию</h3>
+          <p className="text-sm text-muted-foreground">{houseName}</p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
+        <div className="space-y-4 flex-1">
+          {/* Name */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">
+              Ваше имя
+            </label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Введите имя"
+              className="bg-background border-border focus:border-primary"
+              required
+            />
+          </div>
+
+          {/* Phone */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">
+              Телефон
+            </label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+7 (___) ___-__-__"
+              className="bg-background border-border focus:border-primary"
+              required
+            />
+          </div>
+
+          {/* Contact Methods */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-3 block">
+              Удобный способ связи
+            </label>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => toggleContactMethod("phone")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all ${
+                  contactMethods.includes("phone")
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background border-border text-foreground hover:border-primary/50"
+                }`}
+              >
+                <Phone className="h-4 w-4" />
+                <span className="text-sm font-medium">Телефон</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleContactMethod("telegram")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all ${
+                  contactMethods.includes("telegram")
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background border-border text-foreground hover:border-primary/50"
+                }`}
+              >
+                <Send className="h-4 w-4" />
+                <span className="text-sm font-medium">Telegram</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleContactMethod("whatsapp")}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full border transition-all ${
+                  contactMethods.includes("whatsapp")
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background border-border text-foreground hover:border-primary/50"
+                }`}
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isSubmitting || !name.trim() || !phone.trim()}
+          className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold"
+        >
+          {isSubmitting ? (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
+            />
+          ) : (
+            "Получить консультацию"
+          )}
+        </Button>
+
+        <p className="text-xs text-muted-foreground text-center mt-4">
+          Нажимая кнопку, вы соглашаетесь с{" "}
+          <a href="#" className="text-primary hover:underline">
+            политикой конфиденциальности
+          </a>
+        </p>
+      </form>
+    </motion.div>
+  );
+}
+
+// Компонент благодарности
+function ThankYouMessage({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="h-full flex flex-col items-center justify-center text-center px-4"
+    >
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+        className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6"
+      >
+        <CheckCircle className="h-10 w-10 text-primary" />
+      </motion.div>
+      
+      <motion.h3
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="text-2xl font-semibold text-foreground mb-3"
+      >
+        Спасибо за обращение!
+      </motion.h3>
+      
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="text-muted-foreground mb-8 max-w-[280px]"
+      >
+        Мы свяжемся с вами в течение 15 минут для консультации
+      </motion.p>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <Button
+          onClick={onClose}
+          variant="outline"
+          className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+        >
+          Закрыть
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Компонент модального окна
+interface HouseModalProps {
+  house: HouseModel;
+  onClose: () => void;
+}
+
+function HouseModal({ house, onClose }: HouseModalProps) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showForm, setShowForm] = useState(false);
+  const [showThankYou, setShowThankYou] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [showSwipeHint, setShowSwipeHint] = useState(true);
+
+  // Скрываем подсказку после первого свайпа
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSwipeHint(false), 4000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+    
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && currentImageIndex < house.images.length - 1) {
+        setCurrentImageIndex(prev => prev + 1);
+        setShowSwipeHint(false);
+      } else if (diff < 0 && currentImageIndex > 0) {
+        setCurrentImageIndex(prev => prev - 1);
+        setShowSwipeHint(false);
+      }
+    }
+    
+    setTouchStart(null);
+  };
+
+  const handleFormSuccess = () => {
+    setShowThankYou(true);
+  };
+
+  const handleCloseAll = () => {
+    setShowThankYou(false);
+    setShowForm(false);
+    onClose();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-4xl bg-card rounded-2xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-colors"
+        >
+          <X className="h-5 w-5 text-white" />
+        </button>
+
+        <div className="flex flex-col md:flex-row h-auto md:h-[520px]">
+          {/* Image Gallery */}
+          <div 
+            className="relative w-full md:w-1/2 h-64 md:h-full bg-charcoal"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={currentImageIndex}
+                src={house.images[currentImageIndex]}
+                alt={house.name}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full object-cover"
+              />
+            </AnimatePresence>
+
+            {/* Image dots */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+              {house.images.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setCurrentImageIndex(idx);
+                    setShowSwipeHint(false);
+                  }}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    idx === currentImageIndex 
+                      ? "bg-primary w-6" 
+                      : "bg-white/50 hover:bg-white/80"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Desktop navigation arrows */}
+            <div className="hidden md:flex absolute inset-0 items-center justify-between px-3 pointer-events-none">
+              <button
+                onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
+                className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
+                  currentImageIndex === 0 ? "opacity-0" : "opacity-100"
+                }`}
+              >
+                <ChevronLeft className="h-5 w-5 text-white" />
+              </button>
+              <button
+                onClick={() => currentImageIndex < house.images.length - 1 && setCurrentImageIndex(prev => prev + 1)}
+                className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
+                  currentImageIndex === house.images.length - 1 ? "opacity-0" : "opacity-100"
+                }`}
+              >
+                <ChevronRight className="h-5 w-5 text-white" />
+              </button>
+            </div>
+
+            {/* Swipe indicator - only on mobile */}
+            {showSwipeHint && house.images.length > 1 && (
+              <div className="md:hidden">
+                <SwipeIndicator />
+              </div>
+            )}
+
+            {/* Project badge */}
+            <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
+              {house.projectLabel}
+            </Badge>
+          </div>
+
+          {/* Content */}
+          <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
+            <AnimatePresence mode="wait">
+              {showThankYou ? (
+                <ThankYouMessage key="thank-you" onClose={handleCloseAll} />
+              ) : showForm ? (
+                <ConsultationForm 
+                  key="form"
+                  houseName={house.name} 
+                  onBack={() => setShowForm(false)}
+                  onSuccess={handleFormSuccess}
+                />
+              ) : (
+                <motion.div
+                  key="details"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex-1 flex flex-col"
+                >
+                  {/* Title and price */}
+                  <div className="mb-6">
+                    <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
+                      {house.name}
+                    </h2>
+                    <p className="text-2xl font-bold text-primary">{house.price}</p>
+                  </div>
+
+                  {/* Attributes grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-background rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <Maximize className="h-4 w-4" />
+                        <span className="text-xs uppercase tracking-wide">Площадь</span>
+                      </div>
+                      <p className="text-lg font-semibold text-foreground">{house.area} м²</p>
+                    </div>
+                    <div className="bg-background rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <DoorOpen className="h-4 w-4" />
+                        <span className="text-xs uppercase tracking-wide">Комнат</span>
+                      </div>
+                      <p className="text-lg font-semibold text-foreground">{house.rooms}</p>
+                    </div>
+                    <div className="bg-background rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <BedDouble className="h-4 w-4" />
+                        <span className="text-xs uppercase tracking-wide">Спальни</span>
+                      </div>
+                      <p className="text-lg font-semibold text-foreground">{house.bedrooms}</p>
+                    </div>
+                    <div className="bg-background rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                        <Bath className="h-4 w-4" />
+                        <span className="text-xs uppercase tracking-wide">Санузлы</span>
+                      </div>
+                      <p className="text-lg font-semibold text-foreground">{house.bathrooms}</p>
+                    </div>
+                  </div>
+
+                  {/* Veranda info */}
+                  {house.hasVeranda && (
+                    <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-6">
+                      <Trees className="h-5 w-5 text-primary" />
+                      <div>
+                        <p className="font-medium text-foreground">Веранда</p>
+                        {house.verandaArea && (
+                          <p className="text-sm text-muted-foreground">{house.verandaArea} м²</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CTA Button */}
+                  <div className="mt-auto">
+                    <Button
+                      onClick={() => setShowForm(true)}
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold"
+                    >
+                      Получить консультацию
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export function Catalog() {
+  const [activeProject, setActiveProject] = useState<ProjectType>("all");
+  const [activeAreaRange, setActiveAreaRange] = useState("all");
+  const [selectedHouse, setSelectedHouse] = useState<HouseModel | null>(null);
+
+  // Фильтрация по проекту
+  const projectFilteredHouses = activeProject === "all" 
+    ? houses 
+    : houses.filter(house => house.projectType === activeProject);
+
+  // Дополнительная фильтрация по метражу
+  const filteredHouses = activeAreaRange === "all"
+    ? projectFilteredHouses
+    : projectFilteredHouses.filter(house => {
+        const range = areaRanges.find(r => r.value === activeAreaRange);
+        if (!range || range.value === "all") return true;
+        return house.area >= range.min && house.area < range.max;
+      });
+
+  // Сброс фильтра метража при смене проекта
+  const handleProjectChange = (project: ProjectType) => {
+    setActiveProject(project);
+    setActiveAreaRange("all");
+  };
+
+  return (
+    <section id="catalog" className="py-20 md:py-28 bg-background">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -216,171 +841,161 @@ export function Catalog() {
           </h2>
         </motion.div>
 
-        {/* Category Filter */}
+        {/* Project Filter */}
         <motion.div
-          className="flex flex-wrap justify-center gap-2 md:gap-3 mb-12"
+          className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          {categories.map((cat) => (
+          {projects.map((project) => (
             <Button
-              key={cat.value}
-              variant={activeCategory === cat.value ? "default" : "outline"}
+              key={project.value}
+              variant={activeProject === project.value ? "default" : "outline"}
               size="sm"
-              onClick={() => setActiveCategory(cat.value)}
+              onClick={() => handleProjectChange(project.value)}
               className={`rounded-full transition-all ${
-                activeCategory === cat.value
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-primary/10"
+                activeProject === project.value
+                  ? "bg-primary text-primary-foreground shadow-lg"
+                  : "bg-card border-border hover:bg-primary/10 hover:border-primary/30"
               }`}
             >
-              {cat.label}
+              {project.label}
             </Button>
+          ))}
+        </motion.div>
+
+        {/* Area Range Filter */}
+        <motion.div
+          className="flex flex-wrap justify-center gap-2 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          {areaRanges.map((range) => (
+            <button
+              key={range.value}
+              onClick={() => setActiveAreaRange(range.value)}
+              className={`px-4 py-2 text-sm rounded-lg transition-all ${
+                activeAreaRange === range.value
+                  ? "bg-primary/20 text-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              {range.label}
+            </button>
           ))}
         </motion.div>
 
         {/* Houses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredHouses.map((house, index) => (
-            <motion.div
-              key={house.id}
-              className="group bg-card rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.05 }}
-            >
-              <div className="relative aspect-[4/3] overflow-hidden">
-                <img
-                  src={house.images[0]}
-                  alt={house.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <Badge className="absolute top-3 left-3 bg-primary text-primary-foreground">
-                  {house.category === "mini" && "Мини"}
-                  {house.category === "standard" && "Стандарт"}
-                  {house.category === "large" && "Большой"}
-                  {house.category === "premium" && "Премиум"}
-                </Badge>
-              </div>
-              <div className="p-5">
-                <h3 className="font-display text-lg font-semibold text-foreground mb-2">
-                  {house.name}
-                </h3>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                  <span className="flex items-center gap-1">
-                    <Maximize className="h-4 w-4" />
-                    {house.area}м²
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <BedDouble className="h-4 w-4" />
-                    {house.rooms} {house.rooms === 1 ? "комн." : "комн."}
-                  </span>
+          <AnimatePresence mode="popLayout">
+            {filteredHouses.map((house, index) => (
+              <motion.div
+                key={house.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className="group cursor-pointer"
+                onClick={() => setSelectedHouse(house)}
+              >
+                {/* Card with elevated design */}
+                <div className="relative bg-card rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
+                  {/* Image */}
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src={house.images[0]}
+                      alt={house.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
+                    
+                    {/* Project badge */}
+                    <Badge className="absolute top-3 left-3 bg-primary/90 backdrop-blur-sm text-primary-foreground border-0">
+                      {house.projectLabel}
+                    </Badge>
+
+                    {/* Price on image */}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <p className="text-xl font-bold text-white drop-shadow-lg">
+                        {house.price}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-5">
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+                      {house.name}
+                    </h3>
+
+                    {/* Attributes */}
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Maximize className="h-4 w-4 text-primary" />
+                        <span>{house.area} м²</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <BedDouble className="h-4 w-4 text-primary" />
+                        <span>{house.bedrooms} спал.</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Bath className="h-4 w-4 text-primary" />
+                        <span>{house.bathrooms} сануз.</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Trees className="h-4 w-4 text-primary" />
+                        <span>{house.hasVeranda ? "Веранда" : "—"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hover accent */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-primary">
-                    {house.price}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedHouse(house)}
-                    className="text-primary hover:text-primary hover:bg-primary/10"
-                  >
-                    Подробнее
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
+
+        {/* Empty state */}
+        {filteredHouses.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <p className="text-muted-foreground text-lg">
+              Нет домов по выбранным критериям
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setActiveProject("all");
+                setActiveAreaRange("all");
+              }}
+              className="mt-4"
+            >
+              Сбросить фильтры
+            </Button>
+          </motion.div>
+        )}
       </div>
 
-      {/* House Detail Modal */}
-      <Dialog open={!!selectedHouse} onOpenChange={() => setSelectedHouse(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          {selectedHouse && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="font-display text-2xl">
-                  {selectedHouse.name}
-                </DialogTitle>
-              </DialogHeader>
-
-              {/* Image Carousel */}
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {selectedHouse.images.map((img, idx) => (
-                    <CarouselItem key={idx}>
-                      <div className="aspect-video rounded-lg overflow-hidden">
-                        <img
-                          src={img}
-                          alt={`${selectedHouse.name} - ${idx + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-
-              {/* Details */}
-              <div className="space-y-6 mt-4">
-                <p className="text-muted-foreground">{selectedHouse.description}</p>
-
-                <div className="flex items-center gap-6">
-                  <div className="flex items-center gap-2">
-                    <Maximize className="h-5 w-5 text-primary" />
-                    <span className="font-medium">{selectedHouse.area}м²</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <BedDouble className="h-5 w-5 text-primary" />
-                    <span className="font-medium">{selectedHouse.rooms} комнат</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Grid className="h-5 w-5 text-primary" />
-                    <span className="font-medium capitalize">
-                      {selectedHouse.category === "mini" && "Мини"}
-                      {selectedHouse.category === "standard" && "Стандарт"}
-                      {selectedHouse.category === "large" && "Большой"}
-                      {selectedHouse.category === "premium" && "Премиум"}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-display font-semibold mb-3">В комплектацию входит:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedHouse.features.map((feature, idx) => (
-                      <Badge key={idx} variant="secondary">
-                        {feature}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <span className="text-2xl font-bold text-primary">
-                    {selectedHouse.price}
-                  </span>
-                  <Button
-                    size="lg"
-                    onClick={scrollToContact}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    Узнать цену
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* House Modal */}
+      <AnimatePresence>
+        {selectedHouse && (
+          <HouseModal 
+            house={selectedHouse} 
+            onClose={() => setSelectedHouse(null)} 
+          />
+        )}
+      </AnimatePresence>
     </section>
   );
 }
