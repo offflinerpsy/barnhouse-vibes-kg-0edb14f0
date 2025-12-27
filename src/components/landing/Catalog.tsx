@@ -1,3 +1,25 @@
+/**
+ * =============================================================================
+ * CATALOG SECTION - Каталог домов
+ * =============================================================================
+ * 
+ * ID: #catalog
+ * 
+ * Содержит:
+ * - Фильтр по категориям (Мини, Стандарт, Большие, Премиум)
+ * - Сетка карточек домов (8 моделей)
+ * - Модальное окно с деталями дома
+ * - Карусель изображений в модалке
+ * 
+ * Категории:
+ * - mini: до 35м²
+ * - standard: 35-60м²
+ * - large: 60-100м²
+ * - premium: 100м²+
+ * 
+ * =============================================================================
+ */
+
 import { useState } from "react";
 import { ArrowRight, BedDouble, Maximize, Grid } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,8 +38,10 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 
+// Типы категорий домов
 type Category = "all" | "mini" | "standard" | "large" | "premium";
 
+// Интерфейс модели дома
 interface HouseModel {
   id: string;
   name: string;
@@ -29,6 +53,8 @@ interface HouseModel {
   description: string;
   features: string[];
 }
+
+// Список категорий для фильтра
 
 const categories: { value: Category; label: string }[] = [
   { value: "all", label: "Все" },

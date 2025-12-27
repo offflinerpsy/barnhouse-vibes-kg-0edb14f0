@@ -1,3 +1,23 @@
+/**
+ * =============================================================================
+ * HEADER - Шапка сайта (фиксированная навигация)
+ * =============================================================================
+ * 
+ * Содержит:
+ * - Верхняя полоса: город, время работы, соцсети (скрывается при скролле)
+ * - Основная строка: логотип, навигация, телефон, CTA кнопка
+ * - Mobile: Sheet меню справа
+ * 
+ * Навигация ведёт на секции:
+ * - #catalog - Каталог
+ * - #advantages - Преимущества
+ * - #stages - Этапы работы
+ * - #faq - FAQ
+ * - #contact - Контакты
+ * 
+ * =============================================================================
+ */
+
 import { useState, useEffect } from "react";
 import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -5,6 +25,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/s
 import { ContactModal } from "./ContactModal";
 import logoEra from "@/assets/logo-era.png";
 
+// Пункты навигации с якорями
 const navItems = [
   { label: "Каталог", href: "#catalog" },
   { label: "Преимущества", href: "#advantages" },
