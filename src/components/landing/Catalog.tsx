@@ -90,8 +90,7 @@ const houses: HouseModel[] = [
     rooms: 2,
     bedrooms: 1,
     bathrooms: 1,
-    hasVeranda: true,
-    verandaArea: 12,
+    hasVeranda: false,
     price: "от $24 000",
     images: [
       "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?q=80&w=2070&auto=format&fit=crop",
@@ -163,8 +162,7 @@ const houses: HouseModel[] = [
     rooms: 4,
     bedrooms: 3,
     bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 20,
+    hasVeranda: false,
     price: "от $46 000",
     images: [
       "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
@@ -235,8 +233,7 @@ const houses: HouseModel[] = [
     rooms: 5,
     bedrooms: 3,
     bathrooms: 3,
-    hasVeranda: true,
-    verandaArea: 35,
+    hasVeranda: false,
     price: "от $98 000",
     images: [
       "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
@@ -272,8 +269,7 @@ const houses: HouseModel[] = [
     rooms: 4,
     bedrooms: 3,
     bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 22,
+    hasVeranda: false,
     price: "от $58 000",
     images: [
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
@@ -618,7 +614,259 @@ function ThankYouMessage({ onClose }: { onClose: () => void }) {
   );
 }
 
-// Компонент модального окна
+// ==========================================
+// Компоненты для унифицированных модалок (золотой стиль)
+// ==========================================
+
+// Форма консультации для модалок в золотом стиле
+interface ModalConsultationFormProps {
+  houseName: string;
+  onSuccess: () => void;
+  wantsVeranda?: boolean;
+  isCustomProject?: boolean;
+}
+
+function ModalConsultationForm({ houseName, onSuccess, wantsVeranda = false, isCustomProject = false }: ModalConsultationFormProps) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactMethods, setContactMethods] = useState<string[]>(["phone"]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [needsArchitect, setNeedsArchitect] = useState(wantsVeranda);
+
+  const toggleContactMethod = (method: string) => {
+    setContactMethods(prev => 
+      prev.includes(method) 
+        ? prev.filter(m => m !== method)
+        : [...prev, method]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim() || !phone.trim() || contactMethods.length === 0) return;
+    
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const formData = { 
+      name, 
+      phone, 
+      contactMethods, 
+      houseName,
+      wantsVeranda,
+      needsArchitect,
+      isCustomProject
+    };
+    
+    console.log("Form submitted:", formData);
+    setIsSubmitting(false);
+    onSuccess();
+  };
+
+  const contactMethodsList = [
+    { id: "phone", label: "Телефон", icon: Phone },
+    { id: "telegram", label: "Telegram", icon: Send },
+    { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+    >
+      <form onSubmit={handleSubmit}>
+        {/* Белый контейнер формы */}
+        <div className="bg-white rounded-xl p-5 space-y-4 shadow-lg">
+          {/* Подсказка для кастом проекта */}
+          {isCustomProject && (
+            <div className="bg-[hsl(var(--gold))]/10 border border-[hsl(var(--gold))]/20 rounded-lg p-3">
+              <p className="text-sm text-[hsl(var(--charcoal))]">
+                Опишите вашу идею — мы подготовим индивидуальный проект
+              </p>
+            </div>
+          )}
+
+          {/* Имя */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-[hsl(var(--charcoal))]/70">
+              Ваше имя
+            </label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Введите имя"
+              required
+              className="h-12 bg-[hsl(var(--secondary))]/30 border-0 font-rising text-[hsl(var(--charcoal))] placeholder:text-[hsl(var(--charcoal))]/50 focus:ring-2 focus:ring-[hsl(var(--gold))]/30 rounded-lg"
+            />
+          </div>
+
+          {/* Телефон */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-[hsl(var(--charcoal))]/70">
+              Телефон
+            </label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+996 XXX XXX XXX"
+              type="tel"
+              required
+              className="h-12 bg-[hsl(var(--secondary))]/30 border-0 font-rising text-[hsl(var(--charcoal))] placeholder:text-[hsl(var(--charcoal))]/50 focus:ring-2 focus:ring-[hsl(var(--gold))]/30 rounded-lg"
+            />
+          </div>
+
+          {/* Способ связи */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-[hsl(var(--charcoal))]/70">
+              Как с вами связаться? <span className="text-[hsl(var(--gold))]">*</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {contactMethodsList.map((method, index) => {
+                const isSelected = contactMethods.includes(method.id);
+                return (
+                  <button
+                    key={method.id}
+                    type="button"
+                    onClick={() => toggleContactMethod(method.id)}
+                    className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all duration-300 ${
+                      isSelected
+                        ? "bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-white shadow-lg scale-[1.02]"
+                        : "bg-[hsl(var(--secondary))]/50 text-[hsl(var(--charcoal))]/70 hover:bg-[hsl(var(--secondary))] hover:scale-[1.01]"
+                    }`}
+                    style={{
+                      animationDelay: `${300 + index * 100}ms`,
+                      animationFillMode: 'backwards'
+                    }}
+                  >
+                    {isSelected && (
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-md">
+                        <CheckCircle className="w-4 h-4 text-[hsl(var(--gold))]" />
+                      </div>
+                    )}
+                    <method.icon className="w-5 h-5 relative z-10" />
+                    <span className="text-xs font-semibold relative z-10">{method.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Чекбокс консультации с архитектором */}
+          {(wantsVeranda || isCustomProject) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="overflow-hidden"
+            >
+              <button
+                type="button"
+                onClick={() => setNeedsArchitect(!needsArchitect)}
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all ${
+                  needsArchitect
+                    ? "bg-[hsl(var(--gold))]/10 border-[hsl(var(--gold))]/30"
+                    : "bg-[hsl(var(--secondary))]/30 border-transparent hover:border-[hsl(var(--gold))]/20"
+                }`}
+              >
+                <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
+                  needsArchitect ? "bg-[hsl(var(--gold))]" : "bg-white border border-[hsl(var(--charcoal))]/20"
+                }`}>
+                  {needsArchitect && <Check className="h-3 w-3 text-white" />}
+                </div>
+                <span className="text-sm font-semibold text-[hsl(var(--charcoal))]">
+                  {wantsVeranda 
+                    ? "Консультация с архитектором (веранда)"
+                    : "Консультация с архитектором"
+                  }
+                </span>
+              </button>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Кнопка отправки */}
+        <Button
+          type="submit"
+          disabled={isSubmitting || !name.trim() || !phone.trim() || contactMethods.length === 0}
+          variant="modal"
+          size="xl"
+          className="w-full mt-5 rounded-xl"
+        >
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-[hsl(var(--gold))]/30 border-t-[hsl(var(--gold))] rounded-full animate-spin" />
+              Отправляем...
+            </span>
+          ) : (
+            <span>Отправить заявку</span>
+          )}
+        </Button>
+
+        {/* Политика */}
+        <p className="text-center text-white/60 text-xs mt-4">
+          Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
+        </p>
+      </form>
+    </motion.div>
+  );
+}
+
+// Благодарность в золотом стиле
+function ModalThankYouMessage({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="py-8"
+    >
+      <div className="bg-white rounded-xl p-8 shadow-lg text-center">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          className="w-20 h-20 mx-auto mb-6 bg-[hsl(var(--gold))]/10 rounded-full flex items-center justify-center"
+        >
+          <CheckCircle className="h-10 w-10 text-[hsl(var(--gold))]" />
+        </motion.div>
+        
+        <motion.h3
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-2xl font-bold text-[hsl(var(--charcoal))] mb-3 font-rising"
+        >
+          Спасибо за обращение!
+        </motion.h3>
+        
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="text-[hsl(var(--charcoal))]/60 mb-6"
+        >
+          Мы свяжемся с вами в течение 15 минут
+        </motion.p>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Button
+            onClick={onClose}
+            className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-white hover:opacity-90 px-8"
+          >
+            Закрыть
+          </Button>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Компонент модального окна - унифицированный стиль
 interface HouseModalProps {
   house: HouseModel;
   onClose: () => void;
@@ -631,27 +879,22 @@ function HouseModal({ house, onClose }: HouseModalProps) {
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const [wantsVeranda, setWantsVeranda] = useState(false);
   
-  // Для поддержки свайпа мышью и тачем
   const dragStartX = useRef<number | null>(null);
   const isDragging = useRef(false);
 
-  // Скрываем подсказку после первого свайпа
   useEffect(() => {
     const timer = setTimeout(() => setShowSwipeHint(false), 4000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
     dragStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (dragStartX.current === null) return;
-    
     const touchEnd = e.changedTouches[0].clientX;
     const diff = dragStartX.current - touchEnd;
-    
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentImageIndex < house.images.length - 1) {
         setCurrentImageIndex(prev => prev + 1);
@@ -661,11 +904,9 @@ function HouseModal({ house, onClose }: HouseModalProps) {
         setShowSwipeHint(false);
       }
     }
-    
     dragStartX.current = null;
   };
 
-  // Mouse events для поддержки свайпа мышью
   const handleMouseDown = (e: React.MouseEvent) => {
     dragStartX.current = e.clientX;
     isDragging.current = true;
@@ -673,8 +914,6 @@ function HouseModal({ house, onClose }: HouseModalProps) {
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current || dragStartX.current === null) return;
-    
-    // Предотвращаем выделение текста при перетаскивании
     e.preventDefault();
   };
 
@@ -683,9 +922,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
       isDragging.current = false;
       return;
     }
-    
     const diff = dragStartX.current - e.clientX;
-    
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentImageIndex < house.images.length - 1) {
         setCurrentImageIndex(prev => prev + 1);
@@ -695,7 +932,6 @@ function HouseModal({ house, onClose }: HouseModalProps) {
         setShowSwipeHint(false);
       }
     }
-    
     dragStartX.current = null;
     isDragging.current = false;
   };
@@ -715,224 +951,261 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     onClose();
   };
 
-  const handleConsultation = () => {
-    setShowForm(true);
-  };
+  // Если показываем форму или благодарность - используем золотой стиль
+  if (showForm || showThankYou) {
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          className="relative w-full max-w-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl"
+            style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
+          >
+            <div className="relative bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl overflow-hidden">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-radial from-white/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-radial from-white/10 to-transparent rounded-full blur-xl translate-y-1/2 -translate-x-1/2" />
 
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-4 z-10 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all hover:rotate-90 duration-300"
+              >
+                <X className="h-5 w-5 text-white" />
+              </button>
+
+              <div className="relative px-6 pt-8 pb-6 text-center">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
+                  {house.name}
+                </h2>
+                <p className="text-white/80 text-sm">
+                  Мы свяжемся с вами в течение 15 минут
+                </p>
+              </div>
+
+              <div className="relative px-6 pb-8">
+                <AnimatePresence mode="wait">
+                  {showThankYou ? (
+                    <ModalThankYouMessage key="thank-you" onClose={handleCloseAll} />
+                  ) : (
+                    <ModalConsultationForm 
+                      key="form"
+                      houseName={house.name} 
+                      onSuccess={handleFormSuccess}
+                      wantsVeranda={wantsVeranda}
+                    />
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  }
+
+  // Стандартный вид с деталями дома
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-4xl bg-card rounded-2xl overflow-hidden shadow-2xl"
+        className="relative w-full max-w-4xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-colors"
+        <div 
+          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl"
+          style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
         >
-          <X className="h-5 w-5 text-white" />
-        </button>
+          <div className="relative bg-card rounded-2xl overflow-hidden">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-charcoal/50 hover:bg-charcoal/70 flex items-center justify-center transition-all hover:rotate-90 duration-300"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
 
-        <div className="flex flex-col md:flex-row h-auto md:h-[520px]">
-          {/* Image Gallery */}
-          <div 
-            className="relative w-full md:w-1/2 h-64 md:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseLeave}
-          >
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={currentImageIndex}
-                src={house.images[currentImageIndex]}
-                alt={house.name}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="w-full h-full object-cover pointer-events-none"
-                draggable={false}
-              />
-            </AnimatePresence>
-
-            {/* Image dots */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-              {house.images.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setCurrentImageIndex(idx);
-                    setShowSwipeHint(false);
-                  }}
-                  className={`w-2.5 h-2.5 rounded-full transition-all ${
-                    idx === currentImageIndex 
-                      ? "bg-primary w-6" 
-                      : "bg-white/50 hover:bg-white/80"
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Desktop navigation arrows */}
-            <div className="hidden md:flex absolute inset-0 items-center justify-between px-3 pointer-events-none">
-              <button
-                onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
-                className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
-                  currentImageIndex === 0 ? "opacity-0" : "opacity-100"
-                }`}
+            <div className="flex flex-col md:flex-row h-auto md:h-[520px]">
+              {/* Image Gallery */}
+              <div 
+                className="relative w-full md:w-1/2 h-64 md:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
               >
-                <ChevronLeft className="h-5 w-5 text-white" />
-              </button>
-              <button
-                onClick={() => currentImageIndex < house.images.length - 1 && setCurrentImageIndex(prev => prev + 1)}
-                className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
-                  currentImageIndex === house.images.length - 1 ? "opacity-0" : "opacity-100"
-                }`}
-              >
-                <ChevronRight className="h-5 w-5 text-white" />
-              </button>
-            </div>
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={currentImageIndex}
+                    src={house.images[currentImageIndex]}
+                    alt={house.name}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="w-full h-full object-cover pointer-events-none"
+                    draggable={false}
+                  />
+                </AnimatePresence>
 
-            {/* Swipe indicator - only on mobile */}
-            {showSwipeHint && house.images.length > 1 && (
-              <div className="md:hidden">
-                <SwipeIndicator />
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                  {house.images.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setCurrentImageIndex(idx);
+                        setShowSwipeHint(false);
+                      }}
+                      className={`w-2.5 h-2.5 rounded-full transition-all ${
+                        idx === currentImageIndex 
+                          ? "bg-primary w-6" 
+                          : "bg-white/50 hover:bg-white/80"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <div className="hidden md:flex absolute inset-0 items-center justify-between px-3 pointer-events-none">
+                  <button
+                    onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
+                    className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
+                      currentImageIndex === 0 ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    <ChevronLeft className="h-5 w-5 text-white" />
+                  </button>
+                  <button
+                    onClick={() => currentImageIndex < house.images.length - 1 && setCurrentImageIndex(prev => prev + 1)}
+                    className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
+                      currentImageIndex === house.images.length - 1 ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    <ChevronRight className="h-5 w-5 text-white" />
+                  </button>
+                </div>
+
+                {showSwipeHint && house.images.length > 1 && (
+                  <div className="md:hidden">
+                    <SwipeIndicator />
+                  </div>
+                )}
+
+                <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground font-semibold">
+                  {house.projectLabel}
+                </Badge>
               </div>
-            )}
 
-            {/* Project badge */}
-            <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground">
-              {house.projectLabel}
-            </Badge>
-          </div>
+              {/* Content */}
+              <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
+                <div className="mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2 font-rising">
+                    {house.name}
+                  </h2>
+                  <p className="text-2xl font-bold text-primary">{house.price}</p>
+                </div>
 
-          {/* Content */}
-          <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-            <AnimatePresence mode="wait">
-              {showThankYou ? (
-                <ThankYouMessage key="thank-you" onClose={handleCloseAll} />
-              ) : showForm ? (
-                <ConsultationForm 
-                  key="form"
-                  houseName={house.name} 
-                  onBack={() => setShowForm(false)}
-                  onSuccess={handleFormSuccess}
-                  wantsVeranda={wantsVeranda}
-                />
-              ) : (
-                <motion.div
-                  key="details"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex-1 flex flex-col"
-                >
-                  {/* Title and price */}
-                  <div className="mb-6">
-                    <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-2">
-                      {house.name}
-                    </h2>
-                    <p className="text-2xl font-bold text-primary">{house.price}</p>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Maximize className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Площадь</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{house.area} м²</p>
                   </div>
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <DoorOpen className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Комнат</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{house.rooms}</p>
+                  </div>
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <BedDouble className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Спальни</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{house.bedrooms}</p>
+                  </div>
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Bath className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Санузлы</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground">{house.bathrooms}</p>
+                  </div>
+                </div>
 
-                  {/* Attributes grid */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Maximize className="h-4 w-4" />
-                        <span className="text-xs uppercase tracking-wide">Площадь</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">{house.area} м²</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <DoorOpen className="h-4 w-4" />
-                        <span className="text-xs uppercase tracking-wide">Комнат</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">{house.rooms}</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <BedDouble className="h-4 w-4" />
-                        <span className="text-xs uppercase tracking-wide">Спальни</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">{house.bedrooms}</p>
-                    </div>
-                    <div className="bg-background rounded-xl p-4 border border-border">
-                      <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Bath className="h-4 w-4" />
-                        <span className="text-xs uppercase tracking-wide">Санузлы</span>
-                      </div>
-                      <p className="text-lg font-semibold text-foreground">{house.bathrooms}</p>
+                {house.hasVeranda ? (
+                  <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-6">
+                    <Trees className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="font-semibold text-foreground">Веранда</p>
+                      {house.verandaArea && (
+                        <p className="text-sm text-muted-foreground">{house.verandaArea} м²</p>
+                      )}
                     </div>
                   </div>
-
-                  {/* Veranda info or "Add veranda" option */}
-                  {house.hasVeranda ? (
-                    <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-6">
-                      <Trees className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="font-medium text-foreground">Веранда</p>
-                        {house.verandaArea && (
-                          <p className="text-sm text-muted-foreground">{house.verandaArea} м²</p>
-                        )}
+                ) : (
+                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Trees className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          В этом проекте веранда не предусмотрена. Хотите добавить?
+                        </p>
+                        <button
+                          onClick={() => setWantsVeranda(!wantsVeranda)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-semibold ${
+                            wantsVeranda
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "bg-background border-border text-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {wantsVeranda ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Plus className="h-4 w-4" />
+                          )}
+                          <span>{wantsVeranda ? "Добавлена в заявку" : "Хочу добавить веранду"}</span>
+                        </button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-border p-4 mb-6">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
-                          <Trees className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-muted-foreground mb-3">
-                            В этом проекте веранда не предусмотрена
-                          </p>
-                          <button
-                            onClick={() => setWantsVeranda(!wantsVeranda)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-sm ${
-                              wantsVeranda
-                                ? "bg-primary/10 border-primary/30 text-primary"
-                                : "bg-muted/50 border-border text-foreground hover:border-primary/30"
-                            }`}
-                          >
-                            {wantsVeranda ? (
-                              <Check className="h-4 w-4" />
-                            ) : (
-                              <Plus className="h-4 w-4" />
-                            )}
-                            <span>Хочу добавить веранду</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CTA Button */}
-                  <div className="mt-auto">
-                    <Button
-                      onClick={handleConsultation}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold"
-                    >
-                      Получить консультацию
-                    </Button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+
+                <div className="mt-auto">
+                  <Button
+                    onClick={() => setShowForm(true)}
+                    size="xl"
+                    className="w-full"
+                  >
+                    Получить консультацию
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -940,7 +1213,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
   );
 }
 
-// Модальное окно для индивидуального проекта
+// Модальное окно для индивидуального проекта - унифицированный стиль как ContactModal
 interface CustomProjectModalProps {
   onClose: () => void;
 }
@@ -963,39 +1236,64 @@ function CustomProjectModal({ onClose }: CustomProjectModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-lg bg-card rounded-2xl overflow-hidden shadow-2xl"
+        className="relative w-full max-w-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-20 p-2 hover:bg-muted rounded-full transition-colors"
+        {/* Золотая рамка */}
+        <div 
+          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl"
+          style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
         >
-          <X className="h-5 w-5 text-foreground" />
-        </button>
+          <div className="relative bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl overflow-hidden">
+            {/* Декоративные элементы */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-radial from-white/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-radial from-white/10 to-transparent rounded-full blur-xl translate-y-1/2 -translate-x-1/2" />
 
-        <div className="p-6 md:p-8 min-h-[450px]">
-          <AnimatePresence mode="wait">
-            {showThankYou ? (
-              <ThankYouMessage key="thank-you" onClose={handleCloseAll} />
-            ) : showForm ? (
-              <ConsultationForm 
-                key="form"
-                houseName="Индивидуальный проект" 
-                onBack={onClose}
-                onSuccess={handleFormSuccess}
-                isCustomProject={true}
-              />
-            ) : null}
-          </AnimatePresence>
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute right-4 top-4 z-10 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all hover:rotate-90 duration-300"
+            >
+              <X className="h-5 w-5 text-white" />
+            </button>
+
+            {/* Header */}
+            <div className="relative px-6 pt-8 pb-6 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-2xl flex items-center justify-center">
+                <PenTool className="h-8 w-8 text-white" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
+                Индивидуальный проект
+              </h2>
+              <p className="text-white/80 text-sm">
+                Создадим дом вашей мечты
+              </p>
+            </div>
+
+            {/* Content */}
+            <div className="relative px-6 pb-8">
+              <AnimatePresence mode="wait">
+                {showThankYou ? (
+                  <ModalThankYouMessage key="thank-you" onClose={handleCloseAll} />
+                ) : showForm ? (
+                  <ModalConsultationForm 
+                    key="form"
+                    houseName="Индивидуальный проект" 
+                    onSuccess={handleFormSuccess}
+                    isCustomProject={true}
+                  />
+                ) : null}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
