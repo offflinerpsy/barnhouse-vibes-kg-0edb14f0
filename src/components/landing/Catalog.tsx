@@ -17,7 +17,7 @@
  * =============================================================================
  */
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BedDouble, 
@@ -316,9 +316,10 @@ const houses: HouseModel[] = [
 ];
 
 // Компонент индикатора свайпа
-function SwipeIndicator() {
+const SwipeIndicator = forwardRef<HTMLDivElement>((_, ref) => {
   return (
     <motion.div 
+      ref={ref}
       className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-charcoal/70 backdrop-blur-sm px-4 py-2 rounded-full z-10"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -342,7 +343,8 @@ function SwipeIndicator() {
       </motion.div>
     </motion.div>
   );
-}
+});
+SwipeIndicator.displayName = "SwipeIndicator";
 
 // Компонент формы консультации
 interface ConsultationFormProps {
@@ -1043,10 +1045,10 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               <X className="h-5 w-5 text-white" />
             </button>
 
-            <div className="flex flex-col md:flex-row h-auto md:h-[520px]">
+            <div className="flex flex-col md:flex-row max-h-[90vh] overflow-hidden">
               {/* Image Gallery */}
               <div 
-                className="relative w-full md:w-1/2 h-64 md:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing"
+                className="relative w-full md:w-1/2 h-56 md:h-auto md:min-h-[400px] bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onMouseDown={handleMouseDown}
@@ -1116,89 +1118,89 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               </div>
 
               {/* Content */}
-              <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col">
-                <div className="mb-6">
-                  <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2 font-rising">
+              <div className="w-full md:w-1/2 p-5 md:p-6 flex flex-col overflow-y-auto">
+                <div className="mb-4">
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-1 font-rising">
                     {house.name}
                   </h2>
-                  <p className="text-2xl font-bold text-primary">{house.price}</p>
+                  <p className="text-xl font-bold text-primary">{house.price}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mb-6">
-                  <div className="bg-background rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Maximize className="h-4 w-4" />
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="bg-background rounded-lg p-3 border border-border">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+                      <Maximize className="h-3.5 w-3.5" />
                       <span className="text-xs uppercase tracking-wide font-semibold">Площадь</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">{house.area} м²</p>
+                    <p className="text-base font-bold text-foreground">{house.area} м²</p>
                   </div>
-                  <div className="bg-background rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <DoorOpen className="h-4 w-4" />
+                  <div className="bg-background rounded-lg p-3 border border-border">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+                      <DoorOpen className="h-3.5 w-3.5" />
                       <span className="text-xs uppercase tracking-wide font-semibold">Комнат</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">{house.rooms}</p>
+                    <p className="text-base font-bold text-foreground">{house.rooms}</p>
                   </div>
-                  <div className="bg-background rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <BedDouble className="h-4 w-4" />
+                  <div className="bg-background rounded-lg p-3 border border-border">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+                      <BedDouble className="h-3.5 w-3.5" />
                       <span className="text-xs uppercase tracking-wide font-semibold">Спальни</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">{house.bedrooms}</p>
+                    <p className="text-base font-bold text-foreground">{house.bedrooms}</p>
                   </div>
-                  <div className="bg-background rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Bath className="h-4 w-4" />
+                  <div className="bg-background rounded-lg p-3 border border-border">
+                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
+                      <Bath className="h-3.5 w-3.5" />
                       <span className="text-xs uppercase tracking-wide font-semibold">Санузлы</span>
                     </div>
-                    <p className="text-lg font-bold text-foreground">{house.bathrooms}</p>
+                    <p className="text-base font-bold text-foreground">{house.bathrooms}</p>
                   </div>
                 </div>
 
                 {house.hasVeranda ? (
-                  <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-6">
-                    <Trees className="h-5 w-5 text-primary" />
+                  <div className="flex items-center gap-3 bg-primary/10 rounded-lg p-3 mb-4">
+                    <Trees className="h-4 w-4 text-primary" />
                     <div>
-                      <p className="font-semibold text-foreground">Веранда</p>
+                      <p className="font-semibold text-foreground text-sm">Веранда</p>
                       {house.verandaArea && (
-                        <p className="text-sm text-muted-foreground">{house.verandaArea} м²</p>
+                        <p className="text-xs text-muted-foreground">{house.verandaArea} м²</p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 mb-6">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Trees className="h-5 w-5 text-primary" />
+                  <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-3 mb-4">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Trees className="h-4 w-4 text-primary" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-muted-foreground mb-3">
-                          В этом проекте веранда не предусмотрена. Хотите добавить?
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Веранда не предусмотрена. Хотите добавить?
                         </p>
                         <button
                           onClick={() => setWantsVeranda(!wantsVeranda)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-semibold ${
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
                             wantsVeranda
                               ? "bg-primary border-primary text-primary-foreground"
                               : "bg-background border-border text-foreground hover:border-primary/50"
                           }`}
                         >
                           {wantsVeranda ? (
-                            <Check className="h-4 w-4" />
+                            <Check className="h-3.5 w-3.5" />
                           ) : (
-                            <Plus className="h-4 w-4" />
+                            <Plus className="h-3.5 w-3.5" />
                           )}
-                          <span>{wantsVeranda ? "Добавлена в заявку" : "Хочу добавить веранду"}</span>
+                          <span>{wantsVeranda ? "Добавлена" : "Добавить веранду"}</span>
                         </button>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div className="mt-auto">
+                <div className="mt-auto pt-2">
                   <Button
                     onClick={() => setShowForm(true)}
-                    size="xl"
+                    size="lg"
                     className="w-full"
                   >
                     Получить консультацию
