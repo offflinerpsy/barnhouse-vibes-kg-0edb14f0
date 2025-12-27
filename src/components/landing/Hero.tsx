@@ -100,27 +100,23 @@ export function Hero() {
           </motion.div>
 
           {/* Main headline */}
-          <div className="overflow-hidden mb-3 md:mb-4">
-            <motion.h1
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: [0.33, 1, 0.68, 1] }}
-              className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-rising font-medium text-white leading-[1.05] tracking-tight"
-            >
-              Архитектура
-            </motion.h1>
-          </div>
-          <div className="overflow-hidden mb-8 md:mb-10">
-            <motion.h1
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}
-              className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-rising font-medium leading-[1.05] tracking-tight"
-            >
-              <span className="text-white">для </span>
-              <span className="text-primary">жизни</span>
-            </motion.h1>
-          </div>
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.33, 1, 0.68, 1] }}
+            className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-rising font-medium text-white leading-[1.05] tracking-tight mb-3 md:mb-4"
+          >
+            Архитектура
+          </motion.h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.33, 1, 0.68, 1] }}
+            className="text-5xl sm:text-6xl md:text-6xl lg:text-7xl xl:text-8xl font-rising font-medium leading-[1.05] tracking-tight mb-8 md:mb-10"
+          >
+            <span className="text-white">для </span>
+            <span className="text-primary">жизни</span>
+          </motion.h1>
 
           {/* Subtitle */}
           <motion.p
