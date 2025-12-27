@@ -92,9 +92,9 @@ const BlueprintGrid = () => (
       <rect width="100%" height="100%" fill="url(#largeGrid)" />
     </svg>
 
-    {/* Corner rulers */}
+    {/* Corner rulers - hidden on mobile */}
     {/* Top ruler */}
-    <div className="absolute top-0 left-16 right-0 h-8 bg-[hsl(30_12%_12%)]/80 border-b border-primary/20 flex items-end">
+    <div className="hidden md:flex absolute top-0 left-16 right-0 h-8 bg-[hsl(30_12%_12%)]/80 border-b border-primary/20 items-end">
       {Array.from({ length: 40 }).map((_, i) => (
         <div key={i} className="flex flex-col items-center" style={{ width: '50px' }}>
           <div className="h-3 w-px bg-primary/40" />
@@ -105,8 +105,8 @@ const BlueprintGrid = () => (
       ))}
     </div>
     
-    {/* Left ruler */}
-    <div className="absolute top-8 left-0 w-16 bottom-0 bg-[hsl(30_12%_12%)]/80 border-r border-primary/20 flex flex-col">
+    {/* Left ruler - hidden on mobile */}
+    <div className="hidden md:flex absolute top-8 left-0 w-16 bottom-0 bg-[hsl(30_12%_12%)]/80 border-r border-primary/20 flex-col">
       {Array.from({ length: 30 }).map((_, i) => (
         <div key={i} className="flex items-center" style={{ height: '50px' }}>
           <div className="w-3 h-px bg-primary/40 ml-auto" />
@@ -117,8 +117,8 @@ const BlueprintGrid = () => (
       ))}
     </div>
 
-    {/* Corner piece */}
-    <div className="absolute top-0 left-0 w-16 h-8 bg-[hsl(30_12%_12%)] border-r border-b border-primary/20 flex items-center justify-center">
+    {/* Corner piece - hidden on mobile */}
+    <div className="hidden md:flex absolute top-0 left-0 w-16 h-8 bg-[hsl(30_12%_12%)] border-r border-b border-primary/20 items-center justify-center">
       <span className="text-[10px] text-primary/60 font-mono">mm</span>
     </div>
 
@@ -316,7 +316,7 @@ export function Advantages() {
       <BlueprintGrid />
 
       {/* Content container - positioned above the grid */}
-      <div className="container mx-auto px-4 pl-20 pt-12 relative z-10" ref={containerRef}>
+      <div className="container mx-auto px-4 md:pl-20 pt-8 md:pt-12 relative z-10" ref={containerRef}>
         {/* Header - styled as technical drawing title block */}
         <motion.div
           className="mb-12 md:mb-16"
