@@ -1045,10 +1045,10 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               <X className="h-5 w-5 text-white" />
             </button>
 
-            <div className="flex flex-col md:flex-row max-h-[90vh] overflow-hidden">
-              {/* Image Gallery */}
+            <div className="flex flex-col md:flex-row h-[85vh] md:h-[520px]">
+              {/* Image Gallery - Fixed size container */}
               <div 
-                className="relative w-full md:w-1/2 h-56 md:h-auto md:min-h-[400px] bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
+                className="relative w-full md:w-1/2 h-[240px] md:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onMouseDown={handleMouseDown}
@@ -1057,17 +1057,21 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 onMouseLeave={handleMouseLeave}
               >
                 <AnimatePresence mode="wait">
-                  <motion.img
+                  <motion.div
                     key={currentImageIndex}
-                    src={house.images[currentImageIndex]}
-                    alt={house.name}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="w-full h-full object-cover pointer-events-none"
-                    draggable={false}
-                  />
+                    className="absolute inset-0"
+                  >
+                    <img
+                      src={house.images[currentImageIndex]}
+                      alt={house.name}
+                      className="w-full h-full object-cover pointer-events-none"
+                      draggable={false}
+                    />
+                  </motion.div>
                 </AnimatePresence>
 
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
@@ -1402,29 +1406,40 @@ export function Catalog() {
               <motion.div
                 key={house.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
                 className="group cursor-pointer"
                 onClick={() => setSelectedHouse(house)}
               >
-                {/* Card with elevated design */}
-                <div className="relative bg-card rounded-2xl overflow-hidden border border-border shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
-                  {/* Image */}
+                {/* Premium Card Design */}
+                <div className="relative bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-shadow duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(195,153,107,0.25)]">
+                  {/* Image Container */}
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
                       src={house.images[0]}
                       alt={house.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
                     />
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
+                    
+                    {/* Premium hover overlay with gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--charcoal))]/80 via-[hsl(var(--charcoal))]/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+                    
+                    {/* Golden glow effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--gold))]/0 via-transparent to-[hsl(var(--gold))]/0 group-hover:from-[hsl(var(--gold))]/10 group-hover:to-[hsl(var(--gold))]/5 transition-all duration-500" />
                     
                     {/* Project badge */}
-                    <Badge className="absolute top-3 left-3 bg-primary/90 backdrop-blur-sm text-primary-foreground border-0">
+                    <Badge className="absolute top-3 left-3 bg-[hsl(var(--charcoal))]/80 backdrop-blur-md text-white border border-white/10 font-medium">
                       {house.projectLabel}
                     </Badge>
+
+                    {/* View button on hover */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500">
+                      <div className="bg-white/95 backdrop-blur-sm text-[hsl(var(--charcoal))] px-6 py-3 rounded-full font-semibold text-sm shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        Подробнее
+                      </div>
+                    </div>
 
                     {/* Price on image */}
                     <div className="absolute bottom-3 left-3 right-3">
@@ -1436,33 +1451,33 @@ export function Catalog() {
 
                   {/* Content */}
                   <div className="p-5">
-                    <h3 className="font-display text-lg font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-3 group-hover:text-primary transition-colors duration-300">
                       {house.name}
                     </h3>
 
                     {/* Attributes */}
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Maximize className="h-4 w-4 text-primary" />
+                        <Maximize className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
                         <span>{house.area} м²</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <BedDouble className="h-4 w-4 text-primary" />
+                        <BedDouble className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
                         <span>{house.bedrooms} спал.</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Bath className="h-4 w-4 text-primary" />
+                        <Bath className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
                         <span>{house.bathrooms} сануз.</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Trees className="h-4 w-4 text-primary" />
+                        <Trees className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
                         <span>{house.hasVeranda ? "Веранда" : "—"}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Hover accent */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  {/* Premium bottom accent */}
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[hsl(var(--gold))] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
               </motion.div>
             ))}
@@ -1492,7 +1507,7 @@ export function Catalog() {
           </motion.div>
         )}
 
-        {/* Custom Project CTA Block */}
+        {/* Custom Project CTA Block - Premium Design */}
         <motion.div
           className="mt-16 md:mt-24"
           initial={{ opacity: 0, y: 30 }}
@@ -1500,34 +1515,57 @@ export function Catalog() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
         >
-          <div className="relative bg-gradient-to-br from-primary/5 via-card to-primary/10 rounded-3xl p-8 md:p-12 border border-primary/20 overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+          <div className="relative overflow-hidden rounded-2xl md:rounded-3xl">
+            {/* Background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--charcoal))] via-[hsl(30,12%,18%)] to-[hsl(var(--charcoal))]" />
             
-            <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-12">
-              {/* Icon */}
-              <div className="flex-shrink-0">
-                <div className="w-20 h-20 md:w-24 md:h-24 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <PenTool className="h-10 w-10 md:h-12 md:w-12 text-primary" />
+            {/* Gold accent elements */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-[hsl(var(--gold))]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+            <div className="absolute bottom-0 left-0 w-60 h-60 bg-[hsl(var(--gold))]/5 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/3" />
+            
+            {/* Decorative lines */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold))]/30 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[hsl(var(--gold))]/30 to-transparent" />
+            
+            <div className="relative px-6 py-12 md:px-16 md:py-16">
+              <div className="flex flex-col md:flex-row items-center gap-8 md:gap-16">
+                {/* Left side - Icon with glow */}
+                <div className="flex-shrink-0">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-[hsl(var(--gold))]/20 rounded-2xl blur-xl" />
+                    <div className="relative w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl flex items-center justify-center shadow-2xl">
+                      <PenTool className="h-10 w-10 md:h-14 md:w-14 text-white" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
-              {/* Content */}
-              <div className="flex-1 text-center md:text-left">
-                <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
-                  Не нашли подходящий проект?
-                </h3>
-                <p className="text-muted-foreground text-lg mb-6 max-w-xl">
-                  Хотите что-то добавить в планировку или создать дом по своему проекту? 
-                  Наши архитекторы разработают индивидуальное решение специально для вас.
-                </p>
-                <Button
-                  onClick={() => setShowCustomModal(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base font-semibold"
-                >
-                  Заказать индивидуальный проект
-                </Button>
+                
+                {/* Right side - Content */}
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="font-display text-2xl md:text-4xl font-bold text-white mb-4">
+                    Создадим дом{" "}
+                    <span className="text-gradient-gold">вашей мечты</span>
+                  </h3>
+                  <p className="text-white/70 text-base md:text-lg mb-8 max-w-xl leading-relaxed">
+                    Не нашли идеальный вариант? Наши архитекторы разработают уникальный проект 
+                    с учётом всех ваших пожеланий — от планировки до мельчайших деталей.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                    <Button
+                      onClick={() => setShowCustomModal(true)}
+                      className="bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] hover:from-[hsl(var(--gold-dark))] hover:to-[hsl(var(--gold))] text-white border-0 px-8 py-6 text-base font-semibold shadow-xl shadow-[hsl(var(--gold))]/20 transition-all duration-300 hover:shadow-[hsl(var(--gold))]/30"
+                    >
+                      Заказать индивидуальный проект
+                    </Button>
+                    <a 
+                      href="#contact"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-4 text-white/80 hover:text-white border border-white/20 hover:border-white/40 rounded-lg transition-all duration-300 font-medium"
+                    >
+                      <Phone className="h-4 w-4" />
+                      Позвонить
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
