@@ -1,5 +1,22 @@
+/**
+ * =============================================================================
+ * ABOUT SECTION - О компании
+ * =============================================================================
+ * 
+ * ID: #about
+ * 
+ * Содержит:
+ * - Изображение производства
+ * - Заголовок и описание компании
+ * - Список преимуществ с чекбоксами
+ * - Плашка "50+ проектов"
+ * 
+ * =============================================================================
+ */
+
 import { CheckCircle } from "lucide-react";
 
+// Список преимуществ компании
 const features = [
   "Собственное производство в Бишкеке",
   "Более 50 реализованных проектов",
@@ -11,7 +28,7 @@ const features = [
 
 export function About() {
   return (
-    <section className="py-20 md:py-28 bg-secondary/30">
+    <section id="about" className="py-20 md:py-28 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Image */}

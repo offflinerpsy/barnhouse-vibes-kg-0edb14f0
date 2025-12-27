@@ -1,7 +1,25 @@
+/**
+ * =============================================================================
+ * HERO SECTION - Главный экран
+ * =============================================================================
+ * 
+ * Первый экран посетителя. Содержит:
+ * - Заголовок и подзаголовок
+ * - CTA кнопка "Обсудить проект"
+ * - Статистика (150+ проектов, 14 дней монтаж, 10 лет гарантии)
+ * - Круглый слайдер с Ken Burns эффектом (desktop)
+ * - Мини-слайдер (mobile)
+ * 
+ * Параллакс эффекты при скролле
+ * =============================================================================
+ */
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
+
+// Слайды для Ken Burns карусели
 const slides = [
   {
     image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
@@ -62,7 +80,7 @@ export function Hero() {
   }, [nextSlide]);
 
   return (
-    <section ref={sectionRef} className="relative min-h-screen flex overflow-hidden bg-charcoal">
+    <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden bg-charcoal">
       {/* Left Content Panel */}
       <motion.div 
         style={{ y: contentY }}
