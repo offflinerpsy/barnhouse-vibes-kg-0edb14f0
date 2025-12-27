@@ -17,7 +17,7 @@
  * =============================================================================
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BedDouble, 
@@ -32,7 +32,10 @@ import {
   CheckCircle,
   ChevronLeft,
   ChevronRight,
-  Hand
+  Hand,
+  PenTool,
+  Plus,
+  Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -350,13 +353,16 @@ interface ConsultationFormProps {
   houseName: string;
   onBack: () => void;
   onSuccess: () => void;
+  wantsVeranda?: boolean;
+  isCustomProject?: boolean;
 }
 
-function ConsultationForm({ houseName, onBack, onSuccess }: ConsultationFormProps) {
+function ConsultationForm({ houseName, onBack, onSuccess, wantsVeranda = false, isCustomProject = false }: ConsultationFormProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [contactMethods, setContactMethods] = useState<string[]>(["phone"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [needsArchitect, setNeedsArchitect] = useState(wantsVeranda);
 
   const toggleContactMethod = (method: string) => {
     setContactMethods(prev => 
@@ -376,7 +382,17 @@ function ConsultationForm({ houseName, onBack, onSuccess }: ConsultationFormProp
     // Имитация отправки
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    console.log("Form submitted:", { name, phone, contactMethods, houseName });
+    const formData = { 
+      name, 
+      phone, 
+      contactMethods, 
+      houseName,
+      wantsVeranda,
+      needsArchitect,
+      isCustomProject
+    };
+    
+    console.log("Form submitted:", formData);
     
     setIsSubmitting(false);
     onSuccess();
@@ -398,13 +414,26 @@ function ConsultationForm({ houseName, onBack, onSuccess }: ConsultationFormProp
           <ChevronLeft className="h-5 w-5 text-foreground" />
         </button>
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Получить консультацию</h3>
-          <p className="text-sm text-muted-foreground">{houseName}</p>
+          <h3 className="text-lg font-semibold text-foreground">
+            {isCustomProject ? "Индивидуальный проект" : "Получить консультацию"}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {isCustomProject ? "Создадим дом вашей мечты" : houseName}
+          </p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
         <div className="space-y-4 flex-1">
+          {/* Custom project note */}
+          {isCustomProject && (
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-2">
+              <p className="text-sm text-foreground">
+                Опишите вашу идею — мы подготовим индивидуальный проект с учётом всех пожеланий
+              </p>
+            </div>
+          )}
+
           {/* Name */}
           <div>
             <label className="text-sm font-medium text-foreground mb-2 block">
@@ -477,6 +506,37 @@ function ConsultationForm({ houseName, onBack, onSuccess }: ConsultationFormProp
               </button>
             </div>
           </div>
+
+          {/* Architect checkbox - показывается если хочет веранду или кастом проект */}
+          {(wantsVeranda || isCustomProject) && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="overflow-hidden"
+            >
+              <button
+                type="button"
+                onClick={() => setNeedsArchitect(!needsArchitect)}
+                className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-all ${
+                  needsArchitect
+                    ? "bg-primary/10 border-primary/30"
+                    : "bg-muted/50 border-border hover:border-primary/30"
+                }`}
+              >
+                <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
+                  needsArchitect ? "bg-primary" : "bg-background border border-border"
+                }`}>
+                  {needsArchitect && <Check className="h-3 w-3 text-primary-foreground" />}
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  {wantsVeranda 
+                    ? "Необходима консультация с архитектором (добавление веранды)"
+                    : "Необходима консультация с архитектором"
+                  }
+                </span>
+              </button>
+            </motion.div>
+          )}
         </div>
 
         <Button
@@ -491,7 +551,7 @@ function ConsultationForm({ houseName, onBack, onSuccess }: ConsultationFormProp
               className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full"
             />
           ) : (
-            "Получить консультацию"
+            isCustomProject ? "Отправить заявку" : "Получить консультацию"
           )}
         </Button>
 
@@ -568,8 +628,12 @@ function HouseModal({ house, onClose }: HouseModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
+  const [wantsVeranda, setWantsVeranda] = useState(false);
+  
+  // Для поддержки свайпа мышью и тачем
+  const dragStartX = useRef<number | null>(null);
+  const isDragging = useRef(false);
 
   // Скрываем подсказку после первого свайпа
   useEffect(() => {
@@ -577,15 +641,16 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     return () => clearTimeout(timer);
   }, []);
 
+  // Touch events
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
+    dragStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
+    if (dragStartX.current === null) return;
     
     const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
+    const diff = dragStartX.current - touchEnd;
     
     if (Math.abs(diff) > 50) {
       if (diff > 0 && currentImageIndex < house.images.length - 1) {
@@ -597,7 +662,47 @@ function HouseModal({ house, onClose }: HouseModalProps) {
       }
     }
     
-    setTouchStart(null);
+    dragStartX.current = null;
+  };
+
+  // Mouse events для поддержки свайпа мышью
+  const handleMouseDown = (e: React.MouseEvent) => {
+    dragStartX.current = e.clientX;
+    isDragging.current = true;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging.current || dragStartX.current === null) return;
+    
+    // Предотвращаем выделение текста при перетаскивании
+    e.preventDefault();
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging.current || dragStartX.current === null) {
+      isDragging.current = false;
+      return;
+    }
+    
+    const diff = dragStartX.current - e.clientX;
+    
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && currentImageIndex < house.images.length - 1) {
+        setCurrentImageIndex(prev => prev + 1);
+        setShowSwipeHint(false);
+      } else if (diff < 0 && currentImageIndex > 0) {
+        setCurrentImageIndex(prev => prev - 1);
+        setShowSwipeHint(false);
+      }
+    }
+    
+    dragStartX.current = null;
+    isDragging.current = false;
+  };
+
+  const handleMouseLeave = () => {
+    isDragging.current = false;
+    dragStartX.current = null;
   };
 
   const handleFormSuccess = () => {
@@ -608,6 +713,10 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     setShowThankYou(false);
     setShowForm(false);
     onClose();
+  };
+
+  const handleConsultation = () => {
+    setShowForm(true);
   };
 
   return (
@@ -637,9 +746,13 @@ function HouseModal({ house, onClose }: HouseModalProps) {
         <div className="flex flex-col md:flex-row h-auto md:h-[520px]">
           {/* Image Gallery */}
           <div 
-            className="relative w-full md:w-1/2 h-64 md:h-full bg-charcoal"
+            className="relative w-full md:w-1/2 h-64 md:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseLeave}
           >
             <AnimatePresence mode="wait">
               <motion.img
@@ -650,7 +763,8 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover pointer-events-none"
+                draggable={false}
               />
             </AnimatePresence>
 
@@ -716,6 +830,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   houseName={house.name} 
                   onBack={() => setShowForm(false)}
                   onSuccess={handleFormSuccess}
+                  wantsVeranda={wantsVeranda}
                 />
               ) : (
                 <motion.div
@@ -765,8 +880,8 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     </div>
                   </div>
 
-                  {/* Veranda info */}
-                  {house.hasVeranda && (
+                  {/* Veranda info or "Add veranda" option */}
+                  {house.hasVeranda ? (
                     <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-6">
                       <Trees className="h-5 w-5 text-primary" />
                       <div>
@@ -776,12 +891,40 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                         )}
                       </div>
                     </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-border p-4 mb-6">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                          <Trees className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-muted-foreground mb-3">
+                            В этом проекте веранда не предусмотрена
+                          </p>
+                          <button
+                            onClick={() => setWantsVeranda(!wantsVeranda)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-sm ${
+                              wantsVeranda
+                                ? "bg-primary/10 border-primary/30 text-primary"
+                                : "bg-muted/50 border-border text-foreground hover:border-primary/30"
+                            }`}
+                          >
+                            {wantsVeranda ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Plus className="h-4 w-4" />
+                            )}
+                            <span>Хочу добавить веранду</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
 
                   {/* CTA Button */}
                   <div className="mt-auto">
                     <Button
-                      onClick={() => setShowForm(true)}
+                      onClick={handleConsultation}
                       className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-base font-semibold"
                     >
                       Получить консультацию
@@ -797,10 +940,73 @@ function HouseModal({ house, onClose }: HouseModalProps) {
   );
 }
 
+// Модальное окно для индивидуального проекта
+interface CustomProjectModalProps {
+  onClose: () => void;
+}
+
+function CustomProjectModal({ onClose }: CustomProjectModalProps) {
+  const [showForm, setShowForm] = useState(true);
+  const [showThankYou, setShowThankYou] = useState(false);
+
+  const handleFormSuccess = () => {
+    setShowThankYou(true);
+  };
+
+  const handleCloseAll = () => {
+    setShowThankYou(false);
+    onClose();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full max-w-lg bg-card rounded-2xl overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-20 p-2 hover:bg-muted rounded-full transition-colors"
+        >
+          <X className="h-5 w-5 text-foreground" />
+        </button>
+
+        <div className="p-6 md:p-8 min-h-[450px]">
+          <AnimatePresence mode="wait">
+            {showThankYou ? (
+              <ThankYouMessage key="thank-you" onClose={handleCloseAll} />
+            ) : showForm ? (
+              <ConsultationForm 
+                key="form"
+                houseName="Индивидуальный проект" 
+                onBack={onClose}
+                onSuccess={handleFormSuccess}
+                isCustomProject={true}
+              />
+            ) : null}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function Catalog() {
   const [activeProject, setActiveProject] = useState<ProjectType>("all");
   const [activeAreaRange, setActiveAreaRange] = useState("all");
   const [selectedHouse, setSelectedHouse] = useState<HouseModel | null>(null);
+  const [showCustomModal, setShowCustomModal] = useState(false);
 
   // Фильтрация по проекту
   const projectFilteredHouses = activeProject === "all" 
@@ -985,6 +1191,47 @@ export function Catalog() {
             </Button>
           </motion.div>
         )}
+
+        {/* Custom Project CTA Block */}
+        <motion.div
+          className="mt-16 md:mt-24"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="relative bg-gradient-to-br from-primary/5 via-card to-primary/10 rounded-3xl p-8 md:p-12 border border-primary/20 overflow-hidden">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+            
+            <div className="relative flex flex-col md:flex-row items-center gap-8 md:gap-12">
+              {/* Icon */}
+              <div className="flex-shrink-0">
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-primary/10 rounded-2xl flex items-center justify-center">
+                  <PenTool className="h-10 w-10 md:h-12 md:w-12 text-primary" />
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
+                  Не нашли подходящий проект?
+                </h3>
+                <p className="text-muted-foreground text-lg mb-6 max-w-xl">
+                  Хотите что-то добавить в планировку или создать дом по своему проекту? 
+                  Наши архитекторы разработают индивидуальное решение специально для вас.
+                </p>
+                <Button
+                  onClick={() => setShowCustomModal(true)}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base font-semibold"
+                >
+                  Заказать индивидуальный проект
+                </Button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
       {/* House Modal */}
@@ -993,6 +1240,15 @@ export function Catalog() {
           <HouseModal 
             house={selectedHouse} 
             onClose={() => setSelectedHouse(null)} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Custom Project Modal */}
+      <AnimatePresence>
+        {showCustomModal && (
+          <CustomProjectModal 
+            onClose={() => setShowCustomModal(false)} 
           />
         )}
       </AnimatePresence>
