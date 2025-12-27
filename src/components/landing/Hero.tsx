@@ -287,8 +287,11 @@ export function Hero() {
       </div>
 
       {/* Mobile: Show circular viewer below content */}
-      <div className="lg:hidden absolute bottom-12 left-1/2 -translate-x-1/2 z-10">
-        <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-full overflow-hidden border border-white/10 shadow-2xl">
+      <div className="lg:hidden absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+        {/* Outer glow for mobile */}
+        <div className="absolute -inset-4 rounded-full bg-gradient-to-br from-primary/15 via-transparent to-primary/10 blur-xl" />
+        
+        <div className="relative w-56 h-56 sm:w-72 sm:h-72 rounded-full overflow-hidden border border-white/10 shadow-2xl">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -312,18 +315,70 @@ export function Hero() {
                   style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
                 />
               </motion.div>
+              {/* Subtle vignette for mobile */}
+              <div className="absolute inset-0 bg-gradient-to-t from-charcoal/30 via-transparent to-charcoal/10 pointer-events-none" />
+            </motion.div>
+          </AnimatePresence>
+          
+          {/* Progress ring for mobile */}
+          <svg className="absolute inset-0 w-full h-full -rotate-90 pointer-events-none">
+            <circle
+              cx="50%"
+              cy="50%"
+              r="49%"
+              fill="none"
+              stroke="rgba(255,255,255,0.1)"
+              strokeWidth="1"
+            />
+            <motion.circle
+              cx="50%"
+              cy="50%"
+              r="49%"
+              fill="none"
+              stroke="hsl(var(--primary))"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 49}%`}
+              initial={{ strokeDashoffset: `${2 * Math.PI * 49}%` }}
+              animate={{ strokeDashoffset: "0%" }}
+              transition={{
+                duration: SLIDE_DURATION / 1000,
+                ease: "linear",
+                repeat: Infinity,
+              }}
+              key={currentSlide}
+            />
+          </svg>
+        </div>
+        
+        {/* Mobile slide info */}
+        <div className="text-center mt-3">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="text-white/40 text-[10px] tracking-[0.15em] uppercase">
+                {slides[currentSlide].location}
+              </div>
+              <div className="text-white text-sm font-rising font-medium">
+                {slides[currentSlide].title}
+              </div>
             </motion.div>
           </AnimatePresence>
         </div>
         
         {/* Mobile dots */}
-        <div className="flex justify-center gap-2 mt-4">
+        <div className="flex justify-center gap-2 mt-2">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
               className={`w-1.5 h-1.5 rounded-full transition-all ${
-                index === currentSlide ? "bg-primary w-4" : "bg-white/30"
+                index === currentSlide ? "bg-primary w-5" : "bg-white/30"
               }`}
             />
           ))}
