@@ -1018,7 +1018,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 lg:p-6"
       onClick={onClose}
     >
       <motion.div
@@ -1026,25 +1026,25 @@ function HouseModal({ house, onClose }: HouseModalProps) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-4xl"
+        className="relative w-full max-w-5xl h-[96dvh] sm:h-auto sm:max-h-[88vh] lg:max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div 
-          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl"
+          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl h-full sm:h-auto"
           style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
         >
-          <div className="relative bg-card rounded-2xl overflow-hidden">
+          <div className="relative bg-card rounded-2xl overflow-hidden h-full sm:h-auto">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-charcoal/50 hover:bg-charcoal/70 flex items-center justify-center transition-all hover:rotate-90 duration-300"
+              className="absolute top-3 right-3 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-charcoal/60 hover:bg-charcoal/80 flex items-center justify-center transition-all hover:rotate-90 duration-300"
             >
-              <X className="h-5 w-5 text-white" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </button>
 
-            <div className="flex flex-col md:flex-row h-[85vh] md:h-[520px]">
-              {/* Image Gallery - Fixed size container */}
+            <div className="flex flex-col lg:flex-row h-full sm:h-auto overflow-hidden">
+              {/* Image Gallery */}
               <div 
-                className="relative w-full md:w-1/2 h-[240px] md:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
+                className="relative w-full lg:w-[55%] h-[35dvh] sm:h-[300px] lg:h-[500px] xl:h-[550px] bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
                 onTouchStart={handleTouchStart}
                 onTouchEnd={handleTouchEnd}
                 onMouseDown={handleMouseDown}
@@ -1052,51 +1052,19 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
               >
-                {/* Toggle между галереей и планировкой */}
-                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex bg-charcoal/80 backdrop-blur-sm rounded-full p-1">
-                  <button
-                    onClick={() => {
-                      setViewMode("gallery");
-                      setCurrentImageIndex(0);
-                    }}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      viewMode === "gallery"
-                        ? "bg-primary text-white"
-                        : "text-white/70 hover:text-white"
-                    }`}
-                  >
-                    Галерея
-                  </button>
-                  {floorPlanImages.length > 0 && (
-                    <button
-                      onClick={() => {
-                        setViewMode("floorplan");
-                        setCurrentImageIndex(0);
-                      }}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        viewMode === "floorplan"
-                          ? "bg-primary text-white"
-                          : "text-white/70 hover:text-white"
-                      }`}
-                    >
-                      Планировка
-                    </button>
-                  )}
-                </div>
-
-                <AnimatePresence mode="wait">
+                  <AnimatePresence mode="wait">
                   <motion.div
                     key={currentImageIndex}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute inset-0"
+                    className="absolute inset-0 flex items-center justify-center"
                   >
                     <img
                       src={currentImages[currentImageIndex]}
                       alt={house.name}
-                      className="w-full h-full object-cover pointer-events-none"
+                      className="w-full h-full object-contain pointer-events-none"
                       draggable={false}
                     />
                   </motion.div>
@@ -1119,7 +1087,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   ))}
                 </div>
 
-                <div className="hidden md:flex absolute inset-0 items-center justify-between px-3 pointer-events-none">
+                <div className="hidden lg:flex absolute inset-0 items-center justify-between px-3 pointer-events-none">
                   <button
                     onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
                     className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
@@ -1139,7 +1107,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 </div>
 
                 {showSwipeHint && currentImages.length > 1 && (
-                  <div className="md:hidden">
+                  <div className="lg:hidden">
                     <SwipeIndicator />
                   </div>
                 )}
@@ -1150,7 +1118,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               </div>
 
               {/* Content */}
-              <div className="w-full md:w-1/2 p-5 md:p-6 flex flex-col overflow-y-auto">
+              <div className="w-full lg:w-[45%] p-4 sm:p-5 lg:p-6 flex flex-col overflow-y-auto flex-1 min-h-0">
                 <div className="mb-4">
                   <h2 className="text-xl md:text-2xl font-bold text-foreground mb-1 font-rising">
                     {house.name}
@@ -1230,7 +1198,40 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   </div>
                 )}
 
-                <div className="mt-auto pt-2">
+                <div className="mt-auto pt-2 space-y-3">
+                  {/* Toggle между галереей и планировкой */}
+                  {floorPlanImages.length > 0 && (
+                    <div className="flex justify-center">
+                      <div className="flex bg-muted rounded-full p-1">
+                        <button
+                          onClick={() => {
+                            setViewMode("gallery");
+                            setCurrentImageIndex(0);
+                          }}
+                          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                            viewMode === "gallery"
+                              ? "bg-primary text-white shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Галерея
+                        </button>
+                        <button
+                          onClick={() => {
+                            setViewMode("floorplan");
+                            setCurrentImageIndex(0);
+                          }}
+                          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                            viewMode === "floorplan"
+                              ? "bg-primary text-white shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          Планировка
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <Button
                     onClick={() => setShowForm(true)}
                     size="lg"
