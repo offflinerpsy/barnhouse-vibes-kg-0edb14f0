@@ -5,14 +5,13 @@
  * 
  * ID: #catalog
  * 
- * Структура:
- * - Проекты (Barn House, Country, Hi-Tech, и т.д.)
- * - В каждом проекте модели с разным метражом
- * - Атрибуты: комнаты, спальни, санузлы, веранда
+ * Система именования: Model + количество модулей
+ * - Одноэтажные: Model 1, 2, 3, 4, 6, 8
+ * - Двухэтажные (Duplex): Model 2X, 4X, 7X, 12X
  * 
  * Фильтрация:
- * - По типу проекта
- * - По метражу внутри проекта
+ * - По этажности (1 этаж / 2 этажа)
+ * - По площади
  * 
  * =============================================================================
  */
@@ -35,14 +34,22 @@ import {
   Hand,
   PenTool,
   Plus,
-  Check
+  Check,
+  Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-// Типы проектов
-type ProjectType = "all" | "barn-house" | "country" | "hi-tech" | "classic" | "minimalist";
+// Импорт локальных изображений
+import house1 from "@/assets/modular-house-1.jpg";
+import house2 from "@/assets/modular-house-2.webp";
+import house3 from "@/assets/modular-house-3.jpg";
+import house4 from "@/assets/modular-house-4.jpg";
+import house5 from "@/assets/modular-house-5.jpg";
+
+// Типы проектов - теперь по этажности
+type ProjectType = "all" | "single-floor" | "duplex";
 
 // Интерфейс модели дома
 interface HouseModel {
@@ -50,268 +57,220 @@ interface HouseModel {
   name: string;
   projectType: Exclude<ProjectType, "all">;
   projectLabel: string;
-  area: number;
+  area: number;            // Общая площадь
+  heatedArea: number;      // Отапливаемая площадь
+  floors: number;          // Этажность
   rooms: number;
-  bedrooms: number;
+  bedrooms: string;        // Диапазон (например "1-2")
   bathrooms: number;
   hasVeranda: boolean;
   verandaArea?: number;
-  price: string;
+  // TODO: Раскомментировать когда будут готовы цены
+  // price: string;
   images: string[];
 }
 
 // Список проектов для фильтра
 const projects: { value: ProjectType; label: string }[] = [
-  { value: "all", label: "Все проекты" },
-  { value: "barn-house", label: "Barn House" },
-  { value: "country", label: "Country" },
-  { value: "hi-tech", label: "Hi-Tech" },
-  { value: "classic", label: "Классика" },
-  { value: "minimalist", label: "Минимализм" },
+  { value: "all", label: "Все модели" },
+  { value: "single-floor", label: "Одноэтажные" },
+  { value: "duplex", label: "Двухэтажные" },
 ];
 
 // Диапазоны метража для подфильтра
 const areaRanges = [
   { value: "all", label: "Все метражи" },
-  { value: "small", label: "до 50м²", min: 0, max: 50 },
-  { value: "medium", label: "50-100м²", min: 50, max: 100 },
-  { value: "large", label: "100-150м²", min: 100, max: 150 },
-  { value: "xlarge", label: "150м²+", min: 150, max: Infinity },
+  { value: "compact", label: "до 40м²", min: 0, max: 40 },
+  { value: "small", label: "40-80м²", min: 40, max: 80 },
+  { value: "medium", label: "80-130м²", min: 80, max: 130 },
+  { value: "large", label: "130м²+", min: 130, max: Infinity },
 ];
 
 const houses: HouseModel[] = [
-  // Barn House
+  // ============================================
+  // ОДНОЭТАЖНЫЕ МОДЕЛИ (Single Floor)
+  // ============================================
+  
+  // Model 1 - Студия 18м²
   {
-    id: "bh-45",
-    name: "Barn House 45",
-    projectType: "barn-house",
-    projectLabel: "Barn House",
-    area: 45,
-    rooms: 2,
-    bedrooms: 1,
+    id: "model-1",
+    name: "Model 1",
+    projectType: "single-floor",
+    projectLabel: "Одноэтажный",
+    area: 18,
+    heatedArea: 18,
+    floors: 1,
+    rooms: 1,
+    bedrooms: "студия",
     bathrooms: 1,
     hasVeranda: false,
-    price: "от $24 000",
-    images: [
-      "https://images.unsplash.com/photo-1588880331179-bc9b93a8cb5e?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=2080&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-    ],
+    // price: "от $12 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house1, house2, house3],
   },
+  
+  // Model 2 - Компакт 36м²
   {
-    id: "bh-75",
-    name: "Barn House 75",
-    projectType: "barn-house",
-    projectLabel: "Barn House",
-    area: 75,
-    rooms: 3,
-    bedrooms: 2,
+    id: "model-2",
+    name: "Model 2",
+    projectType: "single-floor",
+    projectLabel: "Одноэтажный",
+    area: 36,
+    heatedArea: 36,
+    floors: 1,
+    rooms: 2,
+    bedrooms: "1",
     bathrooms: 1,
     hasVeranda: true,
-    verandaArea: 18,
-    price: "от $42 000",
-    images: [
-      "https://images.unsplash.com/photo-1523217582562-09d0def993a6?q=80&w=2080&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
-    ],
+    verandaArea: 12,
+    // price: "от $22 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house2, house3, house4],
   },
+  
+  // Model 3 - Стандарт 54м²
   {
-    id: "bh-120",
-    name: "Barn House 120",
-    projectType: "barn-house",
-    projectLabel: "Barn House",
-    area: 120,
+    id: "model-3",
+    name: "Model 3",
+    projectType: "single-floor",
+    projectLabel: "Одноэтажный",
+    area: 54,
+    heatedArea: 54,
+    floors: 1,
+    rooms: 3,
+    bedrooms: "1-2",
+    bathrooms: 1,
+    hasVeranda: true,
+    verandaArea: 15,
+    // price: "от $32 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house3, house4, house5],
+  },
+  
+  // Model 4 - Комфорт 81м²
+  {
+    id: "model-4",
+    name: "Model 4",
+    projectType: "single-floor",
+    projectLabel: "Одноэтажный",
+    area: 81,
+    heatedArea: 81,
+    floors: 1,
     rooms: 4,
-    bedrooms: 3,
+    bedrooms: "2-3",
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 20,
+    // price: "от $48 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house4, house5, house1],
+  },
+  
+  // Model 6 - Семейный 108м²
+  {
+    id: "model-6",
+    name: "Model 6",
+    projectType: "single-floor",
+    projectLabel: "Одноэтажный",
+    area: 108,
+    heatedArea: 108,
+    floors: 1,
+    rooms: 5,
+    bedrooms: "3-4",
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 25,
-    price: "от $68 000",
-    images: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
-    ],
+    // price: "от $64 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house5, house1, house2],
   },
-  // Country
+  
+  // Model 8 - Премиум 135м²
   {
-    id: "cnt-55",
-    name: "Country 55",
-    projectType: "country",
-    projectLabel: "Country",
-    area: 55,
-    rooms: 3,
-    bedrooms: 2,
-    bathrooms: 1,
-    hasVeranda: true,
-    verandaArea: 15,
-    price: "от $28 000",
-    images: [
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600210492493-0946911123ea?q=80&w=2074&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
-    ],
-  },
-  {
-    id: "cnt-85",
-    name: "Country 85",
-    projectType: "country",
-    projectLabel: "Country",
-    area: 85,
-    rooms: 4,
-    bedrooms: 3,
-    bathrooms: 2,
-    hasVeranda: false,
-    price: "от $46 000",
-    images: [
-      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
-    ],
-  },
-  {
-    id: "cnt-140",
-    name: "Country 140",
-    projectType: "country",
-    projectLabel: "Country",
-    area: 140,
-    rooms: 5,
-    bedrooms: 4,
+    id: "model-8",
+    name: "Model 8",
+    projectType: "single-floor",
+    projectLabel: "Одноэтажный",
+    area: 135,
+    heatedArea: 135,
+    floors: 1,
+    rooms: 6,
+    bedrooms: "4-5",
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 30,
-    price: "от $78 000",
-    images: [
-      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600573472556-e636c2acda88?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=2070&auto=format&fit=crop",
-    ],
+    // price: "от $78 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house1, house3, house5],
   },
-  // Hi-Tech
+  
+  // ============================================
+  // ДВУХЭТАЖНЫЕ МОДЕЛИ (Duplex)
+  // ============================================
+  
+  // Model 2X - Дуплекс компакт 36м²
   {
-    id: "ht-60",
-    name: "Hi-Tech 60",
-    projectType: "hi-tech",
-    projectLabel: "Hi-Tech",
-    area: 60,
+    id: "model-2x",
+    name: "Model 2X",
+    projectType: "duplex",
+    projectLabel: "Двухэтажный",
+    area: 36,
+    heatedArea: 36,
+    floors: 2,
     rooms: 2,
-    bedrooms: 1,
+    bedrooms: "1",
     bathrooms: 1,
     hasVeranda: false,
-    price: "от $38 000",
-    images: [
-      "https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
-    ],
+    // price: "от $24 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house2, house4, house1],
   },
+  
+  // Model 4X - Дуплекс стандарт 72м²
   {
-    id: "ht-100",
-    name: "Hi-Tech 100",
-    projectType: "hi-tech",
-    projectLabel: "Hi-Tech",
-    area: 100,
-    rooms: 3,
-    bedrooms: 2,
-    bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 15,
-    price: "от $62 000",
-    images: [
-      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-    ],
-  },
-  {
-    id: "ht-160",
-    name: "Hi-Tech 160",
-    projectType: "hi-tech",
-    projectLabel: "Hi-Tech",
-    area: 160,
-    rooms: 5,
-    bedrooms: 3,
-    bathrooms: 3,
-    hasVeranda: false,
-    price: "от $98 000",
-    images: [
-      "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=2074&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
-    ],
-  },
-  // Classic
-  {
-    id: "cls-70",
-    name: "Классика 70",
-    projectType: "classic",
-    projectLabel: "Классика",
-    area: 70,
-    rooms: 3,
-    bedrooms: 2,
-    bathrooms: 1,
-    hasVeranda: true,
-    verandaArea: 14,
-    price: "от $36 000",
-    images: [
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
-    ],
-  },
-  {
-    id: "cls-110",
-    name: "Классика 110",
-    projectType: "classic",
-    projectLabel: "Классика",
-    area: 110,
+    id: "model-4x",
+    name: "Model 4X",
+    projectType: "duplex",
+    projectLabel: "Двухэтажный",
+    area: 72,
+    heatedArea: 72,
+    floors: 2,
     rooms: 4,
-    bedrooms: 3,
+    bedrooms: "2-3",
     bathrooms: 2,
-    hasVeranda: false,
-    price: "от $58 000",
-    images: [
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2075&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600210492493-0946911123ea?q=80&w=2074&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
-    ],
-  },
-  // Minimalist
-  {
-    id: "min-40",
-    name: "Минимал 40",
-    projectType: "minimalist",
-    projectLabel: "Минимализм",
-    area: 40,
-    rooms: 1,
-    bedrooms: 1,
-    bathrooms: 1,
-    hasVeranda: false,
-    price: "от $22 000",
-    images: [
-      "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?q=80&w=2084&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
-    ],
-  },
-  {
-    id: "min-65",
-    name: "Минимал 65",
-    projectType: "minimalist",
-    projectLabel: "Минимализм",
-    area: 65,
-    rooms: 2,
-    bedrooms: 1,
-    bathrooms: 1,
     hasVeranda: true,
-    verandaArea: 10,
-    price: "от $35 000",
-    images: [
-      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=2070&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=2187&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1600573472556-e636c2acda88?q=80&w=2070&auto=format&fit=crop",
-    ],
+    verandaArea: 18,
+    // price: "от $44 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house3, house5, house2],
+  },
+  
+  // Model 7X - Дуплекс комфорт 120м²
+  {
+    id: "model-7x",
+    name: "Model 7X",
+    projectType: "duplex",
+    projectLabel: "Двухэтажный",
+    area: 120,
+    heatedArea: 120,
+    floors: 2,
+    rooms: 5,
+    bedrooms: "3-4",
+    bathrooms: 2,
+    hasVeranda: true,
+    verandaArea: 25,
+    // price: "от $72 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house4, house1, house3],
+  },
+  
+  // Model 12X - Дуплекс премиум 204м²
+  {
+    id: "model-12x",
+    name: "Model 12X",
+    projectType: "duplex",
+    projectLabel: "Двухэтажный",
+    area: 204,
+    heatedArea: 204,
+    floors: 2,
+    rooms: 8,
+    bedrooms: "5-6",
+    bathrooms: 3,
+    hasVeranda: true,
+    verandaArea: 40,
+    // price: "от $118 000", // TODO: Раскомментировать когда будут готовы цены
+    images: [house5, house2, house4],
   },
 ];
 
@@ -1127,7 +1086,8 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   <h2 className="text-xl md:text-2xl font-bold text-foreground mb-1 font-rising">
                     {house.name}
                   </h2>
-                  <p className="text-xl font-bold text-primary">{house.price}</p>
+                  {/* TODO: Раскомментировать когда будут готовы цены */}
+                  {/* <p className="text-xl font-bold text-primary">{house.price}</p> */}
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 mb-4">
@@ -1140,10 +1100,10 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   </div>
                   <div className="bg-background rounded-lg p-3 border border-border">
                     <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                      <DoorOpen className="h-3.5 w-3.5" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Комнат</span>
+                      <Layers className="h-3.5 w-3.5" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Этажей</span>
                     </div>
-                    <p className="text-base font-bold text-foreground">{house.rooms}</p>
+                    <p className="text-base font-bold text-foreground">{house.floors}</p>
                   </div>
                   <div className="bg-background rounded-lg p-3 border border-border">
                     <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
@@ -1441,12 +1401,12 @@ export function Catalog() {
                       </div>
                     </div>
 
-                    {/* Price on image */}
-                    <div className="absolute bottom-3 left-3 right-3">
+                    {/* TODO: Раскомментировать когда будут готовы цены */}
+                    {/* <div className="absolute bottom-3 left-3 right-3">
                       <p className="text-xl font-bold text-white drop-shadow-lg">
                         {house.price}
                       </p>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Content */}
@@ -1462,16 +1422,16 @@ export function Catalog() {
                         <span>{house.area} м²</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
+                        <Layers className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
+                        <span>{house.floors} эт.</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <BedDouble className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
-                        <span>{house.bedrooms} спал.</span>
+                        <span>{house.bedrooms === "студия" ? "студия" : `${house.bedrooms} спал.`}</span>
                       </div>
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Bath className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
                         <span>{house.bathrooms} сануз.</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Trees className="h-4 w-4 text-primary/70 group-hover:text-primary transition-colors duration-300" />
-                        <span>{house.hasVeranda ? "Веранда" : "—"}</span>
                       </div>
                     </div>
                   </div>
