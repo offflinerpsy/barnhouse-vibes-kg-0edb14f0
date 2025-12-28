@@ -128,6 +128,7 @@ export function UtpBlock() {
                     src={activeBenefit.image}
                     alt={activeBenefit.title}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                   {/* Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-white/20" />

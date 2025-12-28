@@ -67,12 +67,12 @@ export function Header() {
         {/* Top bar with contacts - visible on desktop */}
         <div className={`hidden lg:flex items-center justify-between text-sm border-b border-border/50 pb-2 mb-2 transition-all ${isScrolled ? 'h-0 opacity-0 overflow-hidden pb-0 mb-0 border-0' : 'h-auto opacity-100'}`}>
           <div className="flex items-center gap-6 text-muted-foreground">
-            <span>г. Бишкек, Кыргызстан</span>
-            <span>Пн-Сб: 9:00 - 18:00</span>
+            <span>г. Бишкек, Ул. Байтик Баатыра 61</span>
+            <span>Ежедневно: 10:00 - 19:00</span>
           </div>
           <div className="flex items-center gap-4">
             <a
-              href="https://wa.me/996700000000"
+              href="https://wa.me/996222001112"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors"
@@ -125,11 +125,11 @@ export function Header() {
           {/* Right side - Phone & CTA */}
           <div className="hidden md:flex items-center gap-4 lg:gap-6">
             <a
-              href="tel:+996700000000"
+              href="tel:+996222001112"
               className="flex flex-col items-end"
             >
               <span className="text-base lg:text-lg font-semibold text-foreground hover:text-primary transition-colors">
-                +996 700 000 000
+                +996 222 001 112
               </span>
               <span className="text-xs text-muted-foreground">Бесплатная консультация</span>
             </a>
@@ -181,14 +181,14 @@ export function Header() {
                 {/* Mobile footer */}
                 <div className="p-6 bg-secondary/30 border-t border-border">
                   <a
-                    href="tel:+996700000000"
+                    href="tel:+996222001112"
                     className="flex items-center gap-3 mb-4"
                   >
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <Phone className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <div className="font-semibold text-foreground">+996 700 000 000</div>
+                      <div className="font-semibold text-foreground">+996 222 001 112</div>
                       <div className="text-xs text-muted-foreground">Бесплатная консультация</div>
                     </div>
                   </a>
@@ -205,7 +205,7 @@ export function Header() {
                   {/* Social links */}
                   <div className="flex items-center justify-center gap-4 mt-6 pt-4 border-t border-border/50">
                     <a
-                      href="https://wa.me/996700000000"
+                      href="https://wa.me/996222001112"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-muted-foreground hover:text-primary transition-colors"

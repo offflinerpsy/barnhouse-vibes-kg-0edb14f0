@@ -125,7 +125,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="text-white/60 text-lg sm:text-xl md:text-2xl leading-relaxed mb-10 md:mb-14 max-w-md"
           >
-            Модульные дома премиум-класса с&nbsp;установкой за&nbsp;14&nbsp;дней. 
+            Модульные дома премиум-класса с&nbsp;установкой за&nbsp;60&nbsp;дней. 
             Скандинавский дизайн, немецкое качество.
           </motion.p>
 
@@ -157,9 +157,9 @@ export function Hero() {
             className="flex gap-8 sm:gap-10 md:gap-14 mt-12 md:mt-16 pt-8 border-t border-white/10"
           >
             {[
-              { value: "150+", label: "проектов" },
-              { value: "14", label: "дней монтаж" },
-              { value: "10", label: "лет гарантии" },
+              { value: "50+", label: "проектов" },
+              { value: "60", label: "дней монтаж" },
+              { value: "5", label: "лет гарантии" },
             ].map((stat, index) => (
               <div key={index}>
                 <div className="text-2xl sm:text-3xl md:text-4xl font-rising font-medium text-white mb-1">

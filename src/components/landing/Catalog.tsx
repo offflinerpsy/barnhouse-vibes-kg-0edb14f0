@@ -1023,6 +1023,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
           alt={house.name}
           className="w-full h-full object-contain pointer-events-none"
           draggable={false}
+          loading="lazy"
         />
       );
     } else {
@@ -1070,6 +1071,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
             alt={`${house.name} планировка`}
             className="w-full h-full object-contain pointer-events-none"
             draggable={false}
+            loading="lazy"
           />
         );
       }
@@ -1577,6 +1579,7 @@ export function Catalog() {
                       src={cardImage}
                       alt={house.name}
                       className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
+                      loading="lazy"
                     />
                     
                     {/* Premium hover overlay with gradient */}

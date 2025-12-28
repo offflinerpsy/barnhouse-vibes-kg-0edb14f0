@@ -103,7 +103,7 @@ export function Footer() {
               transition={{ duration: 0.5, delay: 0.4 }}
             >
               <a
-                href="https://wa.me/996700000000"
+                href="https://wa.me/996222001112"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 rounded-full bg-white/10 flex items-center justify-center hover:bg-green-500/20 hover:scale-110 transition-all duration-300"
@@ -158,11 +158,11 @@ export function Footer() {
             <h4 className="font-display font-semibold text-lg mb-5 text-primary">Контакты</h4>
             <div className="space-y-4">
               <a
-                href="tel:+996700000000"
+                href="tel:+996222001112"
                 className="flex items-center gap-3 text-white/70 hover:text-primary transition-colors group"
               >
                 <Phone className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                +996 700 000 000
+                +996 222 001 112
               </a>
               <a
                 href="mailto:info@eraconcepthome.kg"
@@ -173,7 +173,7 @@ export function Footer() {
               </a>
               <div className="flex items-start gap-3 text-white/70">
                 <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <span>г. Бишкек, Кыргызстан</span>
+                <span>г. Бишкек, Ул. Байтик Баатыра 61</span>
               </div>
             </div>
           </div>

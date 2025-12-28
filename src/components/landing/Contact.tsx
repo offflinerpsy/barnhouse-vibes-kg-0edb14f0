@@ -100,10 +100,10 @@ export function Contact() {
                 <div>
                   <div className="text-sm text-muted-foreground">Телефон</div>
                   <a
-                    href="tel:+996700000000"
+                    href="tel:+996222001112"
                     className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                   >
-                    +996 700 000 000
+                    +996 222 001 112
                   </a>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export function Contact() {
                 <div>
                   <div className="text-sm text-muted-foreground">Адрес</div>
                   <span className="text-lg font-medium text-foreground">
-                    г. Бишкек, Кыргызстан
+                    г. Бишкек, Ул. Байтик Баатыра 61
                   </span>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export function Contact() {
                 className="hover:bg-green-500/10 hover:text-green-600 hover:border-green-500"
               >
                 <a
-                  href="https://wa.me/996700000000"
+                  href="https://wa.me/996222001112"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
