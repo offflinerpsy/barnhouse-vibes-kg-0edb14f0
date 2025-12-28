@@ -41,13 +41,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
-// Импорт локальных изображений
-import house1 from "@/assets/modular-house-1.jpg";
-import house2 from "@/assets/modular-house-2.webp";
-import house3 from "@/assets/modular-house-3.jpg";
-import house4 from "@/assets/modular-house-4.jpg";
-import house5 from "@/assets/modular-house-5.jpg";
-
 // Типы проектов - теперь по этажности
 type ProjectType = "all" | "single-floor" | "duplex";
 
@@ -67,8 +60,20 @@ interface HouseModel {
   verandaArea?: number;
   // TODO: Раскомментировать когда будут готовы цены
   // price: string;
-  images: string[];
+  // Путь к папке модели в /catalog/
+  catalogPath: string;
+  // Количество файлов в каждой папке
+  galleryCount: number;
+  galleryExtraCount: number;
+  floorPlanCount: number;
 }
+
+// Хелпер для генерации массива путей к изображениям
+const generateImagePaths = (catalogPath: string, folder: string, count: number, prefix: string = ""): string[] => {
+  return Array.from({ length: count }, (_, i) => 
+    `/catalog/${catalogPath}/${folder}/${prefix}${i + 1}.webp`
+  );
+};
 
 // Список проектов для фильтра
 const projects: { value: ProjectType; label: string }[] = [
@@ -104,8 +109,10 @@ const houses: HouseModel[] = [
     bedrooms: "студия",
     bathrooms: 1,
     hasVeranda: false,
-    // price: "от $12 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house1, house2, house3],
+    catalogPath: "model-1-18",
+    galleryCount: 4,
+    galleryExtraCount: 25,
+    floorPlanCount: 3, // webp only, excluding pdf
   },
   
   // Model 2 - Компакт 36м²
@@ -122,8 +129,10 @@ const houses: HouseModel[] = [
     bathrooms: 1,
     hasVeranda: true,
     verandaArea: 12,
-    // price: "от $22 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house2, house3, house4],
+    catalogPath: "model-1-36",
+    galleryCount: 4,
+    galleryExtraCount: 24,
+    floorPlanCount: 3,
   },
   
   // Model 3 - Стандарт 54м²
@@ -140,8 +149,10 @@ const houses: HouseModel[] = [
     bathrooms: 1,
     hasVeranda: true,
     verandaArea: 15,
-    // price: "от $32 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house3, house4, house5],
+    catalogPath: "model-1-54",
+    galleryCount: 8,
+    galleryExtraCount: 33,
+    floorPlanCount: 3,
   },
   
   // Model 4 - Комфорт 81м²
@@ -158,8 +169,10 @@ const houses: HouseModel[] = [
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 20,
-    // price: "от $48 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house4, house5, house1],
+    catalogPath: "model-1-81",
+    galleryCount: 4,
+    galleryExtraCount: 34,
+    floorPlanCount: 2,
   },
   
   // Model 6 - Семейный 108м²
@@ -176,8 +189,10 @@ const houses: HouseModel[] = [
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 25,
-    // price: "от $64 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house5, house1, house2],
+    catalogPath: "model-1-108",
+    galleryCount: 4,
+    galleryExtraCount: 54,
+    floorPlanCount: 3,
   },
   
   // Model 8 - Премиум 135м²
@@ -194,8 +209,10 @@ const houses: HouseModel[] = [
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 30,
-    // price: "от $78 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house1, house3, house5],
+    catalogPath: "model-1-135",
+    galleryCount: 5,
+    galleryExtraCount: 38,
+    floorPlanCount: 2,
   },
   
   // ============================================
@@ -215,8 +232,10 @@ const houses: HouseModel[] = [
     bedrooms: "1",
     bathrooms: 1,
     hasVeranda: false,
-    // price: "от $24 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house2, house4, house1],
+    catalogPath: "model-2-36",
+    galleryCount: 4,
+    galleryExtraCount: 0,
+    floorPlanCount: 1,
   },
   
   // Model 4X - Дуплекс стандарт 72м²
@@ -233,8 +252,10 @@ const houses: HouseModel[] = [
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 18,
-    // price: "от $44 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house3, house5, house2],
+    catalogPath: "model-2-72",
+    galleryCount: 4,
+    galleryExtraCount: 6,
+    floorPlanCount: 3,
   },
   
   // Model 7X - Дуплекс комфорт 120м²
@@ -251,8 +272,10 @@ const houses: HouseModel[] = [
     bathrooms: 2,
     hasVeranda: true,
     verandaArea: 25,
-    // price: "от $72 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house4, house1, house3],
+    catalogPath: "model-2-120",
+    galleryCount: 4,
+    galleryExtraCount: 0,
+    floorPlanCount: 2,
   },
   
   // Model 12X - Дуплекс премиум 204м²
@@ -269,8 +292,10 @@ const houses: HouseModel[] = [
     bathrooms: 3,
     hasVeranda: true,
     verandaArea: 40,
-    // price: "от $118 000", // TODO: Раскомментировать когда будут готовы цены
-    images: [house5, house2, house4],
+    catalogPath: "model-2-204",
+    galleryCount: 6,
+    galleryExtraCount: 0,
+    floorPlanCount: 1,
   },
 ];
 
@@ -839,9 +864,21 @@ function HouseModal({ house, onClose }: HouseModalProps) {
   const [showThankYou, setShowThankYou] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
   const [wantsVeranda, setWantsVeranda] = useState(false);
+  const [viewMode, setViewMode] = useState<"gallery" | "floorplan">("gallery");
   
   const dragStartX = useRef<number | null>(null);
   const isDragging = useRef(false);
+
+  // Генерируем пути к изображениям
+  const galleryImages = generateImagePaths(house.catalogPath, "gallery", house.galleryCount);
+  const galleryExtraImages = generateImagePaths(house.catalogPath, "gallery-extra", house.galleryExtraCount, "extra-");
+  const floorPlanImages = generateImagePaths(house.catalogPath, "floor-plan", house.floorPlanCount, "plan-");
+  
+  // Все изображения для галереи (основные + дополнительные)
+  const allGalleryImages = [...galleryImages, ...galleryExtraImages];
+  
+  // Текущий набор изображений в зависимости от режима просмотра
+  const currentImages = viewMode === "gallery" ? allGalleryImages : floorPlanImages;
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSwipeHint(false), 4000);
@@ -857,7 +894,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     const touchEnd = e.changedTouches[0].clientX;
     const diff = dragStartX.current - touchEnd;
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentImageIndex < house.images.length - 1) {
+      if (diff > 0 && currentImageIndex < currentImages.length - 1) {
         setCurrentImageIndex(prev => prev + 1);
         setShowSwipeHint(false);
       } else if (diff < 0 && currentImageIndex > 0) {
@@ -885,7 +922,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     }
     const diff = dragStartX.current - e.clientX;
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentImageIndex < house.images.length - 1) {
+      if (diff > 0 && currentImageIndex < currentImages.length - 1) {
         setCurrentImageIndex(prev => prev + 1);
         setShowSwipeHint(false);
       } else if (diff < 0 && currentImageIndex > 0) {
@@ -1015,6 +1052,38 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseLeave}
               >
+                {/* Toggle между галереей и планировкой */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex bg-charcoal/80 backdrop-blur-sm rounded-full p-1">
+                  <button
+                    onClick={() => {
+                      setViewMode("gallery");
+                      setCurrentImageIndex(0);
+                    }}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      viewMode === "gallery"
+                        ? "bg-primary text-white"
+                        : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    Галерея
+                  </button>
+                  {floorPlanImages.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setViewMode("floorplan");
+                        setCurrentImageIndex(0);
+                      }}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        viewMode === "floorplan"
+                          ? "bg-primary text-white"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      Планировка
+                    </button>
+                  )}
+                </div>
+
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentImageIndex}
@@ -1025,7 +1094,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     className="absolute inset-0"
                   >
                     <img
-                      src={house.images[currentImageIndex]}
+                      src={currentImages[currentImageIndex]}
                       alt={house.name}
                       className="w-full h-full object-cover pointer-events-none"
                       draggable={false}
@@ -1034,7 +1103,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 </AnimatePresence>
 
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                  {house.images.map((_, idx) => (
+                  {currentImages.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => {
@@ -1060,16 +1129,16 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     <ChevronLeft className="h-5 w-5 text-white" />
                   </button>
                   <button
-                    onClick={() => currentImageIndex < house.images.length - 1 && setCurrentImageIndex(prev => prev + 1)}
+                    onClick={() => currentImageIndex < currentImages.length - 1 && setCurrentImageIndex(prev => prev + 1)}
                     className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
-                      currentImageIndex === house.images.length - 1 ? "opacity-0" : "opacity-100"
+                      currentImageIndex === currentImages.length - 1 ? "opacity-0" : "opacity-100"
                     }`}
                   >
                     <ChevronRight className="h-5 w-5 text-white" />
                   </button>
                 </div>
 
-                {showSwipeHint && house.images.length > 1 && (
+                {showSwipeHint && currentImages.length > 1 && (
                   <div className="md:hidden">
                     <SwipeIndicator />
                   </div>
@@ -1362,7 +1431,11 @@ export function Catalog() {
         {/* Houses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <AnimatePresence mode="popLayout">
-            {filteredHouses.map((house, index) => (
+            {filteredHouses.map((house, index) => {
+              // Генерируем путь к первому изображению для карточки
+              const cardImage = `/catalog/${house.catalogPath}/gallery/1.webp`;
+              
+              return (
               <motion.div
                 key={house.id}
                 layout
@@ -1378,7 +1451,7 @@ export function Catalog() {
                   {/* Image Container */}
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
-                      src={house.images[0]}
+                      src={cardImage}
                       alt={house.name}
                       className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
                     />
@@ -1440,7 +1513,8 @@ export function Catalog() {
                   <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[hsl(var(--gold))] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
             
             {/* Custom Project CTA Card - inside the grid */}
             <motion.div
@@ -1768,3 +1842,4 @@ export function Catalog() {
     </section>
   );
 }
+
