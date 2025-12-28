@@ -24,7 +24,7 @@ import { Catalog } from "@/components/landing/Catalog";
 import { UtpBlock } from "@/components/landing/UtpBlock";
 import { Stages } from "@/components/landing/Stages";
 import { About } from "@/components/landing/About";
-import { UTPVariantC } from "@/components/landing/UTPVariantC";
+import { FAQ } from "@/components/landing/FAQ";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
 import { Toaster } from "@/components/ui/toaster";
@@ -81,11 +81,11 @@ const Index = () => {
       <About />
 
       {/* ============================================
-          UTP VARIANT C - Аккордеон с выезжающими картинками
-          ID: #benefits-accordion
-          Содержит: аккордеон УТП с картинками
+          FAQ SECTION - Частые вопросы
+          ID: #faq
+          Содержит: аккордеон с иконками, 7 вопросов
           ============================================ */}
-      <UTPVariantC />
+      <FAQ />
 
       {/* ============================================
           CONTACT SECTION - Контакты
