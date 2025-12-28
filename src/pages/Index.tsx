@@ -21,6 +21,7 @@ import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Advantages } from "@/components/landing/Advantages";
 import { Catalog } from "@/components/landing/Catalog";
+import { UtpBlock } from "@/components/landing/UtpBlock";
 import { Stages } from "@/components/landing/Stages";
 import { About } from "@/components/landing/About";
 import { FAQ } from "@/components/landing/FAQ";
@@ -57,6 +58,13 @@ const Index = () => {
           Содержит: фильтры, карточки домов, модалка деталей
           ============================================ */}
       <Catalog />
+
+      {/* ============================================
+          UTP BLOCK - Преимущества модульных домов
+          ID: #benefits
+          Содержит: авто-слайдер с 4 преимуществами
+          ============================================ */}
+      <UtpBlock />
 
       {/* ============================================
           ADVANTAGES SECTION - Преимущества

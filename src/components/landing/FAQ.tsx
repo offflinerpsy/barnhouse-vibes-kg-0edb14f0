@@ -1,6 +1,6 @@
 /**
  * =============================================================================
- * FAQ SECTION - Частые вопросы
+ * FAQ SECTION - Частые вопросы (Обновленная версия)
  * =============================================================================
  * 
  * ID: #faq
@@ -8,7 +8,8 @@
  * Содержит:
  * - Кастомный аккордеон с иконками Plus/Minus
  * - 7 вопросов и ответов
- * - CTA кнопка "Связаться с нами"
+ * - Stagger анимация появления
+ * - CTA блок "Связаться с нами"
  * 
  * =============================================================================
  */
@@ -92,7 +93,7 @@ function FAQAccordionItem({
   return (
     <motion.div
       variants={itemVariants}
-      className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 hover:border-primary/50"
+      className="bg-[#EFEBE3] rounded-xl border border-[#DDD6C9] overflow-hidden transition-all duration-300 hover:border-primary/50"
     >
       <button
         onClick={onToggle}
@@ -105,8 +106,8 @@ function FAQAccordionItem({
         <span
           className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 mt-0.5 ${
             isOpen
-              ? "bg-primary text-primary-foreground rotate-0"
-              : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground"
+              ? "bg-primary text-white rotate-0"
+              : "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white"
           }`}
         >
           {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -121,7 +122,7 @@ function FAQAccordionItem({
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <div className="px-6 pb-6 pt-0">
-              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{item.answer}</p>
+              <p className="text-sm md:text-base text-[#7A7269] leading-relaxed">{item.answer}</p>
             </div>
           </motion.div>
         )}
@@ -138,7 +139,7 @@ export function FAQ() {
   };
 
   return (
-    <section id="faq" className="py-20 md:py-28 bg-secondary/30">
+    <section id="faq" className="py-20 md:py-28 bg-[#EBE6DD]/30">
       <div className="container mx-auto px-4 max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -150,7 +151,7 @@ export function FAQ() {
           <span className="inline-block text-primary font-medium text-sm md:text-base uppercase tracking-wider mb-3 md:mb-4">
             Ответы на вопросы
           </span>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
             Частые вопросы
           </h2>
         </motion.div>
@@ -172,6 +173,22 @@ export function FAQ() {
           ))}
         </motion.div>
 
+        {/* CTA Block */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="mt-12 text-center"
+        >
+          <p className="text-[#7A7269] text-sm md:text-base mb-6">Не нашли ответ на свой вопрос?</p>
+          <a 
+            href="#contact"
+            className="inline-flex bg-primary text-white hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] h-12 px-8 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-primary/20 items-center justify-center"
+          >
+            Связаться с нами
+          </a>
+        </motion.div>
       </div>
     </section>
   );
