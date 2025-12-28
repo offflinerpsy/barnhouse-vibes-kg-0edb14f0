@@ -9,7 +9,6 @@
  * - Stages: Этапы работы (#stages)
  * - Catalog: Каталог домов (#catalog)
  * - Advantages: Преимущества компании (#advantages)
- * - About: О компании (#about)
  * - FAQ: Частые вопросы (#faq)
  * - Contact: Контактная форма (#contact)
  * - Footer: Подвал сайта (#footer)
@@ -23,7 +22,6 @@ import { Advantages } from "@/components/landing/Advantages";
 import { Catalog } from "@/components/landing/Catalog";
 import { UtpBlock } from "@/components/landing/UtpBlock";
 import { Stages } from "@/components/landing/Stages";
-import { About } from "@/components/landing/About";
 import { FAQ } from "@/components/landing/FAQ";
 import { Contact } from "@/components/landing/Contact";
 import { Footer } from "@/components/landing/Footer";
@@ -72,13 +70,6 @@ const Index = () => {
           Содержит: 4 преимущества, карусель изображений
           ============================================ */}
       <Advantages />
-
-      {/* ============================================
-          ABOUT SECTION - О компании
-          ID: #about
-          Содержит: описание, фото, список преимуществ
-          ============================================ */}
-      <About />
 
       {/* ============================================
           FAQ SECTION - Частые вопросы

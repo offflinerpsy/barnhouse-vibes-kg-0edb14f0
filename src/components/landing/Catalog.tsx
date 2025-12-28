@@ -17,6 +17,15 @@
  */
 
 import React, { useState, useEffect, useRef, forwardRef } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   BedDouble, 
@@ -44,6 +53,12 @@ import { Input } from "@/components/ui/input";
 // Типы проектов - теперь по этажности
 type ProjectType = "all" | "single-floor" | "duplex";
 
+// Интерфейс файла планировки
+interface FloorPlanFile {
+  name: string;  // e.g., "plan-1"
+  ext: "webp" | "pdf";
+}
+
 // Интерфейс модели дома
 interface HouseModel {
   id: string;
@@ -65,7 +80,8 @@ interface HouseModel {
   // Количество файлов в каждой папке
   galleryCount: number;
   galleryExtraCount: number;
-  floorPlanCount: number;
+  // Файлы планировок с указанием расширения
+  floorPlanFiles: FloorPlanFile[];
 }
 
 // Хелпер для генерации массива путей к изображениям
@@ -112,7 +128,12 @@ const houses: HouseModel[] = [
     catalogPath: "model-1-18",
     galleryCount: 4,
     galleryExtraCount: 25,
-    floorPlanCount: 3, // webp only, excluding pdf
+    floorPlanFiles: [
+      { name: "plan-1", ext: "webp" },
+      { name: "plan-2", ext: "webp" },
+      { name: "plan-3", ext: "webp" },
+      { name: "plan-4", ext: "pdf" },
+    ],
   },
   
   // Model 2 - Компакт 36м²
@@ -132,7 +153,12 @@ const houses: HouseModel[] = [
     catalogPath: "model-1-36",
     galleryCount: 4,
     galleryExtraCount: 24,
-    floorPlanCount: 3,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "webp" },
+      { name: "plan-2", ext: "pdf" },
+      { name: "plan-3", ext: "pdf" },
+      { name: "plan-4", ext: "pdf" },
+    ],
   },
   
   // Model 3 - Стандарт 54м²
@@ -152,7 +178,12 @@ const houses: HouseModel[] = [
     catalogPath: "model-1-54",
     galleryCount: 8,
     galleryExtraCount: 33,
-    floorPlanCount: 3,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "pdf" },
+      { name: "plan-2", ext: "webp" },
+      { name: "plan-3", ext: "webp" },
+      { name: "plan-4", ext: "webp" },
+    ],
   },
   
   // Model 4 - Комфорт 81м²
@@ -172,7 +203,11 @@ const houses: HouseModel[] = [
     catalogPath: "model-1-81",
     galleryCount: 4,
     galleryExtraCount: 34,
-    floorPlanCount: 2,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "pdf" },
+      { name: "plan-2", ext: "pdf" },
+      { name: "plan-3", ext: "pdf" },
+    ],
   },
   
   // Model 6 - Семейный 108м²
@@ -192,7 +227,12 @@ const houses: HouseModel[] = [
     catalogPath: "model-1-108",
     galleryCount: 4,
     galleryExtraCount: 54,
-    floorPlanCount: 3,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "webp" },
+      { name: "plan-2", ext: "webp" },
+      { name: "plan-3", ext: "webp" },
+      { name: "plan-4", ext: "pdf" },
+    ],
   },
   
   // Model 8 - Премиум 135м²
@@ -212,7 +252,11 @@ const houses: HouseModel[] = [
     catalogPath: "model-1-135",
     galleryCount: 5,
     galleryExtraCount: 38,
-    floorPlanCount: 2,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "webp" },
+      { name: "plan-2", ext: "webp" },
+      { name: "plan-3", ext: "webp" },
+    ],
   },
   
   // ============================================
@@ -235,7 +279,10 @@ const houses: HouseModel[] = [
     catalogPath: "model-2-36",
     galleryCount: 4,
     galleryExtraCount: 0,
-    floorPlanCount: 1,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "pdf" },
+      { name: "plan-2", ext: "pdf" },
+    ],
   },
   
   // Model 4X - Дуплекс стандарт 72м²
@@ -255,7 +302,12 @@ const houses: HouseModel[] = [
     catalogPath: "model-2-72",
     galleryCount: 4,
     galleryExtraCount: 6,
-    floorPlanCount: 3,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "pdf" },
+      { name: "plan-2", ext: "pdf" },
+      { name: "plan-3", ext: "pdf" },
+      { name: "plan-4", ext: "pdf" },
+    ],
   },
   
   // Model 7X - Дуплекс комфорт 120м²
@@ -275,7 +327,11 @@ const houses: HouseModel[] = [
     catalogPath: "model-2-120",
     galleryCount: 4,
     galleryExtraCount: 0,
-    floorPlanCount: 2,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "webp" },
+      { name: "plan-2", ext: "webp" },
+      { name: "plan-3", ext: "webp" },
+    ],
   },
   
   // Model 12X - Дуплекс премиум 204м²
@@ -295,7 +351,10 @@ const houses: HouseModel[] = [
     catalogPath: "model-2-204",
     galleryCount: 6,
     galleryExtraCount: 0,
-    floorPlanCount: 1,
+    floorPlanFiles: [
+      { name: "plan-1", ext: "pdf" },
+      { name: "plan-2", ext: "pdf" },
+    ],
   },
 ];
 
@@ -872,13 +931,18 @@ function HouseModal({ house, onClose }: HouseModalProps) {
   // Генерируем пути к изображениям
   const galleryImages = generateImagePaths(house.catalogPath, "gallery", house.galleryCount);
   const galleryExtraImages = generateImagePaths(house.catalogPath, "gallery-extra", house.galleryExtraCount, "extra-");
-  const floorPlanImages = generateImagePaths(house.catalogPath, "floor-plan", house.floorPlanCount, "plan-");
+  
+  // Генерируем пути к планировкам с учётом расширений (webp или pdf)
+  const floorPlanItems = house.floorPlanFiles.map(file => ({
+    path: `/catalog/${house.catalogPath}/floor-plan/${file.name}.${file.ext}`,
+    isPdf: file.ext === "pdf",
+  }));
   
   // Все изображения для галереи (основные + дополнительные)
   const allGalleryImages = [...galleryImages, ...galleryExtraImages];
   
-  // Текущий набор изображений в зависимости от режима просмотра
-  const currentImages = viewMode === "gallery" ? allGalleryImages : floorPlanImages;
+  // Для галереи - просто массив путей, для планировок - объекты с info
+  const currentItemCount = viewMode === "gallery" ? allGalleryImages.length : floorPlanItems.length;
 
   useEffect(() => {
     const timer = setTimeout(() => setShowSwipeHint(false), 4000);
@@ -894,7 +958,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     const touchEnd = e.changedTouches[0].clientX;
     const diff = dragStartX.current - touchEnd;
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentImageIndex < currentImages.length - 1) {
+      if (diff > 0 && currentImageIndex < currentItemCount - 1) {
         setCurrentImageIndex(prev => prev + 1);
         setShowSwipeHint(false);
       } else if (diff < 0 && currentImageIndex > 0) {
@@ -922,7 +986,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     }
     const diff = dragStartX.current - e.clientX;
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && currentImageIndex < currentImages.length - 1) {
+      if (diff > 0 && currentImageIndex < currentItemCount - 1) {
         setCurrentImageIndex(prev => prev + 1);
         setShowSwipeHint(false);
       } else if (diff < 0 && currentImageIndex > 0) {
@@ -947,6 +1011,69 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     setShowThankYou(false);
     setShowForm(false);
     onClose();
+  };
+
+  // Рендер содержимого галереи - картинка или PDF
+  const renderGalleryContent = () => {
+    if (viewMode === "gallery") {
+      // Обычная галерея - только изображения
+      return (
+        <img
+          src={allGalleryImages[currentImageIndex]}
+          alt={house.name}
+          className="w-full h-full object-contain pointer-events-none"
+          draggable={false}
+        />
+      );
+    } else {
+      // Планировки - могут быть PDF или изображения
+      const currentItem = floorPlanItems[currentImageIndex];
+      if (currentItem.isPdf) {
+        return (
+          <div className="w-full h-full flex items-center justify-center bg-white">
+            <Document
+              file={currentItem.path}
+              loading={
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+                </div>
+              }
+              error={
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
+                  <p className="text-sm">Не удалось загрузить PDF</p>
+                  <a 
+                    href={currentItem.path} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary underline text-sm mt-2"
+                  >
+                    Открыть в новой вкладке
+                  </a>
+                </div>
+              }
+              className="flex items-center justify-center h-full"
+            >
+              <Page 
+                pageNumber={1} 
+                renderTextLayer={false}
+                renderAnnotationLayer={false}
+                className="max-h-full"
+                width={Math.min(500, window.innerWidth - 40)}
+              />
+            </Document>
+          </div>
+        );
+      } else {
+        return (
+          <img
+            src={currentItem.path}
+            alt={`${house.name} планировка`}
+            className="w-full h-full object-contain pointer-events-none"
+            draggable={false}
+          />
+        );
+      }
+    }
   };
 
   // Если показываем форму или благодарность - используем золотой стиль
@@ -1054,24 +1181,19 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               >
                   <AnimatePresence mode="wait">
                   <motion.div
-                    key={currentImageIndex}
+                    key={`${viewMode}-${currentImageIndex}`}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3 }}
                     className="absolute inset-0 flex items-center justify-center"
                   >
-                    <img
-                      src={currentImages[currentImageIndex]}
-                      alt={house.name}
-                      className="w-full h-full object-contain pointer-events-none"
-                      draggable={false}
-                    />
+                    {renderGalleryContent()}
                   </motion.div>
                 </AnimatePresence>
 
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                  {currentImages.map((_, idx) => (
+                  {Array.from({ length: currentItemCount }).map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => {
@@ -1097,16 +1219,16 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     <ChevronLeft className="h-5 w-5 text-white" />
                   </button>
                   <button
-                    onClick={() => currentImageIndex < currentImages.length - 1 && setCurrentImageIndex(prev => prev + 1)}
+                    onClick={() => currentImageIndex < currentItemCount - 1 && setCurrentImageIndex(prev => prev + 1)}
                     className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
-                      currentImageIndex === currentImages.length - 1 ? "opacity-0" : "opacity-100"
+                      currentImageIndex === currentItemCount - 1 ? "opacity-0" : "opacity-100"
                     }`}
                   >
                     <ChevronRight className="h-5 w-5 text-white" />
                   </button>
                 </div>
 
-                {showSwipeHint && currentImages.length > 1 && (
+                {showSwipeHint && currentItemCount > 1 && (
                   <div className="lg:hidden">
                     <SwipeIndicator />
                   </div>
@@ -1200,7 +1322,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
 
                 <div className="mt-auto pt-2 space-y-3">
                   {/* Toggle между галереей и планировкой */}
-                  {floorPlanImages.length > 0 && (
+                  {floorPlanItems.length > 0 && (
                     <div className="flex justify-center">
                       <div className="flex bg-muted rounded-full p-1">
                         <button

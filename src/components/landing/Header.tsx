@@ -149,7 +149,7 @@ export function Header() {
                 <Menu className="h-6 w-6 text-foreground" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:w-[350px] bg-white p-0">
+            <SheetContent side="right" className="w-full sm:w-[350px] bg-white p-0 [&>button]:hidden">
               <div className="flex flex-col h-full">
                 {/* Mobile header */}
                 <div className="flex items-center justify-between p-4 border-b border-border">

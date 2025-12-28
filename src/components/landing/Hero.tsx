@@ -84,7 +84,7 @@ export function Hero() {
       {/* Left Content Panel */}
       <motion.div 
         style={{ y: contentY }}
-        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-16 xl:px-24 py-24 pb-72 md:py-24 md:pb-24 lg:pb-24"
+        className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-16 xl:px-24 py-20 pb-[420px] sm:pb-[450px] md:py-24 md:pb-24 lg:pb-24"
       >
         <div className="relative z-10 max-w-lg xl:max-w-xl">
           {/* Tagline */}
