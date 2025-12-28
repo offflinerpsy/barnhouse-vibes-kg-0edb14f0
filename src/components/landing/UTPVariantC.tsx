@@ -26,7 +26,6 @@ const benefits = [
     icon: Eye,
     title: "Контроль",
     description: "Строим дом прямо на вашем участке, вы видите каждый этап и качество сборки без скрытых работ.",
-    image: "/utp/barnhouse-construction-kyrgyzstan-mountains-workers.jpg",
   },
   {
     id: "climate",
@@ -34,7 +33,6 @@ const benefits = [
     title: "Климат",
     description:
       "Энергоэффективная конструкция под климат Кыргызстана: прохлада летом и тепло зимой при меньших затратах.",
-    image: "/utp/barnhouse-panoramic-windows-tian-shan-summer.jpg",
   },
   {
     id: "reliability",
@@ -42,7 +40,6 @@ const benefits = [
     title: "Надёжность",
     description:
       "Сухая строганая древесина и точная сборка защищают дом от усадки и деформаций, с комплексной гарантией на конструктив.",
-    image: "/utp/premium-timber-construction-materials-barnhouse.jpg",
   },
   {
     id: "aesthetics",
@@ -50,7 +47,6 @@ const benefits = [
     title: "Эстетика",
     description:
       "Скандинавский стиль с панорамным остеклением, который объединяет с природой и делает дом растущим в цене активом.",
-    image: "/utp/scandinavian-barnhouse-kyrgyzstan-nature-panoramic.jpg",
   },
 ]
 
@@ -144,50 +140,27 @@ export function UTPVariantC() {
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.4, ease: "easeOut" }}
                     >
-                      <div className="grid md:grid-cols-2 gap-6 p-6 pt-0">
+                      <div className="p-6 pt-0">
                         {/* Description */}
-                        <div className="flex flex-col justify-center">
-                          <p className="text-[#5C5549] leading-relaxed text-lg mb-6">{benefit.description}</p>
+                        <p className="text-[#5C5549] leading-relaxed text-lg mb-6">{benefit.description}</p>
 
-                          {/* Animated Stats */}
-                          <div className="flex gap-8">
-                            <motion.div
-                              animate={{ y: [0, -3, 0] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                            >
-                              <div className="text-3xl font-light text-[#C3996B]">100%</div>
-                              <div className="text-sm text-[#5C5549]">Прозрачность</div>
-                            </motion.div>
-                            <motion.div
-                              animate={{ y: [0, -3, 0] }}
-                              transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
-                            >
-                              <div className="text-3xl font-light text-[#C3996B]">5 лет</div>
-                              <div className="text-sm text-[#5C5549]">Гарантия</div>
-                            </motion.div>
-                          </div>
-                        </div>
-
-                        {/* Image */}
-                        <motion.div
-                          className="relative aspect-[16/10] rounded-xl overflow-hidden"
-                          initial={{ x: 30, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
-                        >
-                          <img
-                            src={benefit.image || "/placeholder.svg"}
-                            alt={benefit.title}
-                            className="w-full h-full object-cover"
-                          />
-
-                          {/* Shine Effect */}
+                        {/* Animated Stats */}
+                        <div className="flex gap-8">
                           <motion.div
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                            animate={{ x: ["-100%", "200%"] }}
-                            transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
-                          />
-                        </motion.div>
+                            animate={{ y: [0, -3, 0] }}
+                            transition={{ duration: 2, repeat: Infinity }}
+                          >
+                            <div className="text-3xl font-light text-[#C3996B]">100%</div>
+                            <div className="text-sm text-[#5C5549]">Прозрачность</div>
+                          </motion.div>
+                          <motion.div
+                            animate={{ y: [0, -3, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+                          >
+                            <div className="text-3xl font-light text-[#C3996B]">5 лет</div>
+                            <div className="text-sm text-[#5C5549]">Гарантия</div>
+                          </motion.div>
+                        </div>
                       </div>
                     </motion.div>
                   )}
