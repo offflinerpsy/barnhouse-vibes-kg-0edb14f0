@@ -1,33 +1,52 @@
 /**
- * ERA Mobile Catalog - TikTok/Instagram Style
- * Fullscreen photos with swipe navigation
+ * ERA Mobile Catalog — Instagram/TikTok style
+ * - Fullscreen photo
+ * - Swipe left/right: switch models
+ * - Swipe up: open gallery
+ * - Persistent model picker + application form
  */
 
-import { useState, useCallback, useMemo } from "react";
-import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { 
-  X, 
-  ChevronLeft, 
-  ChevronRight, 
-  Phone, 
-  MessageCircle, 
-  Send,
-  Maximize2,
+import { useCallback, useMemo, useState } from "react";
+import { AnimatePresence, motion, PanInfo } from "framer-motion";
+import {
+  ArrowUp,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
   Grid3X3,
   Home,
   Bed,
   Bath,
+  Images,
+  Phone,
+  Send,
+  MessageCircle,
+  X,
+  Maximize2,
   Ruler,
-  ChevronUp,
-  Images
 } from "lucide-react";
+import { ContactModal } from "@/components/landing/ContactModal";
 
 interface CatalogAppViewProps {
   onClose?: () => void;
 }
 
-// All ERA models with real data
-const ALL_MODELS = [
+type FilterType = "all" | "1-floor" | "2-floor";
+
+type EraModel = {
+  id: string;
+  name: string;
+  area: number;
+  floors: number;
+  bedrooms: number;
+  bathrooms: number;
+  catalogPath: string;
+  galleryCount: number;
+  galleryExtraCount: number;
+  floorPlanCount: number;
+};
+
+const ERA_MODELS: EraModel[] = [
   {
     id: "model-1",
     name: "Model 1",
@@ -150,93 +169,275 @@ const ALL_MODELS = [
   },
 ];
 
-type FilterType = "all" | "1-floor" | "2-floor";
+const SWIPE_X = 70;
+const SWIPE_Y = 90;
 
-const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
+function getAllPhotos(model: EraModel): string[] {
+  const photos: string[] = [];
+  // Real photos first
+  for (let i = 1; i <= model.galleryExtraCount; i++) {
+    photos.push(`/catalog/${model.catalogPath}/gallery-extra/extra-${i}.webp`);
+  }
+  // Renders after
+  for (let i = 1; i <= model.galleryCount; i++) {
+    photos.push(`/catalog/${model.catalogPath}/gallery/${i}.webp`);
+  }
+  return photos;
+}
+
+function getFloorPlans(model: EraModel): string[] {
+  const plans: string[] = [];
+  for (let i = 1; i <= model.floorPlanCount; i++) {
+    plans.push(`/catalog/${model.catalogPath}/floor-plan/plan-${i}.webp`);
+  }
+  return plans;
+}
+
+function ActionButton({
+  icon: Icon,
+  label,
+  onClick,
+  variant = "glass",
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  variant?: "glass" | "primary";
+}) {
+  return (
+    <button onClick={onClick} className="flex flex-col items-center gap-1.5">
+      <div
+        className={
+          variant === "primary"
+            ? "w-12 h-12 rounded-2xl bg-primary border border-primary/30 shadow-lg shadow-primary/20 flex items-center justify-center"
+            : "w-12 h-12 rounded-2xl bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
+        }
+      >
+        <Icon
+          className={
+            variant === "primary"
+              ? "h-5 w-5 text-charcoal"
+              : "h-5 w-5 text-warm-white"
+          }
+        />
+      </div>
+      <span className="text-[10px] font-medium text-warm-white/70 leading-none">
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function Chip({
+  icon: Icon,
+  value,
+  label,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="flex-none inline-flex items-center gap-2 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 px-3 py-2 whitespace-nowrap">
+      <Icon className="h-4 w-4 text-primary" />
+      <span className="text-xs font-semibold text-warm-white">
+        {value}
+        <span className="ml-1 text-warm-white/65 font-medium">{label}</span>
+      </span>
+    </div>
+  );
+}
+
+function ModelPickerSheet({
+  open,
+  onClose,
+  models,
+  currentModelId,
+  onSelect,
+}: {
+  open: boolean;
+  onClose: () => void;
+  models: EraModel[];
+  currentModelId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-40"
+        >
+          <button
+            aria-label="Закрыть выбор модели"
+            onClick={onClose}
+            className="absolute inset-0 bg-charcoal/70"
+          />
+
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 320 }}
+            className="absolute left-0 right-0 bottom-0 rounded-t-3xl bg-charcoal border-t border-warm-white/10"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <div className="px-5 pt-3 pb-4">
+              <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-warm-white/20" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Grid3X3 className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-warm-white">
+                    Выбор модели
+                  </h3>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="w-10 h-10 rounded-2xl bg-charcoal/60 border border-warm-white/10 flex items-center justify-center"
+                >
+                  <X className="h-5 w-5 text-warm-white" />
+                </button>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-2 max-h-[55vh] overflow-y-auto pr-1">
+                {models.map((m) => {
+                  const active = m.id === currentModelId;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => onSelect(m.id)}
+                      className={
+                        active
+                          ? "flex items-center justify-between rounded-2xl px-4 py-3 bg-primary/15 border border-primary/30"
+                          : "flex items-center justify-between rounded-2xl px-4 py-3 bg-charcoal/40 border border-warm-white/10 hover:border-warm-white/20"
+                      }
+                    >
+                      <div className="text-left">
+                        <div className="text-sm font-semibold text-warm-white">
+                          {m.name}
+                        </div>
+                        <div className="text-xs text-warm-white/65">
+                          {m.floors} эт. • {m.bedrooms} спальн. • {m.bathrooms} с/у
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-sm font-bold text-primary">
+                          {m.area}м²
+                        </div>
+                        {active && (
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+const slideVariants = {
+  enter: (direction: 1 | -1) => ({
+    x: direction > 0 ? 80 : -80,
+    opacity: 0,
+    scale: 1.01,
+  }),
+  center: { x: 0, opacity: 1, scale: 1 },
+  exit: (direction: 1 | -1) => ({
+    x: direction > 0 ? -80 : 80,
+    opacity: 0,
+    scale: 0.99,
+  }),
+};
+
+export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [currentModelIndex, setCurrentModelIndex] = useState(0);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [filter, setFilter] = useState<FilterType>("all");
+
   const [showGallery, setShowGallery] = useState(false);
   const [galleryTab, setGalleryTab] = useState<"photos" | "plans">("photos");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Filter models
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+
   const filteredModels = useMemo(() => {
-    if (filter === "all") return ALL_MODELS;
-    if (filter === "1-floor") return ALL_MODELS.filter(m => m.floors === 1);
-    return ALL_MODELS.filter(m => m.floors === 2);
+    if (filter === "all") return ERA_MODELS;
+    if (filter === "1-floor") return ERA_MODELS.filter((m) => m.floors === 1);
+    return ERA_MODELS.filter((m) => m.floors === 2);
   }, [filter]);
 
-  const currentModel = filteredModels[currentModelIndex] || filteredModels[0];
+  const safeIndex = Math.min(currentModelIndex, Math.max(0, filteredModels.length - 1));
+  const currentModel = filteredModels[safeIndex] ?? filteredModels[0];
 
-  // Get all photos for current model (extra first, then gallery)
-  const getAllPhotos = useCallback((model: typeof ALL_MODELS[0]) => {
-    const photos: string[] = [];
-    // Extra photos first (real photos)
-    for (let i = 1; i <= model.galleryExtraCount; i++) {
-      photos.push(`/catalog/${model.catalogPath}/gallery-extra/extra-${i}.webp`);
-    }
-    // Then gallery renders
-    for (let i = 1; i <= model.galleryCount; i++) {
-      photos.push(`/catalog/${model.catalogPath}/gallery/${i}.webp`);
-    }
-    return photos;
-  }, []);
+  const allPhotos = useMemo(() => getAllPhotos(currentModel), [currentModel]);
+  const floorPlans = useMemo(() => getFloorPlans(currentModel), [currentModel]);
+  const mainPhoto = allPhotos[0] ?? `/catalog/${currentModel.catalogPath}/gallery/1.webp`;
 
-  // Get floor plans
-  const getFloorPlans = useCallback((model: typeof ALL_MODELS[0]) => {
-    const plans: string[] = [];
-    for (let i = 1; i <= model.floorPlanCount; i++) {
-      plans.push(`/catalog/${model.catalogPath}/floor-plan/plan-${i}.webp`);
-    }
-    return plans;
-  }, []);
+  const goToModel = useCallback(
+    (dir: 1 | -1) => {
+      setDirection(dir);
+      setCurrentModelIndex((prev) => {
+        const next = prev + dir;
+        if (next < 0) return filteredModels.length - 1;
+        if (next >= filteredModels.length) return 0;
+        return next;
+      });
+      setShowGallery(false);
+    },
+    [filteredModels.length]
+  );
 
-  const allPhotos = getAllPhotos(currentModel);
-  const floorPlans = getFloorPlans(currentModel);
-  const mainPhoto = allPhotos[0] || `/catalog/${currentModel.catalogPath}/gallery/1.webp`;
+  const handlePanEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (lightboxImage) return;
+      if (modelPickerOpen) return;
+      if (showGallery) return;
 
-  // Navigation handlers
-  const goToModel = useCallback((direction: 1 | -1) => {
-    setCurrentModelIndex(prev => {
-      const next = prev + direction;
-      if (next < 0) return filteredModels.length - 1;
-      if (next >= filteredModels.length) return 0;
-      return next;
-    });
-    setShowGallery(false);
-  }, [filteredModels.length]);
+      const absX = Math.abs(info.offset.x);
+      const absY = Math.abs(info.offset.y);
 
-  // Swipe handler for main view
-  const handleSwipe = useCallback((info: PanInfo) => {
-    const threshold = 50;
-    if (Math.abs(info.offset.x) > threshold) {
-      goToModel(info.offset.x > 0 ? -1 : 1);
-    }
-    if (info.offset.y < -threshold && !showGallery) {
-      setShowGallery(true);
-    }
-  }, [goToModel, showGallery]);
+      if (absX > absY && absX > SWIPE_X) {
+        goToModel(info.offset.x > 0 ? -1 : 1);
+        return;
+      }
 
-  // Lightbox navigation
+      if (absY > absX && info.offset.y < -SWIPE_Y) {
+        setShowGallery(true);
+      }
+    },
+    [goToModel, lightboxImage, modelPickerOpen, showGallery]
+  );
+
   const lightboxPhotos = galleryTab === "photos" ? allPhotos : floorPlans;
-  
-  const navigateLightbox = useCallback((direction: 1 | -1) => {
-    setLightboxIndex(prev => {
-      const next = prev + direction;
-      if (next < 0) return lightboxPhotos.length - 1;
-      if (next >= lightboxPhotos.length) return 0;
-      return next;
-    });
-  }, [lightboxPhotos.length]);
+  const navigateLightbox = useCallback(
+    (dir: 1 | -1) => {
+      setLightboxIndex((prev) => {
+        const next = prev + dir;
+        if (next < 0) return lightboxPhotos.length - 1;
+        if (next >= lightboxPhotos.length) return 0;
+        return next;
+      });
+    },
+    [lightboxPhotos.length]
+  );
 
-  // Contact handlers
   const handleCall = () => {
     window.location.href = "tel:+996555123456";
   };
 
   const handleWhatsApp = () => {
-    const text = encodeURIComponent(`Здравствуйте! Интересует ${currentModel.name} ${currentModel.area}м²`);
+    const text = encodeURIComponent(
+      `Здравствуйте! Интересует ${currentModel.name} ${currentModel.area}м²`
+    );
     window.open(`https://wa.me/996555123456?text=${text}`, "_blank");
   };
 
@@ -250,377 +451,351 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black flex flex-col"
+      className="fixed inset-0 z-50 bg-charcoal text-warm-white"
     >
-      {/* Header - Filters */}
-      <div className="absolute top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
+
+      {/* Top bar */}
+      <header className="absolute top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
         <div className="px-4 pt-3 pb-2">
-          {/* Close + Filters Row */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
             {onClose && (
               <button
+                aria-label="Закрыть"
                 onClick={onClose}
-                className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-xl flex items-center justify-center border border-white/10"
+                className="w-11 h-11 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="h-5 w-5 text-warm-white" />
               </button>
             )}
 
-            {/* Filter Pills */}
-            <div className="flex gap-2 ml-auto">
-              {(["all", "1-floor", "2-floor"] as FilterType[]).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => {
-                    setFilter(f);
-                    setCurrentModelIndex(0);
-                  }}
-                  className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all border ${
-                    filter === f
-                      ? "bg-[#C3996B] text-black border-[#C3996B]"
-                      : "bg-black/60 backdrop-blur-xl text-white/90 border-white/10"
-                  }`}
-                >
-                  {f === "all" ? "Все" : f === "1-floor" ? "1 этаж" : "2 этажа"}
-                </button>
-              ))}
-            </div>
+            {/* Filters */}
+            <nav className="flex-1 flex justify-center">
+              <div className="flex items-center gap-2 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 p-1">
+                {([
+                  { id: "all" as const, label: "Все" },
+                  { id: "1-floor" as const, label: "1 этаж" },
+                  { id: "2-floor" as const, label: "2 этажа" },
+                ] as const).map((f) => {
+                  const active = filter === f.id;
+                  return (
+                    <button
+                      key={f.id}
+                      onClick={() => {
+                        setFilter(f.id);
+                        setCurrentModelIndex(0);
+                      }}
+                      className={
+                        active
+                          ? "px-4 py-2 rounded-full bg-primary text-charcoal text-xs font-semibold"
+                          : "px-4 py-2 rounded-full text-warm-white/80 text-xs font-semibold hover:text-warm-white"
+                      }
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </nav>
+
+            {/* Model picker */}
+            <button
+              onClick={() => setModelPickerOpen(true)}
+              className="h-11 px-3 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center gap-2"
+            >
+              <Home className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold text-warm-white whitespace-nowrap">
+                Модели
+              </span>
+            </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Main Photo - Fullscreen with swipe */}
-      <motion.div 
-        className="flex-1 relative"
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.2}
-        onDragEnd={(_, info) => handleSwipe(info)}
+      {/* Main stage */}
+      <motion.main
+        className="absolute inset-0"
+        onPanEnd={handlePanEnd}
+        style={{ touchAction: "none" }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction}>
           <motion.div
-            key={currentModel.id + currentModel.area}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.25 }}
+            key={`${currentModel.id}-${currentModel.area}`}
+            custom={direction}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="absolute inset-0"
           >
             <img
               src={mainPhoto}
-              alt={currentModel.name}
-              className="w-full h-full object-cover"
+              alt={`ERA barnhouse ${currentModel.name} ${currentModel.area}м² — фото`}
+              className="h-full w-full object-cover"
               draggable={false}
+              loading="eager"
+              decoding="async"
             />
-            
-            {/* Gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
+
+            {/* Readability gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/25 to-charcoal/45" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Navigation Arrows - subtle */}
+        {/* Arrows */}
         <button
+          aria-label="Предыдущая модель"
           onClick={() => goToModel(-1)}
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-50 hover:opacity-90 active:opacity-100 transition-opacity border border-white/10"
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-charcoal/45 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
         >
-          <ChevronLeft className="w-5 h-5 text-white" />
+          <ChevronLeft className="h-5 w-5 text-warm-white" />
         </button>
         <button
+          aria-label="Следующая модель"
           onClick={() => goToModel(1)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-50 hover:opacity-90 active:opacity-100 transition-opacity border border-white/10"
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-charcoal/45 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
         >
-          <ChevronRight className="w-5 h-5 text-white" />
+          <ChevronRight className="h-5 w-5 text-warm-white" />
         </button>
 
-        {/* Model Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 pb-32">
-          {/* Model Name & Area */}
-          <div className="flex items-end justify-between mb-5">
-            <div>
-              <motion.div
-                key={currentModel.name + currentModel.area}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-baseline gap-3 mb-1"
-              >
-                <h2 className="text-3xl font-bold text-white tracking-tight">
-                  {currentModel.name}
-                </h2>
-                <span className="text-[#C3996B] text-2xl font-bold">
-                  {currentModel.area}м²
-                </span>
-              </motion.div>
-              
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="text-white/60 text-sm"
-              >
-                {currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} барнхаус
-              </motion.p>
-            </div>
-            
-            {/* Model Counter */}
-            <div className="text-white/50 text-sm font-medium">
-              {currentModelIndex + 1}/{filteredModels.length}
-            </div>
-          </div>
-
-          {/* Attributes - horizontal pills */}
-          <motion.div 
-            key={`attrs-${currentModel.id}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex gap-3 mb-5"
-          >
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/10">
-              <Home className="w-4 h-4 text-[#C3996B]" />
-              <span className="text-white text-sm font-medium">{currentModel.floors} эт.</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/10">
-              <Bed className="w-4 h-4 text-[#C3996B]" />
-              <span className="text-white text-sm font-medium">{currentModel.bedrooms} спальни</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/10">
-              <Bath className="w-4 h-4 text-[#C3996B]" />
-              <span className="text-white text-sm font-medium">{currentModel.bathrooms} с/у</span>
-            </div>
-          </motion.div>
-
-          {/* Gallery Button - swipe hint */}
-          <motion.button
+        {/* Action rail (TikTok-style) */}
+        <aside
+          className="absolute right-3 z-30 flex flex-col items-center gap-3"
+          style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
+        >
+          <ActionButton
+            icon={Images}
+            label="Галерея"
             onClick={() => setShowGallery(true)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group"
-          >
-            <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md rounded-full pl-3 pr-4 py-2 border border-white/10 group-hover:border-white/20 transition-colors">
-              <Images className="w-4 h-4 text-[#C3996B]" />
-              <span className="text-sm font-medium">
-                {allPhotos.length} фото
-              </span>
-              {floorPlans.length > 0 && (
-                <span className="text-white/40 text-sm">• {floorPlans.length} план.</span>
-              )}
-            </div>
-            <ChevronUp className="w-5 h-5 animate-bounce" />
-          </motion.button>
-        </div>
+          />
+          <ActionButton
+            icon={FileText}
+            label="Заявка"
+            variant="primary"
+            onClick={() => setContactOpen(true)}
+          />
+          <ActionButton icon={MessageCircle} label="WhatsApp" onClick={handleWhatsApp} />
+          <ActionButton icon={Send} label="Telegram" onClick={handleTelegram} />
+          <ActionButton icon={Phone} label="Звонок" onClick={handleCall} />
+        </aside>
 
-        {/* Model Dots - bottom indicator */}
-        <div className="absolute bottom-24 left-0 right-0 flex justify-center gap-1.5 px-8">
-          {filteredModels.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentModelIndex(idx)}
-              className={`h-1 rounded-full transition-all ${
-                idx === currentModelIndex 
-                  ? "w-6 bg-[#C3996B]" 
-                  : "w-1.5 bg-white/30 hover:bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
-      </motion.div>
+        {/* Model info (caption) */}
+        <section
+          className="absolute left-0 right-0 z-20"
+          style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
+        >
+          <div className="px-4 pr-24">
+            <div className="max-w-[520px]">
+              <div className="flex items-baseline gap-3">
+                <h1 className="text-2xl font-bold text-warm-white tracking-tight">
+                  {currentModel.name}
+                </h1>
+                <div className="text-xl font-bold text-primary">
+                  {currentModel.area}м²
+                </div>
+              </div>
 
-      {/* Bottom Contact Bar */}
-      <div 
-        className="absolute bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        <div className="flex items-center justify-around p-3">
-          <button
-            onClick={handleCall}
-            className="flex flex-col items-center gap-1.5 px-5 py-1"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-              <Phone className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[11px] font-medium">Позвонить</span>
-          </button>
-          
-          <button
-            onClick={handleWhatsApp}
-            className="flex flex-col items-center gap-1.5 px-5 py-1"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-lg shadow-[#25D366]/30">
-              <MessageCircle className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[11px] font-medium">WhatsApp</span>
-          </button>
-          
-          <button
-            onClick={handleTelegram}
-            className="flex flex-col items-center gap-1.5 px-5 py-1"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#0088cc] flex items-center justify-center shadow-lg shadow-[#0088cc]/30">
-              <Send className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-white/60 text-[11px] font-medium">Telegram</span>
-          </button>
-        </div>
-      </div>
+              <p className="mt-1 text-xs text-warm-white/70">
+                {currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} • свайп ←→ модели • ↑ галерея
+              </p>
 
-      {/* Gallery Sheet */}
-      <AnimatePresence>
-        {showGallery && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="absolute inset-0 z-40 bg-black flex flex-col"
-            style={{ paddingTop: 'env(safe-area-inset-top)' }}
-          >
-            {/* Gallery Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <button
-                onClick={() => setShowGallery(false)}
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
-              >
-                <X className="w-5 h-5 text-white" />
-              </button>
-              
-              <h3 className="text-base font-semibold text-white">
-                {currentModel.name} <span className="text-[#C3996B]">{currentModel.area}м²</span>
-              </h3>
+              <div className="mt-3 -mx-1 px-1 flex gap-2 overflow-x-auto scrollbar-hide">
+                <Chip icon={Home} value={String(currentModel.floors)} label="эт." />
+                <Chip icon={Bed} value={String(currentModel.bedrooms)} label="спальн." />
+                <Chip icon={Bath} value={String(currentModel.bathrooms)} label="с/у" />
+              </div>
 
-              <div className="w-10" /> {/* Spacer */}
-            </div>
-
-            {/* Gallery Tabs */}
-            <div className="flex gap-2 p-4">
-              <button
-                onClick={() => setGalleryTab("photos")}
-                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all border ${
-                  galleryTab === "photos"
-                    ? "bg-[#C3996B] text-black border-[#C3996B]"
-                    : "bg-white/10 text-white/70 border-white/10"
-                }`}
-              >
-                <Grid3X3 className="w-4 h-4 inline mr-2" />
-                Фото ({allPhotos.length})
-              </button>
-              <button
-                onClick={() => setGalleryTab("plans")}
-                disabled={floorPlans.length === 0}
-                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all border ${
-                  galleryTab === "plans"
-                    ? "bg-[#C3996B] text-black border-[#C3996B]"
-                    : "bg-white/10 text-white/70 border-white/10"
-                } ${floorPlans.length === 0 ? "opacity-30 cursor-not-allowed" : ""}`}
-              >
-                <Ruler className="w-4 h-4 inline mr-2" />
-                Планировки ({floorPlans.length})
-              </button>
-            </div>
-
-            {/* Gallery Grid */}
-            <div className="flex-1 overflow-y-auto p-4 pb-8">
-              <div className="grid grid-cols-2 gap-2">
-                {(galleryTab === "photos" ? allPhotos : floorPlans).map((photo, idx) => (
-                  <motion.button
-                    key={photo}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.02 }}
-                    onClick={() => {
-                      setLightboxImage(photo);
-                      setLightboxIndex(idx);
-                    }}
-                    className="aspect-[4/3] rounded-xl overflow-hidden relative group"
-                  >
-                    <img
-                      src={photo}
-                      alt={`${currentModel.name} - ${idx + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                      <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
-                    </div>
-                  </motion.button>
-                ))}
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 px-3 py-2">
+                <ArrowUp className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold text-warm-white/80">
+                  Поднимите вверх для сетки
+                </span>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+        </section>
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-black flex items-center justify-center"
-          >
-            {/* Close button */}
-            <button
-              onClick={() => setLightboxImage(null)}
-              className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10"
-              style={{ marginTop: 'env(safe-area-inset-top)' }}
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-
-            {/* Nav arrows */}
-            <button
-              onClick={() => navigateLightbox(-1)}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10"
-            >
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-            <button
-              onClick={() => navigateLightbox(1)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10"
-            >
-              <ChevronRight className="w-5 h-5 text-white" />
-            </button>
-
-            {/* Image with swipe */}
+        {/* Gallery sheet */}
+        <AnimatePresence>
+          {showGallery && (
             <motion.div
-              key={lightboxPhotos[lightboxIndex]}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(_, info) => {
-                if (Math.abs(info.offset.x) > 50) {
-                  navigateLightbox(info.offset.x > 0 ? -1 : 1);
-                }
-                if (info.offset.y > 100) {
-                  setLightboxImage(null);
-                }
-              }}
-              className="w-full h-full flex items-center justify-center p-4"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="absolute inset-0 z-40 bg-charcoal flex flex-col"
+              style={{ paddingTop: "env(safe-area-inset-top)" }}
             >
-              <img
-                src={lightboxPhotos[lightboxIndex]}
-                alt="Fullscreen"
-                className="max-w-full max-h-full object-contain rounded-lg"
-                draggable={false}
-              />
-            </motion.div>
+              <div className="flex items-center justify-between p-4 border-b border-warm-white/10">
+                <button
+                  aria-label="Закрыть галерею"
+                  onClick={() => setShowGallery(false)}
+                  className="w-10 h-10 rounded-2xl bg-charcoal/60 border border-warm-white/10 flex items-center justify-center"
+                >
+                  <X className="h-5 w-5 text-warm-white" />
+                </button>
 
-            {/* Counter */}
-            <div 
-              className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-white/80 text-sm font-medium border border-white/10"
-              style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+                <div className="text-center">
+                  <div className="text-sm font-semibold text-warm-white">
+                    {currentModel.name}{" "}
+                    <span className="text-primary">{currentModel.area}м²</span>
+                  </div>
+                  <div className="text-[11px] text-warm-white/60">Фото — сначала реальные, потом рендеры</div>
+                </div>
+
+                <div className="w-10" />
+              </div>
+
+              {/* Tabs */}
+              <div className="p-4">
+                <div className="flex gap-2 rounded-2xl bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 p-1">
+                  <button
+                    onClick={() => setGalleryTab("photos")}
+                    className={
+                      galleryTab === "photos"
+                        ? "flex-1 py-2.5 rounded-xl bg-primary text-charcoal text-xs font-semibold"
+                        : "flex-1 py-2.5 rounded-xl text-warm-white/80 text-xs font-semibold"
+                    }
+                  >
+                    <Grid3X3 className="h-4 w-4 inline mr-2" />
+                    Фото ({allPhotos.length})
+                  </button>
+                  <button
+                    onClick={() => setGalleryTab("plans")}
+                    disabled={floorPlans.length === 0}
+                    className={
+                      floorPlans.length === 0
+                        ? "flex-1 py-2.5 rounded-xl text-warm-white/30 text-xs font-semibold"
+                        : galleryTab === "plans"
+                        ? "flex-1 py-2.5 rounded-xl bg-primary text-charcoal text-xs font-semibold"
+                        : "flex-1 py-2.5 rounded-xl text-warm-white/80 text-xs font-semibold"
+                    }
+                  >
+                    <Ruler className="h-4 w-4 inline mr-2" />
+                    Планировки ({floorPlans.length})
+                  </button>
+                </div>
+              </div>
+
+              {/* Grid */}
+              <div className="flex-1 overflow-y-auto p-4 pb-8">
+                <div className="grid grid-cols-2 gap-2">
+                  {(galleryTab === "photos" ? allPhotos : floorPlans).map((photo, idx) => (
+                    <motion.button
+                      key={photo}
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: idx * 0.01 }}
+                      onClick={() => {
+                        setLightboxImage(photo);
+                        setLightboxIndex(idx);
+                      }}
+                      className="aspect-[4/3] rounded-2xl overflow-hidden relative"
+                    >
+                      <img
+                        src={photo}
+                        alt={`ERA ${currentModel.name} ${currentModel.area}м² — ${galleryTab === "photos" ? "фото" : "план"} ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-charcoal/60 via-transparent to-transparent" />
+                      <div className="absolute bottom-2 right-2 w-9 h-9 rounded-2xl bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center">
+                        <Maximize2 className="h-4 w-4 text-warm-white" />
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Lightbox */}
+        <AnimatePresence>
+          {lightboxImage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-charcoal flex items-center justify-center"
+              style={{ paddingTop: "env(safe-area-inset-top)" }}
             >
-              {lightboxIndex + 1} / {lightboxPhotos.length}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <button
+                aria-label="Закрыть полноэкранный просмотр"
+                onClick={() => setLightboxImage(null)}
+                className="absolute top-3 right-3 w-11 h-11 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
+              >
+                <X className="h-5 w-5 text-warm-white" />
+              </button>
+
+              <button
+                aria-label="Предыдущее"
+                onClick={() => navigateLightbox(-1)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
+              >
+                <ChevronLeft className="h-5 w-5 text-warm-white" />
+              </button>
+              <button
+                aria-label="Следующее"
+                onClick={() => navigateLightbox(1)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
+              >
+                <ChevronRight className="h-5 w-5 text-warm-white" />
+              </button>
+
+              <motion.div
+                key={lightboxPhotos[lightboxIndex]}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.98 }}
+                onPanEnd={(_, info) => {
+                  const absX = Math.abs(info.offset.x);
+                  const absY = Math.abs(info.offset.y);
+                  if (absX > absY && absX > SWIPE_X) {
+                    navigateLightbox(info.offset.x > 0 ? -1 : 1);
+                    return;
+                  }
+                  if (absY > absX && info.offset.y > SWIPE_Y) {
+                    setLightboxImage(null);
+                  }
+                }}
+                style={{ touchAction: "none" }}
+                className="h-full w-full flex items-center justify-center p-4"
+              >
+                <img
+                  src={lightboxPhotos[lightboxIndex]}
+                  alt={`ERA ${currentModel.name} — полноэкранно`}
+                  className="max-h-full max-w-full object-contain rounded-2xl"
+                  draggable={false}
+                  decoding="async"
+                />
+              </motion.div>
+
+              <div
+                className="absolute left-1/2 -translate-x-1/2 rounded-full bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 px-4 py-2 text-xs font-semibold text-warm-white/80"
+                style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
+              >
+                {lightboxIndex + 1} / {lightboxPhotos.length}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Model picker sheet */}
+        <ModelPickerSheet
+          open={modelPickerOpen}
+          onClose={() => setModelPickerOpen(false)}
+          models={filteredModels}
+          currentModelId={currentModel.id}
+          onSelect={(id) => {
+            const idx = filteredModels.findIndex((m) => m.id === id);
+            if (idx >= 0) setCurrentModelIndex(idx);
+            setModelPickerOpen(false);
+          }}
+        />
+      </motion.main>
     </motion.div>
   );
-};
-
-export default CatalogAppView;
+}
