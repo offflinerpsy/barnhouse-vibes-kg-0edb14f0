@@ -50,6 +50,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
+// Import new modal variants
+import { HouseModalVariantA } from "./HouseModalVariantA";
+import { HouseModalVariantB } from "./HouseModalVariantB";
+import { HouseModalVariantC } from "./HouseModalVariantC";
+
 // Типы проектов - теперь по этажности
 type ProjectType = "all" | "single-floor" | "duplex";
 
