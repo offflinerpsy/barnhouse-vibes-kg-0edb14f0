@@ -11,12 +11,13 @@ applyTo: 'barnhouse-vibes-kg/**'
 
 ### 🟢 ОСНОВНОЙ РЕПОЗИТОРИЙ (ИСПОЛЬЗОВАТЬ ТОЛЬКО ЕГО):
 ```
-https://github.com/offflinerpsy/barnhouse-vibes-kg-01b96b92
+https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0
 ```
 
-### 🔴 СТАРЫЙ РЕПОЗИТОРИЙ (НЕ ИСПОЛЬЗОВАТЬ!):
+### 🔴 СТАРЫЕ РЕПОЗИТОРИИ (НЕ ИСПОЛЬЗОВАТЬ!):
 ```
 https://github.com/offflinerpsy/barnhouse-vibes-kg  ← ЗАПРЕЩЕНО!
+https://github.com/offflinerpsy/barnhouse-vibes-kg-01b96b92  ← ЗАПРЕЩЕНО!
 ```
 
 **При любых git операциях:**
