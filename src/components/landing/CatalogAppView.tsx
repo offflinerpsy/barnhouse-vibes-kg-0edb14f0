@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, Bed, Bath, Maximize, Home, Grid3X3, Phone, MessageCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Bed, Bath, Maximize, Home, Grid3X3, Phone, MessageCircle, ChevronLeft, ChevronRight, Camera, Layers } from 'lucide-react';
 
 // Данные домов
 const houses = [
@@ -12,6 +12,7 @@ const houses = [
     bathrooms: 1,
     price: 'от 2.1 млн ₸',
     galleryCount: 4,
+    extraGalleryCount: 24,
     floorPlanCount: 1,
   },
   {
@@ -22,6 +23,7 @@ const houses = [
     bathrooms: 1,
     price: 'от 3.2 млн ₸',
     galleryCount: 8,
+    extraGalleryCount: 33,
     floorPlanCount: 3,
   },
   {
@@ -32,6 +34,7 @@ const houses = [
     bathrooms: 2,
     price: 'от 4.8 млн ₸',
     galleryCount: 4,
+    extraGalleryCount: 34,
     floorPlanCount: 0,
   },
   {
@@ -42,6 +45,7 @@ const houses = [
     bathrooms: 2,
     price: 'от 6.4 млн ₸',
     galleryCount: 4,
+    extraGalleryCount: 54,
     floorPlanCount: 3,
   },
   {
@@ -52,6 +56,7 @@ const houses = [
     bathrooms: 3,
     price: 'от 8.0 млн ₸',
     galleryCount: 5,
+    extraGalleryCount: 38,
     floorPlanCount: 3,
   },
 ];
@@ -72,11 +77,10 @@ interface CatalogAppViewProps {
 const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [currentHouseIndex, setCurrentHouseIndex] = useState(0);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [viewMode, setViewMode] = useState<'photos' | 'plans'>('photos');
-  const [showControls, setShowControls] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [fullscreenIndex, setFullscreenIndex] = useState(0);
   const [showContactForm, setShowContactForm] = useState(false);
-  const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Фильтрация домов
   const filteredHouses = houses.filter(house => {
@@ -89,44 +93,30 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
   // Генерация путей к изображениям
   const getImages = useCallback(() => {
     if (!currentHouse) return [];
-    const folder = viewMode === 'photos' ? 'gallery' : 'floor-plan';
-    const count = viewMode === 'photos' ? currentHouse.galleryCount : currentHouse.floorPlanCount;
-    const prefix = viewMode === 'photos' ? '' : 'plan-';
     
-    return Array.from({ length: count }, (_, i) => 
-      `/catalog/${currentHouse.id}/${folder}/${prefix}${i + 1}.webp`
+    if (viewMode === 'plans') {
+      return Array.from({ length: currentHouse.floorPlanCount }, (_, i) => 
+        `/catalog/${currentHouse.id}/floor-plan/plan-${i + 1}.webp`
+      );
+    }
+    
+    // Комбинируем основную галерею и дополнительные фото
+    const mainGallery = Array.from({ length: currentHouse.galleryCount }, (_, i) => 
+      `/catalog/${currentHouse.id}/gallery/${i + 1}.webp`
     );
+    const extraGallery = Array.from({ length: currentHouse.extraGalleryCount }, (_, i) => 
+      `/catalog/${currentHouse.id}/gallery-extra/extra-${i + 1}.webp`
+    );
+    
+    return [...mainGallery, ...extraGallery];
   }, [currentHouse, viewMode]);
 
   const images = getImages();
 
-  // Сброс индекса при смене дома или режима
+  // Сброс при смене дома или режима
   useEffect(() => {
-    setCurrentImageIndex(0);
+    setFullscreenImage(null);
   }, [currentHouseIndex, viewMode, activeFilter]);
-
-  // Показать контролы временно
-  const showControlsTemporarily = useCallback(() => {
-    setShowControls(true);
-    if (controlsTimeout) clearTimeout(controlsTimeout);
-    const timeout = setTimeout(() => setShowControls(false), 3000);
-    setControlsTimeout(timeout);
-  }, [controlsTimeout]);
-
-  // Навигация по изображениям
-  const nextImage = () => {
-    if (images.length > 0) {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      showControlsTemporarily();
-    }
-  };
-
-  const prevImage = () => {
-    if (images.length > 0) {
-      setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
-      showControlsTemporarily();
-    }
-  };
 
   // Навигация по домам
   const nextHouse = () => {
@@ -137,19 +127,23 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
     setCurrentHouseIndex((prev) => (prev - 1 + filteredHouses.length) % filteredHouses.length);
   };
 
-  // Обработка свайпа
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 50;
-    if (info.offset.x > threshold) {
-      prevImage();
-    } else if (info.offset.x < -threshold) {
-      nextImage();
-    }
+  // Открытие fullscreen
+  const openFullscreen = (src: string, index: number) => {
+    setFullscreenImage(src);
+    setFullscreenIndex(index);
   };
 
-  // Тап по изображению
-  const handleImageTap = () => {
-    showControlsTemporarily();
+  // Навигация в fullscreen
+  const nextFullscreen = () => {
+    const nextIndex = (fullscreenIndex + 1) % images.length;
+    setFullscreenIndex(nextIndex);
+    setFullscreenImage(images[nextIndex]);
+  };
+
+  const prevFullscreen = () => {
+    const prevIndex = (fullscreenIndex - 1 + images.length) % images.length;
+    setFullscreenIndex(prevIndex);
+    setFullscreenImage(images[prevIndex]);
   };
 
   if (!currentHouse) {
@@ -165,138 +159,100 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-gradient-to-b from-sky-100 to-sky-200 flex flex-col overflow-hidden"
+      className="fixed inset-0 z-50 bg-gradient-to-b from-slate-100 via-slate-50 to-white flex flex-col overflow-hidden"
     >
-      {/* Кнопка закрытия */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute top-4 left-4 z-50 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-charcoal/80 hover:bg-white/30 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* Верхняя часть - Изображение */}
-      <div className="relative flex-1 min-h-0">
-        <motion.div
-          className="absolute inset-0 cursor-pointer"
-          onClick={handleImageTap}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.1}
-          onDragEnd={handleDragEnd}
-        >
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={`${currentHouse.id}-${viewMode}-${currentImageIndex}`}
-              src={images[currentImageIndex] || '/placeholder.svg'}
-              alt={currentHouse.name}
-              className="w-full h-full object-cover"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              draggable={false}
-            />
-          </AnimatePresence>
-
-          {/* Градиент снизу для читаемости */}
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-        </motion.div>
-
-        {/* Большие стрелки навигации */}
-        <AnimatePresence>
-          {showControls && images.length > 1 && (
-            <>
-              <motion.button
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors active:scale-95"
-              >
-                <ChevronLeft className="w-8 h-8" />
-              </motion.button>
-              <motion.button
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-colors active:scale-95"
-              >
-                <ChevronRight className="w-8 h-8" />
-              </motion.button>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Переключатель Фото/Планировка */}
-        <div className="absolute top-4 right-4 z-20">
-          <div className="flex bg-white/20 backdrop-blur-md rounded-full p-1">
-            <button
-              onClick={() => setViewMode('photos')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                viewMode === 'photos'
-                  ? 'bg-white text-charcoal shadow-sm'
-                  : 'text-white hover:bg-white/10'
-              }`}
-            >
-              <Home className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('plans')}
-              disabled={currentHouse.floorPlanCount === 0}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                viewMode === 'plans'
-                  ? 'bg-white text-charcoal shadow-sm'
-                  : 'text-white hover:bg-white/10'
-              } ${currentHouse.floorPlanCount === 0 ? 'opacity-40 cursor-not-allowed' : ''}`}
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </button>
-          </div>
+      {/* Шапка с названием и кнопкой закрытия */}
+      <div className="relative z-30 flex items-center justify-between px-4 py-3 bg-white/70 backdrop-blur-xl border-b border-white/50">
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-black/5 backdrop-blur-md flex items-center justify-center text-charcoal/70 hover:bg-black/10 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+        
+        <div className="flex-1 text-center">
+          <h1 className="text-lg font-bold text-charcoal">{currentHouse.name}</h1>
+          <p className="text-sm text-charcoal/60">{currentHouse.price}</p>
         </div>
 
-        {/* Индикатор изображений */}
-        {images.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
-            {images.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentImageIndex(idx)}
-                className={`h-1.5 rounded-full transition-all ${
-                  idx === currentImageIndex 
-                    ? 'w-6 bg-white' 
-                    : 'w-1.5 bg-white/50 hover:bg-white/70'
-                }`}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Название на изображении */}
-        <div className="absolute bottom-8 left-4 z-20">
-          <h2 className="text-2xl font-bold text-white drop-shadow-lg">{currentHouse.name}</h2>
-          <p className="text-white/80 text-sm">{currentHouse.price}</p>
+        {/* Переключатель Фото/Планировка */}
+        <div className="flex bg-black/5 backdrop-blur-md rounded-full p-1">
+          <button
+            onClick={() => setViewMode('photos')}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+              viewMode === 'photos'
+                ? 'bg-white text-charcoal shadow-sm'
+                : 'text-charcoal/60 hover:text-charcoal'
+            }`}
+          >
+            <Camera className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setViewMode('plans')}
+            disabled={currentHouse.floorPlanCount === 0}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+              viewMode === 'plans'
+                ? 'bg-white text-charcoal shadow-sm'
+                : 'text-charcoal/60 hover:text-charcoal'
+            } ${currentHouse.floorPlanCount === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+          >
+            <Layers className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
-      {/* Нижняя Glass-панель */}
+      {/* Вертикальная лента фотографий */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <div className="flex flex-col">
+          {images.map((src, index) => (
+            <motion.div
+              key={src}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+              className="relative w-full cursor-pointer active:scale-[0.99] transition-transform"
+              onClick={() => openFullscreen(src, index)}
+            >
+              <div className="relative aspect-[16/10] w-full overflow-hidden">
+                <img
+                  src={src}
+                  alt={`${currentHouse.name} - ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  loading={index < 3 ? 'eager' : 'lazy'}
+                />
+                {/* Тонкая линия-разделитель */}
+                <div className="absolute bottom-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              </div>
+              
+              {/* Номер фото в углу */}
+              <div className="absolute top-3 left-3 px-2 py-1 rounded-full bg-black/30 backdrop-blur-sm text-white text-xs font-medium">
+                {index + 1} / {images.length}
+              </div>
+            </motion.div>
+          ))}
+          
+          {/* Отступ для нижней панели */}
+          <div className="h-72" />
+        </div>
+      </div>
+
+      {/* Нижняя Glass-панель - зафиксирована */}
       <motion.div
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        className="relative z-30 bg-white/30 backdrop-blur-xl border-t border-white/40 rounded-t-3xl"
+        className="absolute bottom-0 left-0 right-0 z-30 bg-white/60 backdrop-blur-2xl border-t border-white/50 rounded-t-3xl shadow-2xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 20px)' }}
       >
         {/* Ручка для свайпа */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 bg-charcoal/20 rounded-full" />
+          <div className="w-10 h-1 bg-charcoal/15 rounded-full" />
         </div>
 
-        {/* Фильтры */}
+        {/* Фильтры - горизонтальный скролл */}
         <div className="px-4 pb-3">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-4 px-4">
             {filters.map((filter) => (
               <button
                 key={filter.id}
@@ -304,10 +260,10 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
                   setActiveFilter(filter.id);
                   setCurrentHouseIndex(0);
                 }}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
                   activeFilter === filter.id
-                    ? 'bg-primary text-primary-foreground shadow-md'
-                    : 'bg-white/50 text-charcoal/80 hover:bg-white/70'
+                    ? 'bg-charcoal text-white shadow-lg'
+                    : 'bg-white/70 text-charcoal/70 hover:bg-white border border-black/5'
                 }`}
               >
                 {filter.label}
@@ -321,16 +277,16 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
           <div className="px-4 pb-3 flex items-center justify-between">
             <button
               onClick={prevHouse}
-              className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center text-charcoal/70 hover:bg-white/70 transition-colors"
+              className="w-11 h-11 rounded-full bg-white/80 border border-black/5 flex items-center justify-center text-charcoal/70 hover:bg-white transition-colors shadow-sm"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="text-sm text-charcoal/60">
-              {currentHouseIndex + 1} из {filteredHouses.length}
+            <span className="text-sm text-charcoal/50 font-medium">
+              Проект {currentHouseIndex + 1} из {filteredHouses.length}
             </span>
             <button
               onClick={nextHouse}
-              className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center text-charcoal/70 hover:bg-white/70 transition-colors"
+              className="w-11 h-11 rounded-full bg-white/80 border border-black/5 flex items-center justify-center text-charcoal/70 hover:bg-white transition-colors shadow-sm"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -338,42 +294,91 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
         )}
 
         {/* Атрибуты */}
-        <div className="px-4 pb-4">
-          <div className="flex justify-around bg-white/40 rounded-2xl py-4">
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center">
-                <Maximize className="w-5 h-5 text-charcoal/70" />
-              </div>
-              <span className="text-xs text-charcoal/60">Площадь</span>
-              <span className="text-sm font-semibold text-charcoal">{currentHouse.area} м²</span>
+        <div className="px-4 pb-3">
+          <div className="flex justify-around bg-white/50 backdrop-blur-sm rounded-2xl py-3 border border-black/5">
+            <div className="flex flex-col items-center gap-0.5">
+              <Maximize className="w-5 h-5 text-charcoal/40" />
+              <span className="text-base font-bold text-charcoal">{currentHouse.area} м²</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center">
-                <Bed className="w-5 h-5 text-charcoal/70" />
-              </div>
-              <span className="text-xs text-charcoal/60">Спальни</span>
-              <span className="text-sm font-semibold text-charcoal">{currentHouse.bedrooms}</span>
+            <div className="w-px bg-black/10" />
+            <div className="flex flex-col items-center gap-0.5">
+              <Bed className="w-5 h-5 text-charcoal/40" />
+              <span className="text-base font-bold text-charcoal">{currentHouse.bedrooms} спальни</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-10 h-10 rounded-full bg-white/60 flex items-center justify-center">
-                <Bath className="w-5 h-5 text-charcoal/70" />
-              </div>
-              <span className="text-xs text-charcoal/60">Санузлы</span>
-              <span className="text-sm font-semibold text-charcoal">{currentHouse.bathrooms}</span>
+            <div className="w-px bg-black/10" />
+            <div className="flex flex-col items-center gap-0.5">
+              <Bath className="w-5 h-5 text-charcoal/40" />
+              <span className="text-base font-bold text-charcoal">{currentHouse.bathrooms} санузла</span>
             </div>
           </div>
         </div>
 
         {/* Кнопка консультации */}
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-2">
           <button
             onClick={() => setShowContactForm(true)}
-            className="w-full py-4 bg-primary text-primary-foreground rounded-2xl font-semibold text-lg shadow-lg hover:bg-primary/90 transition-colors active:scale-[0.98]"
+            className="w-full py-4 bg-charcoal text-white rounded-2xl font-semibold text-base shadow-xl hover:bg-charcoal/90 transition-colors active:scale-[0.98]"
           >
             Получить консультацию
           </button>
         </div>
       </motion.div>
+
+      {/* Fullscreen режим */}
+      <AnimatePresence>
+        {fullscreenImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+            onClick={() => setFullscreenImage(null)}
+          >
+            {/* Изображение */}
+            <motion.img
+              key={fullscreenImage}
+              src={fullscreenImage}
+              alt="Fullscreen"
+              className="max-w-full max-h-full object-contain"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            />
+
+            {/* Кнопка закрытия */}
+            <button
+              onClick={() => setFullscreenImage(null)}
+              className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Навигационные стрелки */}
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); prevFullscreen(); }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <ChevronLeft className="w-8 h-8" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); nextFullscreen(); }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
+                  <ChevronRight className="w-8 h-8" />
+                </button>
+              </>
+            )}
+
+            {/* Индикатор */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white text-sm font-medium">
+              {fullscreenIndex + 1} / {images.length}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Форма консультации */}
       <AnimatePresence>
@@ -382,11 +387,11 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-40 flex items-end justify-center"
+            className="fixed inset-0 z-50 flex items-end justify-center"
             onClick={() => setShowContactForm(false)}
           >
             {/* Затемнение */}
-            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
             
             {/* Форма */}
             <motion.div
@@ -394,13 +399,13 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative z-10 w-full max-w-lg bg-white/80 backdrop-blur-xl rounded-t-3xl p-6"
+              className="relative z-10 w-full max-w-lg bg-white/90 backdrop-blur-2xl rounded-t-3xl p-6 shadow-2xl"
               style={{ paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Ручка */}
               <div className="flex justify-center mb-4">
-                <div className="w-10 h-1 bg-charcoal/20 rounded-full" />
+                <div className="w-10 h-1 bg-charcoal/15 rounded-full" />
               </div>
 
               <h3 className="text-xl font-bold text-charcoal mb-4">
@@ -411,28 +416,28 @@ const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
                 <input
                   type="text"
                   placeholder="Ваше имя"
-                  className="w-full px-4 py-3 bg-white/60 border border-white/40 rounded-xl text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full px-4 py-3.5 bg-black/5 border border-black/5 rounded-xl text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />
                 <input
                   type="tel"
                   placeholder="+7 (___) ___-__-__"
-                  className="w-full px-4 py-3 bg-white/60 border border-white/40 rounded-xl text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full px-4 py-3.5 bg-black/5 border border-black/5 rounded-xl text-charcoal placeholder:text-charcoal/40 focus:outline-none focus:ring-2 focus:ring-charcoal/20"
                 />
               </div>
 
               {/* Способ связи */}
               <div className="flex gap-3 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-white/60 rounded-xl text-charcoal/70 hover:bg-white/80 transition-colors">
+                <button className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-black/5 rounded-xl text-charcoal/70 hover:bg-black/10 transition-colors">
                   <Phone className="w-5 h-5" />
-                  <span className="text-sm">Звонок</span>
+                  <span className="text-sm font-medium">Звонок</span>
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-500/20 rounded-xl text-green-700 hover:bg-green-500/30 transition-colors">
+                <button className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-green-500/15 rounded-xl text-green-700 hover:bg-green-500/25 transition-colors">
                   <MessageCircle className="w-5 h-5" />
-                  <span className="text-sm">WhatsApp</span>
+                  <span className="text-sm font-medium">WhatsApp</span>
                 </button>
               </div>
 
-              <button className="w-full mt-4 py-4 bg-primary text-primary-foreground rounded-xl font-semibold shadow-lg hover:bg-primary/90 transition-colors">
+              <button className="w-full mt-4 py-4 bg-charcoal text-white rounded-xl font-semibold shadow-xl hover:bg-charcoal/90 transition-colors">
                 Отправить заявку
               </button>
             </motion.div>
