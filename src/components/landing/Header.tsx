@@ -19,6 +19,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -32,12 +33,14 @@ const navItems = [
   { label: "Этапы работы", href: "#stages" },
   { label: "FAQ", href: "#faq" },
   { label: "Контакты", href: "#contact" },
+  { label: "🧪 Тест", href: "/test-modals", isRoute: true }, // ВРЕМЕННО - удалить после выбора дизайна
 ];
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,10 +50,14 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+  const handleNavClick = (item: { href: string; isRoute?: boolean }) => {
+    if (item.isRoute) {
+      navigate(item.href);
+    } else {
+      const element = document.querySelector(item.href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
     setIsOpen(false);
   };
@@ -114,8 +121,10 @@ export function Header() {
             {navItems.map((item) => (
               <button
                 key={item.href}
-                onClick={() => scrollToSection(item.href)}
-                className="px-4 py-2 text-sm font-medium text-foreground/80 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                onClick={() => handleNavClick(item)}
+                className={`px-4 py-2 text-sm font-medium hover:text-primary hover:bg-primary/5 rounded-lg transition-all ${
+                  item.isRoute ? "text-[hsl(var(--gold))]" : "text-foreground/80"
+                }`}
               >
                 {item.label}
               </button>
@@ -170,8 +179,10 @@ export function Header() {
                   {navItems.map((item) => (
                     <button
                       key={item.href}
-                      onClick={() => scrollToSection(item.href)}
-                      className="w-full text-left px-6 py-4 text-lg font-medium text-foreground hover:bg-secondary/50 hover:text-primary transition-colors border-b border-border/30"
+                      onClick={() => handleNavClick(item)}
+                      className={`w-full text-left px-6 py-4 text-lg font-medium hover:bg-secondary/50 hover:text-primary transition-colors border-b border-border/30 ${
+                        item.isRoute ? "text-[hsl(var(--gold))]" : "text-foreground"
+                      }`}
                     >
                       {item.label}
                     </button>
