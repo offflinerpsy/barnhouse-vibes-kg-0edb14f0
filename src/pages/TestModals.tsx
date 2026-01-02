@@ -5,11 +5,12 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Eye } from "lucide-react";
+import { ArrowLeft, Eye, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HouseModalVariantA } from "@/components/landing/HouseModalVariantA";
 import { HouseModalVariantB } from "@/components/landing/HouseModalVariantB";
 import { HouseModalVariantC } from "@/components/landing/HouseModalVariantC";
+import CatalogAppView from "@/components/landing/CatalogAppView";
 import { AnimatePresence } from "framer-motion";
 
 // Тестовые данные домов
@@ -58,12 +59,25 @@ const testHouses = {
   },
 };
 
-type ModalVariant = "A" | "B" | "C" | null;
+type ModalVariant = "A" | "B" | "C" | "APP" | null;
 
 export default function TestModals() {
   const [activeModal, setActiveModal] = useState<ModalVariant>(null);
 
   const variants = [
+    {
+      id: "APP" as const,
+      title: "App-Style Каталог",
+      description: "Мобильное приложение: фото сверху, glass-панель с фильтрами снизу. Полностью app-like UX.",
+      features: [
+        "Горизонтальные фото сверху (60-70%)",
+        "Glass-морфизм панель управления",
+        "Фильтры по метражу (скролл)",
+        "Большие стрелки при тапе на фото",
+        "Переключатель Фото/Планировка",
+      ],
+      color: "from-emerald-500 to-teal-500",
+    },
     {
       id: "A" as const,
       title: "Вариант A — Fullscreen Gallery",
@@ -128,23 +142,32 @@ export default function TestModals() {
         {/* Title */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-4 font-rising">
-            Варианты дизайна модалок каталога
+            Варианты дизайна каталога
           </h1>
           <p className="text-white/60 max-w-2xl mx-auto">
             Выберите вариант и нажмите "Открыть", чтобы протестировать UX на мобильном устройстве. 
-            Все варианты показывают сначала реальные фотографии, потом 3D-визуализации.
+            Новый App-Style каталог — полностью переработанный интерфейс.
           </p>
         </div>
 
         {/* Variants Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {variants.map((variant) => (
             <div 
               key={variant.id}
-              className="relative bg-white/5 rounded-2xl border border-white/10 overflow-hidden group hover:border-white/20 transition-all"
+              className={`relative bg-white/5 rounded-2xl border overflow-hidden group hover:border-white/20 transition-all ${
+                variant.id === "APP" ? "border-emerald-500/50 ring-2 ring-emerald-500/20" : "border-white/10"
+              }`}
             >
               {/* Gradient header */}
               <div className={`h-2 bg-gradient-to-r ${variant.color}`} />
+              
+              {/* NEW badge for APP variant */}
+              {variant.id === "APP" && (
+                <div className="absolute top-4 right-4 px-2 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full">
+                  NEW
+                </div>
+              )}
               
               <div className="p-6">
                 {/* Title */}
@@ -161,20 +184,26 @@ export default function TestModals() {
                   ))}
                 </ul>
 
-                {/* Test house info */}
-                <div className="bg-white/5 rounded-xl p-4 mb-4">
-                  <p className="text-xs text-white/40 mb-1">Тестовый дом:</p>
-                  <p className="text-white font-medium">{variant.house.name}</p>
-                  <p className="text-white/60 text-sm">{variant.house.area}м² • {variant.house.galleryExtraCount} реальных фото</p>
-                </div>
+                {/* Test house info - only for old variants */}
+                {'house' in variant && variant.house && (
+                  <div className="bg-white/5 rounded-xl p-4 mb-4">
+                    <p className="text-xs text-white/40 mb-1">Тестовый дом:</p>
+                    <p className="text-white font-medium">{variant.house.name}</p>
+                    <p className="text-white/60 text-sm">{variant.house.area}м² • {variant.house.galleryExtraCount} реальных фото</p>
+                  </div>
+                )}
 
                 {/* Open button */}
                 <Button
                   onClick={() => setActiveModal(variant.id)}
                   className={`w-full h-12 bg-gradient-to-r ${variant.color} text-white font-semibold rounded-xl`}
                 >
-                  <Eye className="w-5 h-5 mr-2" />
-                  Открыть вариант {variant.id}
+                  {variant.id === "APP" ? (
+                    <Smartphone className="w-5 h-5 mr-2" />
+                  ) : (
+                    <Eye className="w-5 h-5 mr-2" />
+                  )}
+                  Открыть {variant.id === "APP" ? "App-Каталог" : `вариант ${variant.id}`}
                 </Button>
               </div>
             </div>
@@ -207,6 +236,9 @@ export default function TestModals() {
 
       {/* Modals */}
       <AnimatePresence>
+        {activeModal === "APP" && (
+          <CatalogAppView onClose={() => setActiveModal(null)} />
+        )}
         {activeModal === "A" && (
           <HouseModalVariantA 
             house={testHouses.variantA} 
