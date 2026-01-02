@@ -1,565 +1,621 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform, animate } from 'framer-motion';
-import { X, Bed, Bath, Maximize, Phone, MessageCircle, ChevronLeft, ChevronRight, Camera, Layers, ChevronUp, ChevronDown, Home } from 'lucide-react';
+/**
+ * ERA Mobile Catalog - TikTok/Instagram Style
+ * Fullscreen photos with swipe navigation
+ */
 
-// Данные домов
-const houses = [
-  {
-    id: 'model-1-36',
-    name: 'Барнхаус 36',
-    area: 36,
-    bedrooms: 1,
-    bathrooms: 1,
-    price: 'от 2.1 млн ₸',
-    galleryCount: 4,
-    extraGalleryCount: 24,
-    floorPlanCount: 1,
-  },
-  {
-    id: 'model-1-54',
-    name: 'Барнхаус 54',
-    area: 54,
-    bedrooms: 2,
-    bathrooms: 1,
-    price: 'от 3.2 млн ₸',
-    galleryCount: 8,
-    extraGalleryCount: 33,
-    floorPlanCount: 3,
-  },
-  {
-    id: 'model-1-81',
-    name: 'Барнхаус 81',
-    area: 81,
-    bedrooms: 3,
-    bathrooms: 2,
-    price: 'от 4.8 млн ₸',
-    galleryCount: 4,
-    extraGalleryCount: 34,
-    floorPlanCount: 0,
-  },
-  {
-    id: 'model-1-108',
-    name: 'Барнхаус 108',
-    area: 108,
-    bedrooms: 4,
-    bathrooms: 2,
-    price: 'от 6.4 млн ₸',
-    galleryCount: 4,
-    extraGalleryCount: 54,
-    floorPlanCount: 3,
-  },
-  {
-    id: 'model-1-135',
-    name: 'Барнхаус 135',
-    area: 135,
-    bedrooms: 5,
-    bathrooms: 3,
-    price: 'от 8.0 млн ₸',
-    galleryCount: 5,
-    extraGalleryCount: 38,
-    floorPlanCount: 3,
-  },
-];
+import { useState, useCallback, useMemo } from "react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { 
+  X, 
+  ChevronLeft, 
+  ChevronRight, 
+  Phone, 
+  MessageCircle, 
+  Send,
+  Maximize2,
+  Grid3X3,
+  Home,
+  Bed,
+  Bath,
+  Ruler,
+  ChevronUp,
+  Images
+} from "lucide-react";
 
 interface CatalogAppViewProps {
   onClose?: () => void;
 }
 
+// All ERA models with real data
+const ALL_MODELS = [
+  {
+    id: "model-1",
+    name: "Model 1",
+    area: 18,
+    floors: 1,
+    bedrooms: 1,
+    bathrooms: 1,
+    catalogPath: "model-1-18",
+    galleryCount: 4,
+    galleryExtraCount: 25,
+    floorPlanCount: 3,
+  },
+  {
+    id: "model-2",
+    name: "Model 2",
+    area: 36,
+    floors: 1,
+    bedrooms: 1,
+    bathrooms: 1,
+    catalogPath: "model-1-36",
+    galleryCount: 4,
+    galleryExtraCount: 24,
+    floorPlanCount: 1,
+  },
+  {
+    id: "model-3",
+    name: "Model 3",
+    area: 54,
+    floors: 1,
+    bedrooms: 2,
+    bathrooms: 1,
+    catalogPath: "model-1-54",
+    galleryCount: 8,
+    galleryExtraCount: 33,
+    floorPlanCount: 3,
+  },
+  {
+    id: "model-4",
+    name: "Model 4",
+    area: 81,
+    floors: 1,
+    bedrooms: 3,
+    bathrooms: 2,
+    catalogPath: "model-1-81",
+    galleryCount: 4,
+    galleryExtraCount: 34,
+    floorPlanCount: 0,
+  },
+  {
+    id: "model-5",
+    name: "Model 5",
+    area: 108,
+    floors: 1,
+    bedrooms: 4,
+    bathrooms: 2,
+    catalogPath: "model-1-108",
+    galleryCount: 4,
+    galleryExtraCount: 54,
+    floorPlanCount: 3,
+  },
+  {
+    id: "model-6",
+    name: "Model 6",
+    area: 135,
+    floors: 1,
+    bedrooms: 4,
+    bathrooms: 2,
+    catalogPath: "model-1-135",
+    galleryCount: 5,
+    galleryExtraCount: 38,
+    floorPlanCount: 3,
+  },
+  {
+    id: "model-2x-36",
+    name: "Model 2X",
+    area: 36,
+    floors: 2,
+    bedrooms: 1,
+    bathrooms: 1,
+    catalogPath: "model-2-36",
+    galleryCount: 4,
+    galleryExtraCount: 0,
+    floorPlanCount: 0,
+  },
+  {
+    id: "model-2x-72",
+    name: "Model 2X",
+    area: 72,
+    floors: 2,
+    bedrooms: 2,
+    bathrooms: 1,
+    catalogPath: "model-2-72",
+    galleryCount: 4,
+    galleryExtraCount: 6,
+    floorPlanCount: 0,
+  },
+  {
+    id: "model-2x-120",
+    name: "Model 2X",
+    area: 120,
+    floors: 2,
+    bedrooms: 3,
+    bathrooms: 2,
+    catalogPath: "model-2-120",
+    galleryCount: 4,
+    galleryExtraCount: 0,
+    floorPlanCount: 3,
+  },
+  {
+    id: "model-2x-204",
+    name: "Model 2X",
+    area: 204,
+    floors: 2,
+    bedrooms: 5,
+    bathrooms: 3,
+    catalogPath: "model-2-204",
+    galleryCount: 6,
+    galleryExtraCount: 0,
+    floorPlanCount: 0,
+  },
+];
+
+type FilterType = "all" | "1-floor" | "2-floor";
+
 const CatalogAppView: React.FC<CatalogAppViewProps> = ({ onClose }) => {
-  const [currentHouseIndex, setCurrentHouseIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<'photos' | 'plans'>('photos');
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [fullscreenIndex, setFullscreenIndex] = useState(0);
-  const [showContactForm, setShowContactForm] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  
-  const photoFeedRef = useRef<HTMLDivElement>(null);
-  const dragX = useMotionValue(0);
+  const [currentModelIndex, setCurrentModelIndex] = useState(0);
+  const [filter, setFilter] = useState<FilterType>("all");
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryTab, setGalleryTab] = useState<"photos" | "plans">("photos");
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  const currentHouse = houses[currentHouseIndex];
+  // Filter models
+  const filteredModels = useMemo(() => {
+    if (filter === "all") return ALL_MODELS;
+    if (filter === "1-floor") return ALL_MODELS.filter(m => m.floors === 1);
+    return ALL_MODELS.filter(m => m.floors === 2);
+  }, [filter]);
 
-  // Генерация путей к изображениям
-  const getImages = useCallback(() => {
-    if (!currentHouse) return [];
-    
-    if (viewMode === 'plans') {
-      return Array.from({ length: currentHouse.floorPlanCount }, (_, i) => 
-        `/catalog/${currentHouse.id}/floor-plan/plan-${i + 1}.webp`
-      );
+  const currentModel = filteredModels[currentModelIndex] || filteredModels[0];
+
+  // Get all photos for current model (extra first, then gallery)
+  const getAllPhotos = useCallback((model: typeof ALL_MODELS[0]) => {
+    const photos: string[] = [];
+    // Extra photos first (real photos)
+    for (let i = 1; i <= model.galleryExtraCount; i++) {
+      photos.push(`/catalog/${model.catalogPath}/gallery-extra/extra-${i}.webp`);
     }
-    
-    const mainGallery = Array.from({ length: currentHouse.galleryCount }, (_, i) => 
-      `/catalog/${currentHouse.id}/gallery/${i + 1}.webp`
-    );
-    const extraGallery = Array.from({ length: currentHouse.extraGalleryCount }, (_, i) => 
-      `/catalog/${currentHouse.id}/gallery-extra/extra-${i + 1}.webp`
-    );
-    
-    return [...mainGallery, ...extraGallery];
-  }, [currentHouse, viewMode]);
-
-  const images = getImages();
-
-  // Сброс при смене дома или режима
-  useEffect(() => {
-    setFullscreenImage(null);
-    if (photoFeedRef.current) {
-      photoFeedRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    // Then gallery renders
+    for (let i = 1; i <= model.galleryCount; i++) {
+      photos.push(`/catalog/${model.catalogPath}/gallery/${i}.webp`);
     }
-  }, [currentHouseIndex, viewMode]);
-
-  // Навигация по домам
-  const nextHouse = useCallback(() => {
-    setCurrentHouseIndex((prev) => (prev + 1) % houses.length);
+    return photos;
   }, []);
 
-  const prevHouse = useCallback(() => {
-    setCurrentHouseIndex((prev) => (prev - 1 + houses.length) % houses.length);
+  // Get floor plans
+  const getFloorPlans = useCallback((model: typeof ALL_MODELS[0]) => {
+    const plans: string[] = [];
+    for (let i = 1; i <= model.floorPlanCount; i++) {
+      plans.push(`/catalog/${model.catalogPath}/floor-plan/plan-${i}.webp`);
+    }
+    return plans;
   }, []);
 
-  // Горизонтальный свайп для смены проекта
-  const handleMainDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false);
-    const threshold = 80;
-    
-    if (Math.abs(info.offset.x) > threshold) {
-      if (info.offset.x < 0) {
-        nextHouse();
-      } else {
-        prevHouse();
-      }
-    }
-    
-    // Анимируем возврат
-    animate(dragX, 0, { type: 'spring', stiffness: 400, damping: 30 });
-  };
+  const allPhotos = getAllPhotos(currentModel);
+  const floorPlans = getFloorPlans(currentModel);
+  const mainPhoto = allPhotos[0] || `/catalog/${currentModel.catalogPath}/gallery/1.webp`;
 
-  // Открытие fullscreen
-  const openFullscreen = (src: string, index: number) => {
-    if (!isDragging) {
-      setFullscreenImage(src);
-      setFullscreenIndex(index);
-    }
-  };
+  // Navigation handlers
+  const goToModel = useCallback((direction: 1 | -1) => {
+    setCurrentModelIndex(prev => {
+      const next = prev + direction;
+      if (next < 0) return filteredModels.length - 1;
+      if (next >= filteredModels.length) return 0;
+      return next;
+    });
+    setShowGallery(false);
+  }, [filteredModels.length]);
 
-  // Навигация в fullscreen
-  const nextFullscreen = () => {
-    const nextIndex = (fullscreenIndex + 1) % images.length;
-    setFullscreenIndex(nextIndex);
-    setFullscreenImage(images[nextIndex]);
-  };
-
-  const prevFullscreen = () => {
-    const prevIndex = (fullscreenIndex - 1 + images.length) % images.length;
-    setFullscreenIndex(prevIndex);
-    setFullscreenImage(images[prevIndex]);
-  };
-
-  // Обработка свайпа в fullscreen (вертикаль + горизонталь)
-  const handleFullscreenDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  // Swipe handler for main view
+  const handleSwipe = useCallback((info: PanInfo) => {
     const threshold = 50;
-    
-    // Вертикальный свайп - смена фото
-    if (Math.abs(info.offset.y) > Math.abs(info.offset.x) && Math.abs(info.offset.y) > threshold) {
-      if (info.offset.y < 0) {
-        nextFullscreen();
-      } else {
-        prevFullscreen();
-      }
+    if (Math.abs(info.offset.x) > threshold) {
+      goToModel(info.offset.x > 0 ? -1 : 1);
     }
-    // Горизонтальный свайп - смена проекта  
-    else if (Math.abs(info.offset.x) > threshold) {
-      if (info.offset.x < 0) {
-        nextHouse();
-        setFullscreenImage(null);
-      } else {
-        prevHouse();
-        setFullscreenImage(null);
-      }
+    if (info.offset.y < -threshold && !showGallery) {
+      setShowGallery(true);
     }
+  }, [goToModel, showGallery]);
+
+  // Lightbox navigation
+  const lightboxPhotos = galleryTab === "photos" ? allPhotos : floorPlans;
+  
+  const navigateLightbox = useCallback((direction: 1 | -1) => {
+    setLightboxIndex(prev => {
+      const next = prev + direction;
+      if (next < 0) return lightboxPhotos.length - 1;
+      if (next >= lightboxPhotos.length) return 0;
+      return next;
+    });
+  }, [lightboxPhotos.length]);
+
+  // Contact handlers
+  const handleCall = () => {
+    window.location.href = "tel:+996555123456";
   };
 
-  if (!currentHouse) {
-    return (
-      <div className="fixed inset-0 z-50 bg-background flex items-center justify-center">
-        <p className="text-foreground/60">Нет доступных проектов</p>
-      </div>
-    );
-  }
+  const handleWhatsApp = () => {
+    const text = encodeURIComponent(`Здравствуйте! Интересует ${currentModel.name} ${currentModel.area}м²`);
+    window.open(`https://wa.me/996555123456?text=${text}`, "_blank");
+  };
 
-  // Превью соседних проектов для карусели
-  const prevHouseData = houses[(currentHouseIndex - 1 + houses.length) % houses.length];
-  const nextHouseData = houses[(currentHouseIndex + 1) % houses.length];
+  const handleTelegram = () => {
+    const text = encodeURIComponent(`Интересует ${currentModel.name} ${currentModel.area}м²`);
+    window.open(`https://t.me/erahomes?text=${text}`, "_blank");
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-stone-950 flex flex-col overflow-hidden"
+      className="fixed inset-0 z-50 bg-black flex flex-col"
     >
-      {/* Фоновый градиент */}
-      <div className="absolute inset-0 bg-gradient-to-b from-stone-900 via-stone-950 to-black" />
-      
-      {/* Вертикальная лента фотографий с горизонтальным свайпом для смены проекта */}
-      <motion.div 
-        ref={photoFeedRef}
-        className="relative flex-1 overflow-y-auto overflow-x-hidden z-10"
-        style={{ 
-          scrollbarWidth: 'none', 
-          msOverflowStyle: 'none', 
-          WebkitOverflowScrolling: 'touch',
-          x: dragX 
-        }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.15}
-        onDragStart={() => setIsDragging(true)}
-        onDragEnd={handleMainDragEnd}
-      >
-        <style>{`.photo-feed::-webkit-scrollbar { display: none; }`}</style>
-        
-        <div className="flex flex-col photo-feed">
-          {images.map((src, index) => (
-            <motion.div
-              key={src}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.02, duration: 0.3 }}
-              className="relative w-full cursor-pointer"
-              onClick={() => openFullscreen(src, index)}
-            >
-              <div className="relative aspect-[16/10] w-full overflow-hidden">
-                <img
-                  src={src}
-                  alt={`${currentHouse.name}`}
-                  className="w-full h-full object-cover"
-                  loading={index < 3 ? 'eager' : 'lazy'}
-                  draggable={false}
-                />
-                
-                {/* Тонкая линия-разделитель */}
-                <div className="absolute bottom-0 inset-x-0 h-px bg-white/10" />
-              </div>
-            </motion.div>
-          ))}
-          
-          {/* Отступ для нижней панели */}
-          <div className="h-[420px]" />
-        </div>
-      </motion.div>
+      {/* Header - Filters */}
+      <div className="absolute top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
+        <div className="px-4 pt-3 pb-2">
+          {/* Close + Filters Row */}
+          <div className="flex items-center justify-between">
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-xl flex items-center justify-center border border-white/10"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            )}
 
-      {/* Индикаторы соседних проектов по бокам */}
-      <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 z-20 pointer-events-none flex justify-between px-2">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 0.6, x: 0 }}
-          className="bg-black/60 backdrop-blur-xl rounded-r-2xl py-3 px-2 border-r border-y border-white/10"
-        >
-          <div className="text-white/80 text-xs font-bold writing-vertical rotate-180" style={{ writingMode: 'vertical-rl' }}>
-            {prevHouseData.area} м²
+            {/* Filter Pills */}
+            <div className="flex gap-2 ml-auto">
+              {(["all", "1-floor", "2-floor"] as FilterType[]).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => {
+                    setFilter(f);
+                    setCurrentModelIndex(0);
+                  }}
+                  className={`px-4 py-2.5 rounded-full text-sm font-semibold transition-all border ${
+                    filter === f
+                      ? "bg-[#C3996B] text-black border-[#C3996B]"
+                      : "bg-black/60 backdrop-blur-xl text-white/90 border-white/10"
+                  }`}
+                >
+                  {f === "all" ? "Все" : f === "1-floor" ? "1 этаж" : "2 этажа"}
+                </button>
+              ))}
+            </div>
           </div>
-        </motion.div>
-        
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 0.6, x: 0 }}
-          className="bg-black/60 backdrop-blur-xl rounded-l-2xl py-3 px-2 border-l border-y border-white/10"
-        >
-          <div className="text-white/80 text-xs font-bold" style={{ writingMode: 'vertical-rl' }}>
-            {nextHouseData.area} м²
-          </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* Нижняя панель - полный редизайн */}
-      <motion.div
-        initial={{ y: 100 }}
-        animate={{ y: 0 }}
-        className="absolute bottom-0 left-0 right-0 z-30"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      {/* Main Photo - Fullscreen with swipe */}
+      <motion.div 
+        className="flex-1 relative"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={(_, info) => handleSwipe(info)}
       >
-        {/* Glassmorphism фон */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/95 to-black/70 backdrop-blur-2xl" />
-        
-        <div className="relative z-10 pt-4 pb-4 px-4">
-          
-          {/* Книжная 3D-карусель моделей */}
-          <div className="relative mb-5 h-24 overflow-hidden">
-            {/* Центральная карточка (активный проект) */}
-            <motion.div
-              key={currentHouse.id}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="absolute left-1/2 -translate-x-1/2 w-[70%] max-w-[280px]"
-            >
-              <div className="bg-gradient-to-br from-amber-500/20 via-amber-600/10 to-transparent backdrop-blur-xl rounded-3xl p-4 border border-amber-500/30 shadow-2xl shadow-amber-500/20">
-                {/* Название и цена */}
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h2 className="text-xl font-bold text-white tracking-tight">{currentHouse.name}</h2>
-                    <p className="text-amber-400 font-bold text-sm">{currentHouse.price}</p>
-                  </div>
-                  <div className="bg-amber-500 text-black text-xs font-black px-3 py-1.5 rounded-full">
-                    {currentHouse.area} м²
-                  </div>
-                </div>
-                
-                {/* Атрибуты в одну строку */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5">
-                    <Bed className="w-4 h-4 text-amber-400" />
-                    <span className="text-white font-semibold text-sm">{currentHouse.bedrooms}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Bath className="w-4 h-4 text-amber-400" />
-                    <span className="text-white font-semibold text-sm">{currentHouse.bathrooms}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Camera className="w-4 h-4 text-amber-400" />
-                    <span className="text-white font-semibold text-sm">{currentHouse.galleryCount + currentHouse.extraGalleryCount}</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Левая карточка (предыдущий проект) */}
-            <motion.button
-              onClick={prevHouse}
-              className="absolute left-0 top-1/2 -translate-y-1/2 w-[25%] opacity-50 hover:opacity-70 transition-opacity"
-              style={{ perspective: '1000px' }}
-            >
-              <div 
-                className="bg-white/5 backdrop-blur-sm rounded-2xl p-3 border border-white/10 transform origin-right"
-                style={{ transform: 'rotateY(30deg)' }}
-              >
-                <p className="text-white/70 font-bold text-xs truncate">{prevHouseData.name}</p>
-                <p className="text-white/40 text-xs">{prevHouseData.area} м²</p>
-              </div>
-            </motion.button>
-
-            {/* Правая карточка (следующий проект) */}
-            <motion.button
-              onClick={nextHouse}
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-[25%] opacity-50 hover:opacity-70 transition-opacity"
-              style={{ perspective: '1000px' }}
-            >
-              <div 
-                className="bg-white/5 backdrop-blur-sm rounded-2xl p-3 border border-white/10 transform origin-left"
-                style={{ transform: 'rotateY(-30deg)' }}
-              >
-                <p className="text-white/70 font-bold text-xs truncate">{nextHouseData.name}</p>
-                <p className="text-white/40 text-xs">{nextHouseData.area} м²</p>
-              </div>
-            </motion.button>
-          </div>
-
-          {/* Индикатор текущего проекта - точки */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            {houses.map((_, index) => (
-              <motion.button
-                key={index}
-                onClick={() => setCurrentHouseIndex(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentHouseIndex 
-                    ? 'w-6 h-2 bg-amber-500' 
-                    : 'w-2 h-2 bg-white/30 hover:bg-white/50'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Переключатель Фото/План */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <button
-              onClick={() => setViewMode('photos')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all ${
-                viewMode === 'photos'
-                  ? 'bg-white text-black'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
-              }`}
-            >
-              <Camera className="w-4 h-4" />
-              Фото
-            </button>
-            <button
-              onClick={() => setViewMode('plans')}
-              disabled={currentHouse.floorPlanCount === 0}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all ${
-                viewMode === 'plans'
-                  ? 'bg-white text-black'
-                  : 'bg-white/10 text-white/70 hover:bg-white/20'
-              } ${currentHouse.floorPlanCount === 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
-            >
-              <Layers className="w-4 h-4" />
-              Планировка
-            </button>
-          </div>
-
-          {/* Кнопки действий */}
-          <div className="flex gap-3">
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowContactForm(true)}
-              className="flex-1 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-2xl font-bold text-base shadow-xl shadow-amber-500/30 flex items-center justify-center gap-2"
-            >
-              <Phone className="w-5 h-5" />
-              Консультация
-            </motion.button>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentModel.id + currentModel.area}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0"
+          >
+            <img
+              src={mainPhoto}
+              alt={currentModel.name}
+              className="w-full h-full object-cover"
+              draggable={false}
+            />
             
-            {onClose && (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={onClose}
-                className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl flex items-center justify-center text-white border border-white/20"
+            {/* Gradient overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40" />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation Arrows - subtle */}
+        <button
+          onClick={() => goToModel(-1)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-50 hover:opacity-90 active:opacity-100 transition-opacity border border-white/10"
+        >
+          <ChevronLeft className="w-5 h-5 text-white" />
+        </button>
+        <button
+          onClick={() => goToModel(1)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-50 hover:opacity-90 active:opacity-100 transition-opacity border border-white/10"
+        >
+          <ChevronRight className="w-5 h-5 text-white" />
+        </button>
+
+        {/* Model Info Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-5 pb-32">
+          {/* Model Name & Area */}
+          <div className="flex items-end justify-between mb-5">
+            <div>
+              <motion.div
+                key={currentModel.name + currentModel.area}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-baseline gap-3 mb-1"
               >
-                <X className="w-6 h-6" />
-              </motion.button>
-            )}
+                <h2 className="text-3xl font-bold text-white tracking-tight">
+                  {currentModel.name}
+                </h2>
+                <span className="text-[#C3996B] text-2xl font-bold">
+                  {currentModel.area}м²
+                </span>
+              </motion.div>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="text-white/60 text-sm"
+              >
+                {currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} барнхаус
+              </motion.p>
+            </div>
+            
+            {/* Model Counter */}
+            <div className="text-white/50 text-sm font-medium">
+              {currentModelIndex + 1}/{filteredModels.length}
+            </div>
           </div>
+
+          {/* Attributes - horizontal pills */}
+          <motion.div 
+            key={`attrs-${currentModel.id}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex gap-3 mb-5"
+          >
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/10">
+              <Home className="w-4 h-4 text-[#C3996B]" />
+              <span className="text-white text-sm font-medium">{currentModel.floors} эт.</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/10">
+              <Bed className="w-4 h-4 text-[#C3996B]" />
+              <span className="text-white text-sm font-medium">{currentModel.bedrooms} спальни</span>
+            </div>
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2.5 border border-white/10">
+              <Bath className="w-4 h-4 text-[#C3996B]" />
+              <span className="text-white text-sm font-medium">{currentModel.bathrooms} с/у</span>
+            </div>
+          </motion.div>
+
+          {/* Gallery Button - swipe hint */}
+          <motion.button
+            onClick={() => setShowGallery(true)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group"
+          >
+            <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-md rounded-full pl-3 pr-4 py-2 border border-white/10 group-hover:border-white/20 transition-colors">
+              <Images className="w-4 h-4 text-[#C3996B]" />
+              <span className="text-sm font-medium">
+                {allPhotos.length} фото
+              </span>
+              {floorPlans.length > 0 && (
+                <span className="text-white/40 text-sm">• {floorPlans.length} план.</span>
+              )}
+            </div>
+            <ChevronUp className="w-5 h-5 animate-bounce" />
+          </motion.button>
+        </div>
+
+        {/* Model Dots - bottom indicator */}
+        <div className="absolute bottom-24 left-0 right-0 flex justify-center gap-1.5 px-8">
+          {filteredModels.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentModelIndex(idx)}
+              className={`h-1 rounded-full transition-all ${
+                idx === currentModelIndex 
+                  ? "w-6 bg-[#C3996B]" 
+                  : "w-1.5 bg-white/30 hover:bg-white/50"
+              }`}
+            />
+          ))}
         </div>
       </motion.div>
 
-      {/* Fullscreen режим со свайп-жестами (вертикаль + горизонталь) */}
-      <AnimatePresence>
-        {fullscreenImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center"
+      {/* Bottom Contact Bar */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/10"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="flex items-center justify-around p-3">
+          <button
+            onClick={handleCall}
+            className="flex flex-col items-center gap-1.5 px-5 py-1"
           >
-            {/* Изображение с drag-свайпом */}
-            <motion.div
-              className="relative w-full h-full flex items-center justify-center"
-              drag
-              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-              dragElastic={0.15}
-              onDragEnd={handleFullscreenDragEnd}
-            >
-              <motion.img
-                key={fullscreenImage}
-                src={fullscreenImage}
-                alt="Fullscreen"
-                className="max-w-full max-h-full object-contain select-none"
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.9, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                draggable={false}
-              />
-            </motion.div>
+            <div className="w-12 h-12 rounded-2xl bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+              <Phone className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[11px] font-medium">Позвонить</span>
+          </button>
+          
+          <button
+            onClick={handleWhatsApp}
+            className="flex flex-col items-center gap-1.5 px-5 py-1"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center shadow-lg shadow-[#25D366]/30">
+              <MessageCircle className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[11px] font-medium">WhatsApp</span>
+          </button>
+          
+          <button
+            onClick={handleTelegram}
+            className="flex flex-col items-center gap-1.5 px-5 py-1"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-[#0088cc] flex items-center justify-center shadow-lg shadow-[#0088cc]/30">
+              <Send className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-white/60 text-[11px] font-medium">Telegram</span>
+          </button>
+        </div>
+      </div>
 
-            {/* Верхняя панель fullscreen */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4"
-            >
-              <div className="bg-black/60 backdrop-blur-xl rounded-2xl px-4 py-2 border border-white/10">
-                <p className="text-white font-bold text-sm">{currentHouse.name}</p>
-              </div>
-              
+      {/* Gallery Sheet */}
+      <AnimatePresence>
+        {showGallery && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            className="absolute inset-0 z-40 bg-black flex flex-col"
+            style={{ paddingTop: 'env(safe-area-inset-top)' }}
+          >
+            {/* Gallery Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
               <button
-                onClick={() => setFullscreenImage(null)}
-                className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-xl flex items-center justify-center text-white border border-white/20"
+                onClick={() => setShowGallery(false)}
+                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5 text-white" />
               </button>
-            </motion.div>
-
-            {/* Нижний индикатор и подсказки */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-3"
-            >
-              {/* Номер фото */}
-              <div className="px-5 py-2.5 rounded-full bg-white/15 backdrop-blur-xl text-white text-sm font-bold border border-white/20">
-                {fullscreenIndex + 1} / {images.length}
-              </div>
               
-              {/* Подсказки по свайпу */}
-              <div className="flex items-center gap-6 text-white/40 text-xs">
-                <div className="flex items-center gap-1">
-                  <ChevronUp className="w-4 h-4" />
-                  <ChevronDown className="w-4 h-4" />
-                  <span>фото</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <ChevronLeft className="w-4 h-4" />
-                  <ChevronRight className="w-4 h-4" />
-                  <span>проект</span>
-                </div>
+              <h3 className="text-base font-semibold text-white">
+                {currentModel.name} <span className="text-[#C3996B]">{currentModel.area}м²</span>
+              </h3>
+
+              <div className="w-10" /> {/* Spacer */}
+            </div>
+
+            {/* Gallery Tabs */}
+            <div className="flex gap-2 p-4">
+              <button
+                onClick={() => setGalleryTab("photos")}
+                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all border ${
+                  galleryTab === "photos"
+                    ? "bg-[#C3996B] text-black border-[#C3996B]"
+                    : "bg-white/10 text-white/70 border-white/10"
+                }`}
+              >
+                <Grid3X3 className="w-4 h-4 inline mr-2" />
+                Фото ({allPhotos.length})
+              </button>
+              <button
+                onClick={() => setGalleryTab("plans")}
+                disabled={floorPlans.length === 0}
+                className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-all border ${
+                  galleryTab === "plans"
+                    ? "bg-[#C3996B] text-black border-[#C3996B]"
+                    : "bg-white/10 text-white/70 border-white/10"
+                } ${floorPlans.length === 0 ? "opacity-30 cursor-not-allowed" : ""}`}
+              >
+                <Ruler className="w-4 h-4 inline mr-2" />
+                Планировки ({floorPlans.length})
+              </button>
+            </div>
+
+            {/* Gallery Grid */}
+            <div className="flex-1 overflow-y-auto p-4 pb-8">
+              <div className="grid grid-cols-2 gap-2">
+                {(galleryTab === "photos" ? allPhotos : floorPlans).map((photo, idx) => (
+                  <motion.button
+                    key={photo}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.02 }}
+                    onClick={() => {
+                      setLightboxImage(photo);
+                      setLightboxIndex(idx);
+                    }}
+                    className="aspect-[4/3] rounded-xl overflow-hidden relative group"
+                  >
+                    <img
+                      src={photo}
+                      alt={`${currentModel.name} - ${idx + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <Maximize2 className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
+                    </div>
+                  </motion.button>
+                ))}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Форма консультации */}
+      {/* Lightbox */}
       <AnimatePresence>
-        {showContactForm && (
+        {lightboxImage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end justify-center"
-            onClick={() => setShowContactForm(false)}
+            className="absolute inset-0 z-50 bg-black flex items-center justify-center"
           >
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative z-10 w-full max-w-lg bg-stone-900 rounded-t-[2rem] p-6 border-t border-white/10"
-              style={{ paddingBottom: 'env(safe-area-inset-bottom, 24px)' }}
-              onClick={(e) => e.stopPropagation()}
+            {/* Close button */}
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-4 right-4 z-10 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10"
+              style={{ marginTop: 'env(safe-area-inset-top)' }}
             >
-              <div className="flex justify-center mb-5">
-                <div className="w-12 h-1.5 bg-white/20 rounded-full" />
-              </div>
+              <X className="w-5 h-5 text-white" />
+            </button>
 
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Консультация
-              </h3>
-              <p className="text-white/60 mb-5 text-sm">
-                {currentHouse.name} • {currentHouse.area} м² • {currentHouse.price}
-              </p>
+            {/* Nav arrows */}
+            <button
+              onClick={() => navigateLightbox(-1)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </button>
+            <button
+              onClick={() => navigateLightbox(1)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10"
+            >
+              <ChevronRight className="w-5 h-5 text-white" />
+            </button>
 
-              <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Ваше имя"
-                  className="w-full px-5 py-4 bg-white/10 border border-white/10 rounded-2xl text-white placeholder:text-white/40 focus:outline-none focus:border-amber-500/50 transition-colors font-medium"
-                />
-                <input
-                  type="tel"
-                  placeholder="+7 (___) ___-__-__"
-                  className="w-full px-5 py-4 bg-white/10 border border-white/10 rounded-2xl text-white placeholder:text-white/40 focus:outline-none focus:border-amber-500/50 transition-colors font-medium"
-                />
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 py-4 bg-white/10 rounded-2xl text-white font-semibold hover:bg-white/20 transition-colors active:scale-[0.98] border border-white/10">
-                  <Phone className="w-5 h-5" />
-                  <span>Звонок</span>
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-4 bg-green-600 rounded-2xl text-white font-semibold hover:bg-green-700 transition-colors active:scale-[0.98]">
-                  <MessageCircle className="w-5 h-5" />
-                  <span>WhatsApp</span>
-                </button>
-              </div>
-
-              <motion.button 
-                whileTap={{ scale: 0.98 }}
-                className="w-full mt-4 py-4 bg-gradient-to-r from-amber-500 to-amber-600 text-black rounded-2xl font-bold shadow-xl shadow-amber-500/20"
-              >
-                Отправить заявку
-              </motion.button>
+            {/* Image with swipe */}
+            <motion.div
+              key={lightboxPhotos[lightboxIndex]}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (Math.abs(info.offset.x) > 50) {
+                  navigateLightbox(info.offset.x > 0 ? -1 : 1);
+                }
+                if (info.offset.y > 100) {
+                  setLightboxImage(null);
+                }
+              }}
+              className="w-full h-full flex items-center justify-center p-4"
+            >
+              <img
+                src={lightboxPhotos[lightboxIndex]}
+                alt="Fullscreen"
+                className="max-w-full max-h-full object-contain rounded-lg"
+                draggable={false}
+              />
             </motion.div>
+
+            {/* Counter */}
+            <div 
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full text-white/80 text-sm font-medium border border-white/10"
+              style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+            >
+              {lightboxIndex + 1} / {lightboxPhotos.length}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
