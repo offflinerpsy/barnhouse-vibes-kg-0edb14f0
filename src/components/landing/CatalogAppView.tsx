@@ -9,7 +9,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence, motion, PanInfo } from "framer-motion";
 import {
-  ArrowUp,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -205,23 +204,23 @@ function ActionButton({
   variant?: "glass" | "primary";
 }) {
   return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5">
+    <button onClick={onClick} className="flex flex-col items-center gap-1">
       <div
         className={
           variant === "primary"
-            ? "w-12 h-12 rounded-2xl bg-primary border border-primary/30 shadow-lg shadow-primary/20 flex items-center justify-center"
-            : "w-12 h-12 rounded-2xl bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
+            ? "w-10 h-10 rounded-xl bg-primary border border-primary/30 shadow-lg shadow-primary/20 flex items-center justify-center"
+            : "w-10 h-10 rounded-xl bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
         }
       >
         <Icon
           className={
             variant === "primary"
-              ? "h-5 w-5 text-charcoal"
-              : "h-5 w-5 text-warm-white"
+              ? "h-4 w-4 text-charcoal"
+              : "h-4 w-4 text-warm-white"
           }
         />
       </div>
-      <span className="text-[10px] font-medium text-warm-white/70 leading-none">
+      <span className="text-[9px] font-medium text-warm-white/70 leading-none">
         {label}
       </span>
     </button>
@@ -238,11 +237,11 @@ function Chip({
   label: string;
 }) {
   return (
-    <div className="flex-none inline-flex items-center gap-2 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 px-3 py-2 whitespace-nowrap">
-      <Icon className="h-4 w-4 text-primary" />
-      <span className="text-xs font-semibold text-warm-white">
+    <div className="flex-none inline-flex items-center gap-1 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 px-2 py-1.5 whitespace-nowrap">
+      <Icon className="h-3.5 w-3.5 text-primary" />
+      <span className="text-[11px] font-semibold text-warm-white">
         {value}
-        <span className="ml-1 text-warm-white/65 font-medium">{label}</span>
+        <span className="ml-0.5 text-warm-white/65 font-medium">{label}</span>
       </span>
     </div>
   );
@@ -382,8 +381,16 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const floorPlans = useMemo(() => getFloorPlans(currentModel), [currentModel]);
   const mainPhoto = allPhotos[0] ?? `/catalog/${currentModel.catalogPath}/gallery/1.webp`;
 
+  // Haptic feedback helper
+  const triggerHaptic = useCallback(() => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
+  }, []);
+
   const goToModel = useCallback(
     (dir: 1 | -1) => {
+      triggerHaptic();
       setDirection(dir);
       setCurrentModelIndex((prev) => {
         const next = prev + dir;
@@ -393,7 +400,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
       });
       setShowGallery(false);
     },
-    [filteredModels.length]
+    [filteredModels.length, triggerHaptic]
   );
 
   const handlePanEnd = useCallback(
@@ -455,27 +462,61 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
     >
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
 
+      {/* Stories-style progress indicator */}
+      <div 
+        className="absolute top-0 left-0 right-0 z-40 px-2 flex gap-1"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}
+      >
+        {filteredModels.map((model, idx) => (
+          <button
+            key={model.id}
+            onClick={() => {
+              triggerHaptic();
+              setDirection(idx > safeIndex ? 1 : -1);
+              setCurrentModelIndex(idx);
+            }}
+            className="flex-1 h-[3px] rounded-full overflow-hidden bg-warm-white/25"
+          >
+            <motion.div
+              className="h-full bg-warm-white rounded-full"
+              initial={false}
+              animate={{ 
+                scaleX: idx === safeIndex ? 1 : 0,
+                originX: 0
+              }}
+              transition={{ 
+                duration: idx === safeIndex ? 0.3 : 0,
+                ease: "easeOut"
+              }}
+            />
+          </button>
+        ))}
+      </div>
+
       {/* Top bar */}
-      <header className="absolute top-0 left-0 right-0 z-30 pt-[env(safe-area-inset-top)]">
-        <div className="px-4 pt-3 pb-2">
-          <div className="flex items-center gap-2">
+      <header 
+        className="absolute top-0 left-0 right-0 z-30"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}
+      >
+        <div className="px-3 pt-2 pb-2">
+          <div className="flex items-center gap-1.5">
             {onClose && (
               <button
                 aria-label="Закрыть"
                 onClick={onClose}
-                className="w-11 h-11 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
+                className="flex-none w-9 h-9 rounded-xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center justify-center"
               >
-                <X className="h-5 w-5 text-warm-white" />
+                <X className="h-4 w-4 text-warm-white" />
               </button>
             )}
 
-            {/* Filters */}
-            <nav className="flex-1 flex justify-center">
-              <div className="flex items-center gap-2 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 p-1">
+            {/* Filters - single line, compact for narrow screens */}
+            <nav className="flex-1 flex justify-center min-w-0">
+              <div className="inline-flex items-center gap-0.5 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 p-0.5">
                 {([
                   { id: "all" as const, label: "Все" },
-                  { id: "1-floor" as const, label: "1 этаж" },
-                  { id: "2-floor" as const, label: "2 этажа" },
+                  { id: "1-floor" as const, label: "1эт" },
+                  { id: "2-floor" as const, label: "2эт" },
                 ] as const).map((f) => {
                   const active = filter === f.id;
                   return (
@@ -487,8 +528,8 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                       }}
                       className={
                         active
-                          ? "px-4 py-2 rounded-full bg-primary text-charcoal text-xs font-semibold"
-                          : "px-4 py-2 rounded-full text-warm-white/80 text-xs font-semibold hover:text-warm-white"
+                          ? "px-3 py-1.5 rounded-full bg-primary text-charcoal text-[11px] font-semibold whitespace-nowrap"
+                          : "px-3 py-1.5 rounded-full text-warm-white/80 text-[11px] font-semibold hover:text-warm-white whitespace-nowrap"
                       }
                     >
                       {f.label}
@@ -498,14 +539,14 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               </div>
             </nav>
 
-            {/* Model picker */}
+            {/* Model picker - compact */}
             <button
               onClick={() => setModelPickerOpen(true)}
-              className="h-11 px-3 rounded-2xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center gap-2"
+              className="flex-none h-9 px-2.5 rounded-xl bg-charcoal/60 backdrop-blur-xl border border-warm-white/10 flex items-center gap-1.5"
             >
-              <Home className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold text-warm-white whitespace-nowrap">
-                Модели
+              <Grid3X3 className="h-4 w-4 text-primary" />
+              <span className="text-[11px] font-semibold text-warm-white whitespace-nowrap">
+                {safeIndex + 1}/{filteredModels.length}
               </span>
             </button>
           </div>
@@ -559,14 +600,14 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <ChevronRight className="h-5 w-5 text-warm-white" />
         </button>
 
-        {/* Action rail (TikTok-style) */}
+        {/* Action rail (TikTok-style) - compact */}
         <aside
-          className="absolute right-3 z-30 flex flex-col items-center gap-3"
-          style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
+          className="absolute right-2 z-30 flex flex-col items-center gap-2"
+          style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
         >
           <ActionButton
             icon={Images}
-            label="Галерея"
+            label="Фото"
             onClick={() => setShowGallery(true)}
           />
           <ActionButton
@@ -575,42 +616,36 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             variant="primary"
             onClick={() => setContactOpen(true)}
           />
-          <ActionButton icon={MessageCircle} label="WhatsApp" onClick={handleWhatsApp} />
-          <ActionButton icon={Send} label="Telegram" onClick={handleTelegram} />
-          <ActionButton icon={Phone} label="Звонок" onClick={handleCall} />
+          <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
+          <ActionButton icon={Send} label="TG" onClick={handleTelegram} />
+          <ActionButton icon={Phone} label="Call" onClick={handleCall} />
         </aside>
 
         {/* Model info (caption) */}
         <section
           className="absolute left-0 right-0 z-20"
-          style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
+          style={{ bottom: "calc(12px + env(safe-area-inset-bottom))" }}
         >
-          <div className="px-4 pr-24">
-            <div className="max-w-[520px]">
-              <div className="flex items-baseline gap-3">
-                <h1 className="text-2xl font-bold text-warm-white tracking-tight">
+          <div className="px-3 pr-20">
+            <div className="max-w-[400px]">
+              <div className="flex items-baseline gap-2">
+                <h1 className="text-xl font-bold text-warm-white tracking-tight">
                   {currentModel.name}
                 </h1>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-lg font-bold text-primary">
                   {currentModel.area}м²
                 </div>
               </div>
 
-              <p className="mt-1 text-xs text-warm-white/70">
-                {currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} • свайп ←→ модели • ↑ галерея
+              <p className="mt-0.5 text-[10px] text-warm-white/60">
+                {currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse
               </p>
 
-              <div className="mt-3 -mx-1 px-1 flex gap-2 overflow-x-auto scrollbar-hide">
-                <Chip icon={Home} value={String(currentModel.floors)} label="эт." />
-                <Chip icon={Bed} value={String(currentModel.bedrooms)} label="спальн." />
+              {/* Chips - always single line */}
+              <div className="mt-2 flex gap-1.5">
+                <Chip icon={Home} value={String(currentModel.floors)} label="эт" />
+                <Chip icon={Bed} value={String(currentModel.bedrooms)} label="сп" />
                 <Chip icon={Bath} value={String(currentModel.bathrooms)} label="с/у" />
-              </div>
-
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-charcoal/55 backdrop-blur-xl border border-warm-white/10 px-3 py-2">
-                <ArrowUp className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold text-warm-white/80">
-                  Поднимите вверх для сетки
-                </span>
               </div>
             </div>
           </div>
