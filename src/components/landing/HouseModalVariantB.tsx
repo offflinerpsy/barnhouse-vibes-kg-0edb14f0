@@ -1,20 +1,22 @@
 /**
- * VARIANT B - Bottom Sheet Modal
+ * VARIANT B - Premium Photo Gallery Modal (Improved)
  * 
- * Фокус: fullscreen фото с выезжающим bottom sheet
- * - 100% экрана = галерея
- * - Swipe up для bottom sheet с деталями
- * - Компактные атрибуты в collapsed состоянии
- * - Сначала реальные фото, потом рендеры
+ * Особенности:
+ * - Пропорциональные фото (object-contain) с умным размещением
+ * - Полупрозрачная "песчаная" панель с атрибутами
+ * - Режим fullscreen при тапе на фото
+ * - Модалка (не fullscreen) на ПК/планшете
+ * - Форма поверх фото, не перекрывая
+ * - Автолисталка как в Stories
+ * - Плавные анимации
  */
 
-import React, { useState, useRef } from "react";
-import { motion, AnimatePresence, PanInfo, useDragControls } from "framer-motion";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { 
   X, 
   ChevronLeft, 
   ChevronRight,
-  ChevronUp,
   Maximize,
   BedDouble,
   Bath,
@@ -26,7 +28,7 @@ import {
   MessageCircle,
   Send,
   CheckCircle,
-  Grip
+  Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,16 +53,21 @@ interface HouseModalVariantBProps {
   onClose: () => void;
 }
 
-type SheetState = "collapsed" | "half" | "full";
 type ViewMode = "gallery" | "plans";
 
 export function HouseModalVariantB({ house, onClose }: HouseModalVariantBProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [sheetState, setSheetState] = useState<SheetState>("collapsed");
   const [viewMode, setViewMode] = useState<ViewMode>("gallery");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const dragControls = useDragControls();
+  const [isPaused, setIsPaused] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const progressInterval = useRef<NodeJS.Timeout | null>(null);
+  const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
+  const AUTO_ADVANCE_TIME = 4000;
 
   // Сначала РЕАЛЬНЫЕ фото (gallery-extra), потом рендеры (gallery)
   const realPhotos = Array.from({ length: house.galleryExtraCount }, (_, i) => 
@@ -80,8 +87,91 @@ export function HouseModalVariantB({ house, onClose }: HouseModalVariantBProps) 
   const currentImages = viewMode === "gallery" ? allImages : floorPlans;
   const totalImages = currentImages.length;
 
-  const handleImageDrag = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (sheetState !== "collapsed") return;
+  // Auto-advance timer
+  useEffect(() => {
+    if (isPaused || showDetails || showForm || showSuccess || isFullscreen) {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+      return;
+    }
+
+    setProgress(0);
+    const startTime = Date.now();
+    
+    progressInterval.current = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / AUTO_ADVANCE_TIME) * 100, 100);
+      setProgress(newProgress);
+      
+      if (newProgress >= 100) {
+        if (currentIndex < totalImages - 1) {
+          setCurrentIndex(prev => prev + 1);
+        } else {
+          setCurrentIndex(0);
+        }
+      }
+    }, 50);
+
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, [currentIndex, isPaused, showDetails, showForm, showSuccess, isFullscreen, totalImages]);
+
+  // Handle fullscreen controls visibility
+  const showControlsTemporarily = useCallback(() => {
+    setControlsVisible(true);
+    if (hideControlsTimeout.current) {
+      clearTimeout(hideControlsTimeout.current);
+    }
+    hideControlsTimeout.current = setTimeout(() => {
+      if (isFullscreen) {
+        setControlsVisible(false);
+      }
+    }, 3000);
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    return () => {
+      if (hideControlsTimeout.current) {
+        clearTimeout(hideControlsTimeout.current);
+      }
+    };
+  }, []);
+
+  const handleImageTap = (e: React.MouseEvent | React.TouchEvent) => {
+    if (showForm || showDetails) return;
+    
+    if (isFullscreen) {
+      // В fullscreen режиме - показываем/скрываем контролы или переключаем фото
+      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0]?.clientX || 0 : e.clientX;
+      const x = clientX - rect.left;
+      const third = rect.width / 3;
+
+      if (x < third) {
+        if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
+      } else if (x > third * 2) {
+        if (currentIndex < totalImages - 1) setCurrentIndex(prev => prev + 1);
+      } else {
+        if (controlsVisible) {
+          setIsFullscreen(false);
+          setControlsVisible(true);
+        } else {
+          showControlsTemporarily();
+        }
+      }
+    } else {
+      // Не в fullscreen - входим в fullscreen
+      setIsFullscreen(true);
+      showControlsTemporarily();
+    }
+  };
+
+  const handleDrag = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (showForm || showDetails || isFullscreen) return;
     
     const threshold = 50;
     if (info.offset.x < -threshold && currentIndex < totalImages - 1) {
@@ -91,307 +181,347 @@ export function HouseModalVariantB({ house, onClose }: HouseModalVariantBProps) 
     }
   };
 
-  const handleSheetDrag = (e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const velocity = info.velocity.y;
-    const offset = info.offset.y;
-
-    if (velocity < -500 || offset < -100) {
-      if (sheetState === "collapsed") setSheetState("half");
-      else if (sheetState === "half") setSheetState("full");
-    } else if (velocity > 500 || offset > 100) {
-      if (sheetState === "full") setSheetState("half");
-      else if (sheetState === "half") setSheetState("collapsed");
-    }
-  };
-
-  const sheetHeights = {
-    collapsed: "140px",
-    half: "50vh",
-    full: "85vh"
+  const exitFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFullscreen(false);
+    setControlsVisible(true);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black"
-      onClick={onClose}
-    >
+    <AnimatePresence>
       <motion.div
-        className="relative w-full h-full"
-        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+        onClick={onClose}
       >
-        {/* Fullscreen Image Gallery */}
+        {/* Modal Container - полный экран на мобиле, модалка на десктопе */}
         <motion.div
-          className="absolute inset-0 cursor-grab active:cursor-grabbing"
-          drag={sheetState === "collapsed" ? "x" : false}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          onDragEnd={handleImageDrag}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className={`
+            relative bg-[hsl(var(--charcoal))] overflow-hidden
+            ${isFullscreen 
+              ? "w-full h-full" 
+              : "w-full h-full md:w-[90vw] md:h-[90vh] md:max-w-5xl md:rounded-2xl md:shadow-2xl"
+            }
+          `}
+          onClick={(e) => e.stopPropagation()}
         >
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={`${viewMode}-${currentIndex}`}
-              src={currentImages[currentIndex]}
-              alt={`${house.name}`}
-              className="w-full h-full object-cover"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              draggable={false}
-            />
-          </AnimatePresence>
-
-          {/* Dim overlay when sheet is open */}
+          {/* Main Image Area */}
           <motion.div
-            className="absolute inset-0 bg-black pointer-events-none"
-            animate={{ opacity: sheetState === "collapsed" ? 0 : sheetState === "half" ? 0.3 : 0.6 }}
-          />
-        </motion.div>
+            className={`
+              relative cursor-pointer
+              ${isFullscreen ? "h-full" : "h-[55vh] md:h-[65vh]"}
+            `}
+            drag={!isFullscreen && !showForm && !showDetails ? "x" : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={handleDrag}
+            onClick={handleImageTap}
+            onPointerDown={() => setIsPaused(true)}
+            onPointerUp={() => setIsPaused(false)}
+            onPointerLeave={() => setIsPaused(false)}
+          >
+            {/* Image */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${viewMode}-${currentIndex}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="absolute inset-0 flex items-center justify-center bg-black"
+              >
+                <img
+                  src={currentImages[currentIndex]}
+                  alt={house.name}
+                  className={`
+                    max-w-full max-h-full
+                    ${viewMode === "plans" ? "object-contain p-4" : "object-contain"}
+                  `}
+                  draggable={false}
+                />
+              </motion.div>
+            </AnimatePresence>
 
-        {/* Top gradient */}
-        <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/70 to-transparent pointer-events-none" />
+            {/* Gradients for controls visibility */}
+            <motion.div 
+              className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent pointer-events-none"
+              animate={{ opacity: isFullscreen && !controlsVisible ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.div 
+              className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"
+              animate={{ opacity: isFullscreen && !controlsVisible ? 0 : 1 }}
+              transition={{ duration: 0.3 }}
+            />
 
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 z-30 w-10 h-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center"
-        >
-          <X className="w-5 h-5 text-white" />
-        </button>
-
-        {/* Title */}
-        <div className="absolute top-4 left-4 z-20">
-          <h2 className="text-xl font-bold text-white drop-shadow-lg font-rising">
-            {house.name}
-          </h2>
-          <p className="text-white/70 text-sm">{house.projectLabel}</p>
-        </div>
-
-        {/* Photo type badge */}
-        {viewMode === "gallery" && realPhotos.length > 0 && (
-          <div className="absolute top-16 left-4 z-20">
-            <span className={`text-xs px-2.5 py-1 rounded-full ${
-              currentIndex < realPhotos.length 
-                ? "bg-[hsl(var(--gold))] text-[hsl(var(--charcoal))]"
-                : "bg-white/20 text-white/80"
-            }`}>
-              {currentIndex < realPhotos.length ? "Реальное фото" : "3D визуализация"}
-            </span>
-          </div>
-        )}
-
-        {/* View mode toggle */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-          <div className="flex bg-black/40 backdrop-blur-sm rounded-full p-1">
-            <button
-              onClick={() => { setViewMode("gallery"); setCurrentIndex(0); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                viewMode === "gallery" ? "bg-white text-black" : "text-white/70"
-              }`}
+            {/* Progress bars */}
+            <motion.div 
+              className="absolute top-3 left-4 right-4 z-20"
+              animate={{ opacity: isFullscreen && !controlsVisible ? 0 : 1, y: isFullscreen && !controlsVisible ? -20 : 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <Camera className="w-3.5 h-3.5" />
-              <span>Фото</span>
-            </button>
-            <button
-              onClick={() => { setViewMode("plans"); setCurrentIndex(0); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                viewMode === "plans" ? "bg-white text-black" : "text-white/70"
-              }`}
+              <div className="flex gap-1">
+                {Array.from({ length: totalImages }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-0.5 flex-1 bg-white/30 rounded-full overflow-hidden"
+                  >
+                    <motion.div
+                      className="h-full bg-white rounded-full"
+                      initial={{ width: "0%" }}
+                      animate={{ 
+                        width: i < currentIndex 
+                          ? "100%" 
+                          : i === currentIndex 
+                            ? `${progress}%` 
+                            : "0%"
+                      }}
+                      transition={{ duration: 0.05, ease: "linear" }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Top controls */}
+            <motion.div 
+              className="absolute top-8 left-4 right-4 z-20 flex items-start justify-between"
+              animate={{ opacity: isFullscreen && !controlsVisible ? 0 : 1, y: isFullscreen && !controlsVisible ? -30 : 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <Layout className="w-3.5 h-3.5" />
-              <span>План</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Navigation arrows */}
-        <div className="hidden md:flex absolute inset-y-0 left-4 right-4 items-center justify-between pointer-events-none z-10">
-          <button
-            onClick={() => currentIndex > 0 && setCurrentIndex(prev => prev - 1)}
-            className={`p-3 bg-black/30 backdrop-blur-sm rounded-full pointer-events-auto ${
-              currentIndex === 0 ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            <ChevronLeft className="w-6 h-6 text-white" />
-          </button>
-          <button
-            onClick={() => currentIndex < totalImages - 1 && setCurrentIndex(prev => prev + 1)}
-            className={`p-3 bg-black/30 backdrop-blur-sm rounded-full pointer-events-auto ${
-              currentIndex === totalImages - 1 ? "opacity-0" : "opacity-100"
-            }`}
-          >
-            <ChevronRight className="w-6 h-6 text-white" />
-          </button>
-        </div>
-
-        {/* Progress bar */}
-        <div className="absolute top-24 md:top-4 left-16 right-16 z-20">
-          <div className="flex gap-1">
-            {Array.from({ length: totalImages }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-0.5 flex-1 rounded-full transition-all ${
-                  i === currentIndex ? "bg-white" : "bg-white/30"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom Sheet */}
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 z-30 bg-[hsl(var(--charcoal))] rounded-t-3xl"
-          animate={{ height: sheetHeights[sheetState] }}
-          transition={{ type: "spring", damping: 30, stiffness: 300 }}
-          drag="y"
-          dragControls={dragControls}
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.1}
-          onDragEnd={handleSheetDrag}
-        >
-          {/* Handle */}
-          <div 
-            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
-            onPointerDown={(e) => dragControls.start(e)}
-          >
-            <div className="w-10 h-1 bg-white/30 rounded-full" />
-          </div>
-
-          {/* Collapsed content */}
-          {sheetState === "collapsed" && (
-            <div className="px-5 pb-4">
-              {/* Quick attributes */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-1.5 text-white/80 text-sm">
-                    <Maximize className="w-4 h-4 text-[hsl(var(--gold))]" />
-                    <span>{house.area}м²</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-white/80 text-sm">
-                    <BedDouble className="w-4 h-4 text-[hsl(var(--gold))]" />
-                    <span>{house.bedrooms}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-white/80 text-sm">
-                    <Bath className="w-4 h-4 text-[hsl(var(--gold))]" />
-                    <span>{house.bathrooms}</span>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setSheetState("half")}
-                  className="text-white/60"
-                >
-                  <ChevronUp className="w-5 h-5" />
-                </button>
+              {/* Left side - title & badge */}
+              <div>
+                <h2 className="text-lg font-bold text-white drop-shadow-lg font-rising">
+                  {house.name}
+                </h2>
+                <p className="text-white/70 text-xs mb-2">{house.projectLabel}</p>
+                {viewMode === "gallery" && realPhotos.length > 0 && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                    currentIndex < realPhotos.length 
+                      ? "bg-[hsl(var(--gold))] text-[hsl(var(--charcoal))]"
+                      : "bg-white/20 text-white"
+                  }`}>
+                    {currentIndex < realPhotos.length ? "РЕАЛЬНОЕ ФОТО" : "ВИЗУАЛИЗАЦИЯ"}
+                  </span>
+                )}
               </div>
 
-              {/* CTA */}
-              <Button
-                onClick={() => { setSheetState("full"); setShowForm(true); }}
-                className="w-full h-12 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-[hsl(var(--charcoal))] font-semibold rounded-xl"
+              {/* Right side - close button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); isFullscreen ? exitFullscreen(e) : onClose(); }}
+                className="w-9 h-9 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/60 transition-colors"
               >
-                Получить консультацию
-              </Button>
-            </div>
-          )}
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </motion.div>
 
-          {/* Half/Full content */}
-          {sheetState !== "collapsed" && (
-            <div className="h-full overflow-y-auto px-5 pb-8">
-              <AnimatePresence mode="wait">
-                {showSuccess ? (
-                  <SuccessContent onClose={onClose} />
-                ) : showForm ? (
-                  <FormContent 
-                    houseName={house.name}
-                    onBack={() => setShowForm(false)}
-                    onSuccess={() => setShowSuccess(true)}
-                  />
-                ) : (
-                  <DetailsContent 
-                    house={house}
-                    sheetState={sheetState}
-                    onConsult={() => setShowForm(true)}
-                  />
-                )}
-              </AnimatePresence>
+            {/* View mode toggle */}
+            <motion.div 
+              className="absolute top-8 left-1/2 -translate-x-1/2 z-20"
+              animate={{ opacity: isFullscreen && !controlsVisible ? 0 : 1, y: isFullscreen && !controlsVisible ? -30 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex bg-black/40 backdrop-blur-sm rounded-full p-1">
+                <button
+                  onClick={(e) => { e.stopPropagation(); setViewMode("gallery"); setCurrentIndex(0); }}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    viewMode === "gallery" ? "bg-white text-black" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  <Camera className="w-3 h-3" />
+                  <span className="hidden sm:inline">Фото</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setViewMode("plans"); setCurrentIndex(0); }}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    viewMode === "plans" ? "bg-white text-black" : "text-white/70 hover:text-white"
+                  }`}
+                >
+                  <Layout className="w-3 h-3" />
+                  <span className="hidden sm:inline">План</span>
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Navigation arrows - desktop only */}
+            <div className="hidden md:flex absolute inset-y-0 left-4 right-4 items-center justify-between pointer-events-none z-10">
+              <motion.button
+                onClick={(e) => { e.stopPropagation(); currentIndex > 0 && setCurrentIndex(prev => prev - 1); }}
+                className={`p-2 bg-black/30 backdrop-blur-sm rounded-full pointer-events-auto hover:bg-black/50 transition-all ${
+                  currentIndex === 0 ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+                animate={{ opacity: isFullscreen && !controlsVisible ? 0 : (currentIndex === 0 ? 0 : 1) }}
+              >
+                <ChevronLeft className="w-5 h-5 text-white" />
+              </motion.button>
+              <motion.button
+                onClick={(e) => { e.stopPropagation(); currentIndex < totalImages - 1 && setCurrentIndex(prev => prev + 1); }}
+                className={`p-2 bg-black/30 backdrop-blur-sm rounded-full pointer-events-auto hover:bg-black/50 transition-all ${
+                  currentIndex === totalImages - 1 ? "opacity-0 pointer-events-none" : "opacity-100"
+                }`}
+                animate={{ opacity: isFullscreen && !controlsVisible ? 0 : (currentIndex === totalImages - 1 ? 0 : 1) }}
+              >
+                <ChevronRight className="w-5 h-5 text-white" />
+              </motion.button>
             </div>
-          )}
+
+            {/* Fullscreen hint */}
+            <AnimatePresence>
+              {!isFullscreen && !showForm && !showDetails && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ delay: 1 }}
+                  className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 md:hidden"
+                >
+                  <span className="text-white/50 text-xs bg-black/30 px-3 py-1 rounded-full backdrop-blur-sm">
+                    Нажмите для полного экрана
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+
+          {/* Bottom Panel - "Sandy mist" effect */}
+          <AnimatePresence>
+            {!isFullscreen && (
+              <motion.div
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 100, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="absolute bottom-0 left-0 right-0 z-30"
+              >
+                {/* Sandy mist background */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[hsl(38_25%_20%/0.95)] via-[hsl(38_25%_15%/0.85)] to-transparent backdrop-blur-xl" />
+                
+                {/* Content */}
+                <div className="relative px-5 pt-6 pb-6 md:pb-8">
+                  <AnimatePresence mode="wait">
+                    {showSuccess ? (
+                      <SuccessContent key="success" onClose={onClose} />
+                    ) : showForm ? (
+                      <FormContent 
+                        key="form"
+                        houseName={house.name}
+                        onBack={() => setShowForm(false)}
+                        onSuccess={() => setShowSuccess(true)}
+                      />
+                    ) : showDetails ? (
+                      <DetailsContent 
+                        key="details"
+                        house={house}
+                        onBack={() => setShowDetails(false)}
+                        onConsult={() => setShowForm(true)}
+                      />
+                    ) : (
+                      <QuickAttributesContent 
+                        key="quick"
+                        house={house}
+                        onDetails={() => setShowDetails(true)}
+                        onConsult={() => setShowForm(true)}
+                      />
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Fullscreen bottom controls */}
+          <AnimatePresence>
+            {isFullscreen && controlsVisible && (
+              <motion.div
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 50, opacity: 0 }}
+                className="absolute bottom-0 left-0 right-0 z-30 p-4"
+              >
+                <div className="flex gap-3">
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); exitFullscreen(e); setShowDetails(true); }}
+                    variant="outline"
+                    className="flex-1 h-11 border-white/20 bg-black/30 backdrop-blur-sm text-white hover:bg-black/50 rounded-xl"
+                  >
+                    <Info className="w-4 h-4 mr-2" />
+                    Подробнее
+                  </Button>
+                  <Button
+                    onClick={(e) => { e.stopPropagation(); exitFullscreen(e); setShowForm(true); }}
+                    className="flex-1 h-11 bg-[hsl(var(--gold))] text-[hsl(var(--charcoal))] hover:bg-[hsl(var(--gold-dark))] font-semibold rounded-xl"
+                  >
+                    Консультация
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 }
 
-// Details Content
-function DetailsContent({ house, sheetState, onConsult }: { house: HouseModel; sheetState: SheetState; onConsult: () => void }) {
+// Quick Attributes Content
+function QuickAttributesContent({ 
+  house, 
+  onDetails, 
+  onConsult 
+}: { 
+  house: HouseModel; 
+  onDetails: () => void;
+  onConsult: () => void;
+}) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
     >
-      {/* Attributes Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-white/5 rounded-xl p-4">
-          <Maximize className="w-5 h-5 text-[hsl(var(--gold))] mb-2" />
-          <p className="text-xl font-bold text-white">{house.area} м²</p>
-          <p className="text-white/50 text-xs">Площадь</p>
+      {/* Compact attributes row */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <Maximize className="w-4 h-4 text-[hsl(var(--gold))]" />
+            <span className="text-white/90 text-sm font-medium">{house.area}м²</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Layers className="w-4 h-4 text-[hsl(var(--gold))]" />
+            <span className="text-white/90 text-sm">{house.floors} эт.</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <BedDouble className="w-4 h-4 text-[hsl(var(--gold))]" />
+            <span className="text-white/90 text-sm">{house.bedrooms}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Bath className="w-4 h-4 text-[hsl(var(--gold))]" />
+            <span className="text-white/90 text-sm">{house.bathrooms}</span>
+          </div>
+          {house.hasVeranda && (
+            <div className="flex items-center gap-1.5">
+              <Trees className="w-4 h-4 text-[hsl(var(--gold))]" />
+              <span className="text-white/90 text-sm">Веранда</span>
+            </div>
+          )}
         </div>
-        <div className="bg-white/5 rounded-xl p-4">
-          <Layers className="w-5 h-5 text-[hsl(var(--gold))] mb-2" />
-          <p className="text-xl font-bold text-white">{house.floors}</p>
-          <p className="text-white/50 text-xs">Этажей</p>
-        </div>
-        <div className="bg-white/5 rounded-xl p-4">
-          <BedDouble className="w-5 h-5 text-[hsl(var(--gold))] mb-2" />
-          <p className="text-xl font-bold text-white">{house.bedrooms}</p>
-          <p className="text-white/50 text-xs">Спальни</p>
-        </div>
-        <div className="bg-white/5 rounded-xl p-4">
-          <Bath className="w-5 h-5 text-[hsl(var(--gold))] mb-2" />
-          <p className="text-xl font-bold text-white">{house.bathrooms}</p>
-          <p className="text-white/50 text-xs">Санузлы</p>
-        </div>
+        <button
+          onClick={onDetails}
+          className="text-white/60 hover:text-white text-xs underline underline-offset-2"
+        >
+          Ещё
+        </button>
       </div>
 
-      {/* Veranda */}
-      {house.hasVeranda && (
-        <div className="bg-[hsl(var(--gold))]/10 rounded-xl p-4 mb-6 flex items-center gap-3">
-          <Trees className="w-5 h-5 text-[hsl(var(--gold))]" />
-          <div>
-            <p className="text-white font-medium">Веранда</p>
-            {house.verandaArea && <p className="text-white/50 text-sm">{house.verandaArea} м²</p>}
-          </div>
-        </div>
-      )}
-
-      {/* Full state features */}
-      {sheetState === "full" && (
-        <div className="space-y-4 mb-6">
-          <h3 className="text-white font-semibold">Особенности</h3>
-          <ul className="space-y-2">
-            {[
-              "Панорамное остекление",
-              "Высокие потолки",
-              "Качественная теплоизоляция",
-              "Современные материалы"
-            ].map((feature, i) => (
-              <li key={i} className="flex items-center gap-2 text-white/70 text-sm">
-                <div className="w-1.5 h-1.5 bg-[hsl(var(--gold))] rounded-full" />
-                {feature}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* CTA */}
+      {/* CTA Button */}
       <Button
         onClick={onConsult}
-        className="w-full h-12 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-[hsl(var(--charcoal))] font-semibold rounded-xl"
+        className="w-full h-12 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-[hsl(var(--charcoal))] font-semibold rounded-xl shadow-lg shadow-[hsl(var(--gold))]/20"
       >
         Получить консультацию
       </Button>
@@ -399,8 +529,99 @@ function DetailsContent({ house, sheetState, onConsult }: { house: HouseModel; s
   );
 }
 
-// Form Content
-function FormContent({ houseName, onBack, onSuccess }: { houseName: string; onBack: () => void; onSuccess: () => void }) {
+// Details Content
+function DetailsContent({ 
+  house, 
+  onBack,
+  onConsult 
+}: { 
+  house: HouseModel; 
+  onBack: () => void;
+  onConsult: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="max-h-[40vh] overflow-y-auto"
+    >
+      <button 
+        onClick={onBack} 
+        className="flex items-center gap-1 text-white/60 text-sm mb-4 hover:text-white transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Назад
+      </button>
+
+      {/* Attributes Grid */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+          <Maximize className="w-4 h-4 text-[hsl(var(--gold))] mb-1" />
+          <p className="text-lg font-bold text-white">{house.area} м²</p>
+          <p className="text-white/50 text-xs">Площадь</p>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+          <Layers className="w-4 h-4 text-[hsl(var(--gold))] mb-1" />
+          <p className="text-lg font-bold text-white">{house.floors}</p>
+          <p className="text-white/50 text-xs">Этажей</p>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+          <BedDouble className="w-4 h-4 text-[hsl(var(--gold))] mb-1" />
+          <p className="text-lg font-bold text-white">{house.bedrooms}</p>
+          <p className="text-white/50 text-xs">Спальни</p>
+        </div>
+        <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+          <Bath className="w-4 h-4 text-[hsl(var(--gold))] mb-1" />
+          <p className="text-lg font-bold text-white">{house.bathrooms}</p>
+          <p className="text-white/50 text-xs">Санузлы</p>
+        </div>
+      </div>
+
+      {/* Veranda */}
+      {house.hasVeranda && (
+        <div className="bg-[hsl(var(--gold))]/10 rounded-xl p-3 mb-4 flex items-center gap-3 border border-[hsl(var(--gold))]/20">
+          <Trees className="w-5 h-5 text-[hsl(var(--gold))]" />
+          <div>
+            <p className="text-white font-medium text-sm">Веранда</p>
+            {house.verandaArea && <p className="text-white/50 text-xs">{house.verandaArea} м²</p>}
+          </div>
+        </div>
+      )}
+
+      {/* Features */}
+      <div className="mb-4">
+        <h4 className="text-white/70 text-xs uppercase tracking-wide mb-2">Особенности</h4>
+        <div className="flex flex-wrap gap-2">
+          {["Панорамное остекление", "Высокие потолки", "Теплоизоляция", "Современные материалы"].map((f, i) => (
+            <span key={i} className="text-white/80 text-xs bg-white/5 px-2 py-1 rounded-lg border border-white/5">
+              {f}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* CTA */}
+      <Button
+        onClick={onConsult}
+        className="w-full h-11 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-[hsl(var(--charcoal))] font-semibold rounded-xl"
+      >
+        Получить консультацию
+      </Button>
+    </motion.div>
+  );
+}
+
+// Form Content - compact, overlays on photo background
+function FormContent({ 
+  houseName, 
+  onBack, 
+  onSuccess 
+}: { 
+  houseName: string; 
+  onBack: () => void; 
+  onSuccess: () => void;
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [contact, setContact] = useState("phone");
@@ -423,47 +644,51 @@ function FormContent({ houseName, onBack, onSuccess }: { houseName: string; onBa
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      <button onClick={onBack} className="flex items-center gap-1 text-white/60 text-sm mb-4">
+      <button 
+        onClick={onBack} 
+        className="flex items-center gap-1 text-white/60 text-sm mb-3 hover:text-white transition-colors"
+      >
         <ChevronLeft className="w-4 h-4" />
         Назад
       </button>
 
-      <h3 className="text-xl font-bold text-white mb-1">Консультация</h3>
-      <p className="text-white/50 text-sm mb-6">{houseName}</p>
+      <h3 className="text-lg font-bold text-white mb-1">Консультация</h3>
+      <p className="text-white/50 text-xs mb-4">{houseName}</p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Ваше имя"
-          className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
+          className="h-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 rounded-xl focus:border-[hsl(var(--gold))]/50"
           required
         />
         <Input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+996 XXX XXX XXX"
-          className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl"
+          className="h-11 bg-white/10 border-white/10 text-white placeholder:text-white/40 rounded-xl focus:border-[hsl(var(--gold))]/50"
           required
         />
         
         <div className="flex gap-2">
           {[
-            { id: "phone", icon: Phone },
-            { id: "telegram", icon: Send },
-            { id: "whatsapp", icon: MessageCircle },
+            { id: "phone", icon: Phone, label: "Звонок" },
+            { id: "telegram", icon: Send, label: "Telegram" },
+            { id: "whatsapp", icon: MessageCircle, label: "WhatsApp" },
           ].map((m) => (
             <button
               key={m.id}
               type="button"
               onClick={() => setContact(m.id)}
-              className={`flex-1 h-12 rounded-xl flex items-center justify-center transition-all ${
+              className={`flex-1 h-10 rounded-xl flex items-center justify-center gap-1.5 text-xs transition-all ${
                 contact === m.id
                   ? "bg-[hsl(var(--gold))] text-[hsl(var(--charcoal))]"
-                  : "bg-white/5 text-white/50"
+                  : "bg-white/5 text-white/60 hover:bg-white/10"
               }`}
             >
-              <m.icon className="w-5 h-5" />
+              <m.icon className="w-4 h-4" />
+              <span className="hidden sm:inline">{m.label}</span>
             </button>
           ))}
         </div>
@@ -471,9 +696,9 @@ function FormContent({ houseName, onBack, onSuccess }: { houseName: string; onBa
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-[hsl(var(--charcoal))] font-semibold rounded-xl"
+          className="w-full h-11 bg-gradient-to-r from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] text-[hsl(var(--charcoal))] font-semibold rounded-xl disabled:opacity-50"
         >
-          {isSubmitting ? "Отправка..." : "Отправить"}
+          {isSubmitting ? "Отправка..." : "Отправить заявку"}
         </Button>
       </form>
     </motion.div>
@@ -486,22 +711,21 @@ function SuccessContent({ onClose }: { onClose: () => void }) {
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center justify-center py-8"
+      exit={{ opacity: 0, scale: 0.9 }}
+      className="text-center py-4"
     >
-      <div className="w-16 h-16 bg-[hsl(var(--gold))]/20 rounded-full flex items-center justify-center mb-4">
-        <CheckCircle className="w-8 h-8 text-[hsl(var(--gold))]" />
+      <div className="w-14 h-14 bg-[hsl(var(--gold))]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+        <CheckCircle className="w-7 h-7 text-[hsl(var(--gold))]" />
       </div>
-      <h3 className="text-xl font-bold text-white mb-2">Спасибо!</h3>
-      <p className="text-white/60 text-center mb-6">Свяжемся в течение 15 минут</p>
+      <h3 className="text-lg font-bold text-white mb-1">Заявка отправлена!</h3>
+      <p className="text-white/60 text-sm mb-4">Мы свяжемся с вами в ближайшее время</p>
       <Button
         onClick={onClose}
         variant="outline"
-        className="border-white/20 text-white hover:bg-white/10"
+        className="border-white/20 text-white hover:bg-white/10 rounded-xl"
       >
         Закрыть
       </Button>
     </motion.div>
   );
 }
-
-export default HouseModalVariantB;
