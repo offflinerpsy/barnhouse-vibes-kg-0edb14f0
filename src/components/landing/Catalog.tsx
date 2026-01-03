@@ -680,34 +680,38 @@ interface CardImageWithSkeletonProps {
   className?: string;
 }
 
-function CardImageWithSkeleton({ src, alt, className = "" }: CardImageWithSkeletonProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+const CardImageWithSkeleton = forwardRef<HTMLImageElement, CardImageWithSkeletonProps>(
+  function CardImageWithSkeleton({ src, alt, className = "" }, ref) {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [hasError, setHasError] = useState(false);
 
-  return (
-    <>
-      {/* Skeleton shimmer effect */}
-      {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-muted overflow-hidden z-0">
-          <div 
-            className="absolute inset-0 animate-shimmer"
-            style={{
-              background: "linear-gradient(90deg, transparent 0%, rgba(195,153,107,0.15) 50%, transparent 100%)"
-            }}
-          />
-        </div>
-      )}
-      <img
-        src={src}
-        alt={alt}
-        className={`${className} ${isLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
-        loading="lazy"
-        onLoad={() => setIsLoaded(true)}
-        onError={() => setHasError(true)}
-      />
-    </>
-  );
-}
+    return (
+      <>
+        {/* Skeleton shimmer effect */}
+        {!isLoaded && !hasError && (
+          <div className="absolute inset-0 bg-muted overflow-hidden z-0">
+            <div 
+              className="absolute inset-0 animate-shimmer"
+              style={{
+                background: "linear-gradient(90deg, transparent 0%, rgba(195,153,107,0.15) 50%, transparent 100%)"
+              }}
+            />
+          </div>
+        )}
+        <img
+          ref={ref}
+          src={src}
+          alt={alt}
+          className={`${className} ${isLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+          loading="lazy"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
+        />
+      </>
+    );
+  }
+);
+CardImageWithSkeleton.displayName = "CardImageWithSkeleton";
 
 // Компонент модального окна - унифицированный стиль
 interface HouseModalProps {
