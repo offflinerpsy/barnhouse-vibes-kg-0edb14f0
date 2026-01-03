@@ -231,7 +231,7 @@ function BathroomIcon() {
   );
 }
 
-// Model picker sheet
+// Model picker sheet with swipe-up gesture and full-screen grid
 function ModelPickerSheet({
   open,
   onClose,
@@ -245,6 +245,16 @@ function ModelPickerSheet({
   currentModelId: string;
   onSelect: (id: string) => void;
 }) {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // Swipe down to close
+    if (info.offset.y > 80) {
+      onClose();
+    }
+  };
+
+  // Calculate grid layout based on number of models to fit screen
+  const gridCols = models.length <= 6 ? 2 : models.length <= 9 ? 3 : 2;
+
   return (
     <AnimatePresence>
       {open && (
@@ -255,12 +265,24 @@ function ModelPickerSheet({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 350 }}
-            className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95`}
-            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={handleDragEnd}
+            className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95 flex flex-col`}
+            style={{ 
+              paddingBottom: "env(safe-area-inset-bottom)",
+              maxHeight: "calc(100% - env(safe-area-inset-top) - 60px)",
+            }}
           >
-            <div className="px-5 pt-3 pb-5">
-              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20" />
-              <div className="flex items-center justify-between mb-5">
+            {/* Drag handle */}
+            <div className="flex-shrink-0 pt-3 pb-2 cursor-grab active:cursor-grabbing">
+              <div className="mx-auto h-1.5 w-12 rounded-full bg-white/30" />
+            </div>
+
+            {/* Header */}
+            <div className="flex-shrink-0 px-5 pb-4">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Grid3X3 className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-semibold text-white">Выбор модели</h3>
@@ -269,29 +291,58 @@ function ModelPickerSheet({
                   <X className="h-5 w-5 text-white/80" />
                 </button>
               </div>
+            </div>
 
-              <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1 -mr-1">
+            {/* Grid of models - fits screen height without scroll */}
+            <div className="flex-1 px-4 pb-4">
+              <div 
+                className="h-full grid gap-2"
+                style={{ 
+                  gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+                  gridAutoRows: `1fr`,
+                }}
+              >
                 {models.map((m) => {
                   const active = m.id === currentModelId;
+                  const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
                   return (
                     <button
                       key={m.id}
                       onClick={() => onSelect(m.id)}
-                      className={`w-full flex items-center gap-4 rounded-2xl px-4 py-3.5 transition-all ${
+                      className={`relative rounded-2xl overflow-hidden transition-all ${
                         active
-                          ? "bg-primary/15 border-2 border-primary/50"
-                          : `${glassPanelLight} hover:bg-white/[0.08]`
+                          ? "ring-2 ring-primary ring-offset-2 ring-offset-charcoal shadow-lg shadow-primary/20"
+                          : "hover:ring-1 hover:ring-white/30"
                       }`}
                     >
-                      <HouseSchematic model={m} size="md" />
-                      <div className="flex-1 text-left min-w-0">
-                        <div className="text-base font-semibold text-white truncate">{m.name}</div>
-                        <div className="text-sm text-white/50">{m.floors}эт • {m.bedrooms}сп • {m.bathrooms}с/у</div>
+                      {/* Thumbnail */}
+                      <img 
+                        src={thumb} 
+                        alt={m.name} 
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      
+                      {/* Model info */}
+                      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <HouseSchematic model={m} size="sm" />
+                            <span className="text-xs font-medium text-white/80">
+                              {m.floors}эт • {m.bedrooms}сп
+                            </span>
+                          </div>
+                          <span className="text-sm font-bold text-primary">{m.area}м²</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-primary">{m.area}м²</span>
-                        {active && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
-                      </div>
+
+                      {/* Active indicator */}
+                      {active && (
+                        <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
+                      )}
                     </button>
                   );
                 })}
@@ -745,19 +796,32 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           </div>
         </section>
 
-        {/* Pullable catalog handle at bottom */}
-        <button
-          onClick={() => setModelPickerOpen(true)}
-          className={`absolute left-4 right-4 z-30 rounded-t-2xl ${glassPanel} transition-all active:scale-[0.98]`}
+        {/* Swipeable catalog drawer at bottom */}
+        <motion.div
+          className={`absolute left-4 right-4 z-30 rounded-t-2xl ${glassPanel} cursor-grab active:cursor-grabbing`}
           style={{ bottom: 0, paddingBottom: "env(safe-area-inset-bottom)" }}
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0.5, bottom: 0 }}
+          onDragEnd={(_, info) => {
+            // Swipe up to open full catalog
+            if (info.offset.y < -40) {
+              setModelPickerOpen(true);
+            }
+          }}
+          onClick={() => setModelPickerOpen(true)}
         >
           <div className="flex flex-col items-center pt-2 pb-3">
-            {/* Handle bar */}
-            <div className="w-10 h-1 rounded-full bg-white/30 mb-2" />
+            {/* Handle bar with upward hint animation */}
+            <motion.div 
+              className="w-10 h-1.5 rounded-full bg-white/40 mb-2"
+              animate={{ y: [0, -3, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+            />
             
-            {/* Horizontal scroll of model previews */}
-            <div className="flex items-center gap-3 px-4 overflow-x-auto w-full scrollbar-hide">
-              {filteredModels.map((m, idx) => {
+            {/* Compact preview of models */}
+            <div className="flex items-center justify-center gap-2 px-4 w-full">
+              {filteredModels.slice(0, 5).map((m, idx) => {
                 const isActive = idx === safeIndex;
                 const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
                 return (
@@ -769,38 +833,34 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                       setDirection(idx > safeIndex ? 1 : -1); 
                       setCurrentModelIndex(idx); 
                     }}
-                    className={`relative flex-shrink-0 rounded-xl overflow-hidden transition-all ${
-                      isActive ? "ring-2 ring-primary ring-offset-1 ring-offset-charcoal" : "opacity-60 hover:opacity-80"
+                    className={`relative flex-shrink-0 rounded-lg overflow-hidden transition-all ${
+                      isActive ? "ring-2 ring-primary scale-110" : "opacity-50 hover:opacity-80"
                     }`}
                   >
                     <img 
                       src={thumb} 
                       alt={m.name} 
-                      className="w-14 h-10 object-cover" 
+                      className="w-11 h-8 object-cover" 
                       loading="lazy" 
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-0.5 left-0 right-0 text-center">
-                      <span className="text-[9px] font-bold text-white drop-shadow">{m.area}м²</span>
-                    </div>
                   </button>
                 );
               })}
-              {/* "More" indicator */}
-              <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-10 opacity-60">
-                <ChevronRight className="h-4 w-4 text-white/50" />
-                <span className="text-[9px] text-white/40">ещё</span>
-              </div>
+              {filteredModels.length > 5 && (
+                <div className="flex-shrink-0 w-11 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <span className="text-xs font-bold text-white/60">+{filteredModels.length - 5}</span>
+                </div>
+              )}
             </div>
             
-            {/* Label */}
-            <div className="flex items-center gap-1.5 mt-2">
+            {/* Label with swipe hint */}
+            <div className="flex items-center gap-2 mt-2">
               <Grid3X3 className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-medium text-white/60">Каталог моделей</span>
-              <span className="text-xs font-semibold text-primary">({safeIndex + 1}/{filteredModels.length})</span>
+              <span className="text-xs font-medium text-white/60">Потяните вверх</span>
+              <span className="text-xs font-semibold text-primary">• {filteredModels.length} моделей</span>
             </div>
           </div>
-        </button>
+        </motion.div>
 
         {/* Gallery sheet */}
         <AnimatePresence>
