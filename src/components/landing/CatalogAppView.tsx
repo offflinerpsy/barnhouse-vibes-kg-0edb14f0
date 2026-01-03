@@ -1,13 +1,9 @@
 /**
- * ERA Mobile Catalog — Instagram/TikTok style
- * - Fullscreen photo with pinch-to-zoom
- * - Swipe left/right: switch models
- * - Swipe up: open gallery
- * - Persistent model picker + application form
- * - Glassmorphism UI with gold accents
+ * ERA Mobile Catalog — Instagram/TikTok style (v2 - Polished)
+ * Premium glassmorphism UI with refined spacing and hierarchy
  */
 
-import { useCallback, useMemo, useState, useRef } from "react";
+import { useCallback, useMemo, useState, useRef, forwardRef } from "react";
 import { AnimatePresence, motion, PanInfo } from "framer-motion";
 import {
   ChevronLeft,
@@ -20,7 +16,7 @@ import {
   MessageCircle,
   X,
   Maximize2,
-  Ruler,
+  Layers,
 } from "lucide-react";
 import { ContactModal } from "@/components/landing/ContactModal";
 
@@ -44,126 +40,16 @@ type EraModel = {
 };
 
 const ERA_MODELS: EraModel[] = [
-  {
-    id: "model-1",
-    name: "Model 1",
-    area: 18,
-    floors: 1,
-    bedrooms: 1,
-    bathrooms: 1,
-    catalogPath: "model-1-18",
-    galleryCount: 4,
-    galleryExtraCount: 25,
-    floorPlanCount: 3,
-  },
-  {
-    id: "model-2",
-    name: "Model 2",
-    area: 36,
-    floors: 1,
-    bedrooms: 1,
-    bathrooms: 1,
-    catalogPath: "model-1-36",
-    galleryCount: 4,
-    galleryExtraCount: 24,
-    floorPlanCount: 1,
-  },
-  {
-    id: "model-3",
-    name: "Model 3",
-    area: 54,
-    floors: 1,
-    bedrooms: 2,
-    bathrooms: 1,
-    catalogPath: "model-1-54",
-    galleryCount: 8,
-    galleryExtraCount: 33,
-    floorPlanCount: 3,
-  },
-  {
-    id: "model-4",
-    name: "Model 4",
-    area: 81,
-    floors: 1,
-    bedrooms: 3,
-    bathrooms: 2,
-    catalogPath: "model-1-81",
-    galleryCount: 4,
-    galleryExtraCount: 34,
-    floorPlanCount: 0,
-  },
-  {
-    id: "model-5",
-    name: "Model 5",
-    area: 108,
-    floors: 1,
-    bedrooms: 4,
-    bathrooms: 2,
-    catalogPath: "model-1-108",
-    galleryCount: 4,
-    galleryExtraCount: 54,
-    floorPlanCount: 3,
-  },
-  {
-    id: "model-6",
-    name: "Model 6",
-    area: 135,
-    floors: 1,
-    bedrooms: 4,
-    bathrooms: 2,
-    catalogPath: "model-1-135",
-    galleryCount: 5,
-    galleryExtraCount: 38,
-    floorPlanCount: 3,
-  },
-  {
-    id: "model-2x-36",
-    name: "Model 2X",
-    area: 36,
-    floors: 2,
-    bedrooms: 1,
-    bathrooms: 1,
-    catalogPath: "model-2-36",
-    galleryCount: 4,
-    galleryExtraCount: 0,
-    floorPlanCount: 0,
-  },
-  {
-    id: "model-2x-72",
-    name: "Model 2X",
-    area: 72,
-    floors: 2,
-    bedrooms: 2,
-    bathrooms: 1,
-    catalogPath: "model-2-72",
-    galleryCount: 4,
-    galleryExtraCount: 6,
-    floorPlanCount: 0,
-  },
-  {
-    id: "model-2x-120",
-    name: "Model 2X",
-    area: 120,
-    floors: 2,
-    bedrooms: 3,
-    bathrooms: 2,
-    catalogPath: "model-2-120",
-    galleryCount: 4,
-    galleryExtraCount: 0,
-    floorPlanCount: 3,
-  },
-  {
-    id: "model-2x-204",
-    name: "Model 2X",
-    area: 204,
-    floors: 2,
-    bedrooms: 5,
-    bathrooms: 3,
-    catalogPath: "model-2-204",
-    galleryCount: 6,
-    galleryExtraCount: 0,
-    floorPlanCount: 0,
-  },
+  { id: "model-1", name: "Model 1", area: 18, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-18", galleryCount: 4, galleryExtraCount: 25, floorPlanCount: 3 },
+  { id: "model-2", name: "Model 2", area: 36, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-36", galleryCount: 4, galleryExtraCount: 24, floorPlanCount: 1 },
+  { id: "model-3", name: "Model 3", area: 54, floors: 1, bedrooms: 2, bathrooms: 1, catalogPath: "model-1-54", galleryCount: 8, galleryExtraCount: 33, floorPlanCount: 3 },
+  { id: "model-4", name: "Model 4", area: 81, floors: 1, bedrooms: 3, bathrooms: 2, catalogPath: "model-1-81", galleryCount: 4, galleryExtraCount: 34, floorPlanCount: 0 },
+  { id: "model-5", name: "Model 5", area: 108, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-108", galleryCount: 4, galleryExtraCount: 54, floorPlanCount: 3 },
+  { id: "model-6", name: "Model 6", area: 135, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-135", galleryCount: 5, galleryExtraCount: 38, floorPlanCount: 3 },
+  { id: "model-2x-36", name: "Model 2X", area: 36, floors: 2, bedrooms: 1, bathrooms: 1, catalogPath: "model-2-36", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 0 },
+  { id: "model-2x-72", name: "Model 2X", area: 72, floors: 2, bedrooms: 2, bathrooms: 1, catalogPath: "model-2-72", galleryCount: 4, galleryExtraCount: 6, floorPlanCount: 0 },
+  { id: "model-2x-120", name: "Model 2X", area: 120, floors: 2, bedrooms: 3, bathrooms: 2, catalogPath: "model-2-120", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 3 },
+  { id: "model-2x-204", name: "Model 2X", area: 204, floors: 2, bedrooms: 5, bathrooms: 3, catalogPath: "model-2-204", galleryCount: 6, galleryExtraCount: 0, floorPlanCount: 0 },
 ];
 
 const SWIPE_X = 70;
@@ -188,149 +74,119 @@ function getFloorPlans(model: EraModel): string[] {
   return plans;
 }
 
-// Schematic model icon - shows floors, size, and layout intuitively
-function ModelIcon({ model }: { model: EraModel }) {
-  const sizeScale = Math.min(1, model.area / 120); // Normalize to 120m²
-  const width = 20 + sizeScale * 12;
+// Clean schematic house icon
+function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" | "md" }) {
+  const isSmall = size === "sm";
+  const w = isSmall ? 24 : 32;
+  const h = isSmall ? 20 : 26;
   
   return (
-    <svg 
-      viewBox="0 0 40 32" 
-      className="w-8 h-6 md:w-10 md:h-7"
-      fill="none"
-    >
-      {/* Ground line */}
-      <line x1="2" y1="30" x2="38" y2="30" stroke="currentColor" strokeWidth="1" opacity="0.3" />
-      
+    <svg viewBox="0 0 32 26" width={w} height={h} fill="none" className="shrink-0">
       {model.floors === 1 ? (
-        // Single floor house
         <>
-          {/* Roof */}
-          <path 
-            d={`M${20 - width/2 - 2} 16 L20 8 L${20 + width/2 + 2} 16`}
-            stroke="hsl(var(--primary))" 
-            strokeWidth="2" 
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* House body */}
-          <rect 
-            x={20 - width/2} 
-            y="16" 
-            width={width} 
-            height="14" 
-            stroke="currentColor" 
-            strokeWidth="1.5"
-            fill="hsl(var(--primary) / 0.15)"
-            rx="1"
-          />
-          {/* Door */}
-          <rect x="17" y="22" width="6" height="8" fill="hsl(var(--primary) / 0.4)" rx="0.5" />
-          {/* Windows based on bedrooms */}
-          {model.bedrooms >= 2 && <rect x={20 - width/2 + 2} y="19" width="4" height="4" fill="hsl(var(--primary) / 0.3)" rx="0.5" />}
-          {model.bedrooms >= 3 && <rect x={20 + width/2 - 6} y="19" width="4" height="4" fill="hsl(var(--primary) / 0.3)" rx="0.5" />}
+          <path d="M16 2 L4 11 L4 24 L28 24 L28 11 Z" fill="hsl(var(--primary) / 0.15)" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinejoin="round"/>
+          <path d="M16 2 L4 11" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M16 2 L28 11" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
+          <rect x="13" y="16" width="6" height="8" rx="1" fill="hsl(var(--primary) / 0.4)"/>
+          {model.bedrooms >= 2 && <rect x="6" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
+          {model.bedrooms >= 3 && <rect x="22" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
         </>
       ) : (
-        // Two floor house
         <>
-          {/* Roof */}
-          <path 
-            d={`M${20 - width/2 - 2} 10 L20 2 L${20 + width/2 + 2} 10`}
-            stroke="hsl(var(--primary))" 
-            strokeWidth="2" 
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {/* Second floor */}
-          <rect 
-            x={20 - width/2} 
-            y="10" 
-            width={width} 
-            height="10" 
-            stroke="currentColor" 
-            strokeWidth="1.5"
-            fill="hsl(var(--primary) / 0.2)"
-            rx="1"
-          />
-          {/* First floor */}
-          <rect 
-            x={20 - width/2} 
-            y="20" 
-            width={width} 
-            height="10" 
-            stroke="currentColor" 
-            strokeWidth="1.5"
-            fill="hsl(var(--primary) / 0.1)"
-            rx="1"
-          />
-          {/* Door */}
-          <rect x="17" y="23" width="6" height="7" fill="hsl(var(--primary) / 0.4)" rx="0.5" />
-          {/* Upper windows */}
-          <rect x={20 - width/2 + 3} y="13" width="4" height="4" fill="hsl(var(--primary) / 0.3)" rx="0.5" />
-          {model.bedrooms >= 3 && <rect x={20 + width/2 - 7} y="13" width="4" height="4" fill="hsl(var(--primary) / 0.3)" rx="0.5" />}
+          <path d="M16 2 L4 9 L4 24 L28 24 L28 9 Z" fill="hsl(var(--primary) / 0.1)" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinejoin="round"/>
+          <path d="M16 2 L4 9" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M16 2 L28 9" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
+          <line x1="4" y1="16" x2="28" y2="16" stroke="hsl(var(--primary) / 0.4)" strokeWidth="1"/>
+          <rect x="13" y="18" width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.4)"/>
+          <rect x="7" y="10" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>
+          <rect x="21" y="10" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>
         </>
       )}
     </svg>
   );
 }
 
-function ActionButton({
-  icon: Icon,
-  label,
-  onClick,
-  variant = "glass",
-}: {
+// Glass panel base styles
+const glassPanel = "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
+const glassPanelLight = "bg-white/[0.06] backdrop-blur-xl border border-white/[0.1]";
+
+// Refined action button with better proportions
+const ActionButton = forwardRef<HTMLButtonElement, {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
-  variant?: "glass" | "primary";
-}) {
-  return (
-    <button onClick={onClick} className="flex flex-col items-center gap-1.5">
-      <div
-        className={
-          variant === "primary"
-            ? "w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-primary/90 backdrop-blur-xl border border-primary/50 shadow-lg shadow-primary/25 flex items-center justify-center"
-            : "w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-        }
-      >
-        <Icon
-          className={
-            variant === "primary"
-              ? "h-5 w-5 md:h-6 md:w-6 text-charcoal"
-              : "h-5 w-5 md:h-6 md:w-6 text-white"
-          }
-        />
-      </div>
-      <span className="text-[11px] md:text-xs font-medium text-white/80 leading-none">
-        {label}
-      </span>
-    </button>
-  );
-}
-
-function Chip({
-  icon: Icon,
-  value,
-  label,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  value: string;
-  label: string;
-}) {
-  return (
-    <div className="flex-none inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-2 whitespace-nowrap">
-      <Icon className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-      <span className="text-sm md:text-base font-semibold text-white">
-        {value}
-        <span className="ml-1 text-white/70 font-medium">{label}</span>
-      </span>
+  variant?: "default" | "primary";
+}>(({ icon: Icon, label, onClick, variant = "default" }, ref) => (
+  <button ref={ref} onClick={onClick} className="flex flex-col items-center gap-1">
+    <div className={
+      variant === "primary"
+        ? `w-11 h-11 rounded-[14px] bg-primary shadow-lg shadow-primary/30 flex items-center justify-center`
+        : `w-11 h-11 rounded-[14px] ${glassPanelLight} flex items-center justify-center`
+    }>
+      <Icon className={variant === "primary" ? "h-5 w-5 text-charcoal" : "h-5 w-5 text-white/90"} />
     </div>
+    <span className="text-[10px] font-medium text-white/60 tracking-wide uppercase">{label}</span>
+  </button>
+));
+ActionButton.displayName = "ActionButton";
+
+// Compact info chip
+const InfoChip = forwardRef<HTMLDivElement, {
+  icon: React.ReactNode;
+  value: string | number;
+  label: string;
+}>(({ icon, value, label }, ref) => (
+  <div ref={ref} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full ${glassPanelLight}`}>
+    <span className="text-primary">{icon}</span>
+    <span className="text-sm font-semibold text-white">{value}</span>
+    <span className="text-xs text-white/50">{label}</span>
+  </div>
+));
+InfoChip.displayName = "InfoChip";
+
+// Floor icon
+function FloorIcon({ floors }: { floors: number }) {
+  return (
+    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none">
+      {floors === 1 ? (
+        <>
+          <path d="M8 2 L2 7 L2 14 L14 14 L14 7 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2"/>
+        </>
+      ) : (
+        <>
+          <path d="M8 1 L2 5 L2 15 L14 15 L14 5 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2"/>
+          <line x1="2" y1="10" x2="14" y2="10" stroke="currentColor" strokeWidth="1" opacity="0.5"/>
+        </>
+      )}
+    </svg>
   );
 }
 
+// Bedroom icon
+function BedroomIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none">
+      <rect x="2" y="7" width="12" height="7" rx="1" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2"/>
+      <path d="M2 11 L14 11" stroke="currentColor" strokeWidth="1"/>
+      <rect x="4" y="4" width="3" height="3" rx="0.5" fill="currentColor" fillOpacity="0.4"/>
+      <rect x="9" y="4" width="3" height="3" rx="0.5" fill="currentColor" fillOpacity="0.4"/>
+    </svg>
+  );
+}
+
+// Bathroom icon
+function BathroomIcon() {
+  return (
+    <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none">
+      <path d="M2 8 L14 8 L14 13 L2 13 Z" stroke="currentColor" strokeWidth="1.5" fill="currentColor" fillOpacity="0.2"/>
+      <circle cx="4" cy="6" r="2" stroke="currentColor" strokeWidth="1.5"/>
+      <path d="M3 13 L3 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M13 13 L13 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+// Model picker sheet
 function ModelPickerSheet({
   open,
   onClose,
@@ -347,76 +203,49 @@ function ModelPickerSheet({
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 z-40"
-        >
-          <button
-            aria-label="Закрыть выбор модели"
-            onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40">
+          <button aria-label="Закрыть" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 320 }}
-            className="absolute left-0 right-0 bottom-0 rounded-t-3xl bg-charcoal/95 backdrop-blur-xl border-t border-white/15"
+            transition={{ type: "spring", damping: 30, stiffness: 350 }}
+            className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95`}
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            <div className="px-5 pt-3 pb-4">
-              <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-white/25" />
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="px-5 pt-3 pb-5">
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-white/20" />
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2.5">
                   <Grid3X3 className="h-5 w-5 text-primary" />
-                  <h3 className="text-base md:text-lg font-semibold text-white">
-                    Выбор модели
-                  </h3>
+                  <h3 className="text-lg font-semibold text-white">Выбор модели</h3>
                 </div>
-                <button
-                  onClick={onClose}
-                  className="w-10 h-10 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center"
-                >
-                  <X className="h-5 w-5 text-white" />
+                <button onClick={onClose} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+                  <X className="h-5 w-5 text-white/80" />
                 </button>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 gap-2.5 max-h-[55vh] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[55vh] overflow-y-auto pr-1 -mr-1">
                 {models.map((m) => {
                   const active = m.id === currentModelId;
                   return (
                     <button
                       key={m.id}
                       onClick={() => onSelect(m.id)}
-                      className={
+                      className={`w-full flex items-center gap-4 rounded-2xl px-4 py-3.5 transition-all ${
                         active
-                          ? "flex items-center gap-3 rounded-2xl px-4 py-3 bg-primary/15 border border-primary/40"
-                          : "flex items-center gap-3 rounded-2xl px-4 py-3 bg-white/5 border border-white/10 hover:border-white/20"
-                      }
+                          ? "bg-primary/15 border-2 border-primary/50"
+                          : `${glassPanelLight} hover:bg-white/[0.08]`
+                      }`}
                     >
-                      {/* Schematic icon */}
-                      <div className="flex-none text-white/80">
-                        <ModelIcon model={m} />
+                      <HouseSchematic model={m} size="md" />
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="text-base font-semibold text-white truncate">{m.name}</div>
+                        <div className="text-sm text-white/50">{m.floors}эт • {m.bedrooms}сп • {m.bathrooms}с/у</div>
                       </div>
-                      
-                      <div className="flex-1 text-left">
-                        <div className="text-base md:text-lg font-semibold text-white">
-                          {m.name}
-                        </div>
-                        <div className="text-sm md:text-base text-white/60">
-                          {m.floors} эт. • {m.bedrooms} спальн. • {m.bathrooms} с/у
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-base md:text-lg font-bold text-primary">
-                          {m.area}м²
-                        </div>
-                        {active && (
-                          <div className="h-2.5 w-2.5 rounded-full bg-primary" />
-                        )}
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-bold text-primary">{m.area}м²</span>
+                        {active && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                       </div>
                     </button>
                   );
@@ -431,20 +260,12 @@ function ModelPickerSheet({
 }
 
 const slideVariants = {
-  enter: (direction: 1 | -1) => ({
-    x: direction > 0 ? 80 : -80,
-    opacity: 0,
-    scale: 1.01,
-  }),
+  enter: (dir: 1 | -1) => ({ x: dir > 0 ? 60 : -60, opacity: 0, scale: 1.02 }),
   center: { x: 0, opacity: 1, scale: 1 },
-  exit: (direction: 1 | -1) => ({
-    x: direction > 0 ? -80 : 80,
-    opacity: 0,
-    scale: 0.99,
-  }),
+  exit: (dir: 1 | -1) => ({ x: dir > 0 ? -60 : 60, opacity: 0, scale: 0.98 }),
 };
 
-// Pinch-to-zoom lightbox component
+// Zoomable lightbox with pinch-to-zoom
 function ZoomableLightbox({
   src,
   alt,
@@ -484,10 +305,7 @@ function ZoomableLightbox({
       const distance = Math.hypot(dx, dy);
       const newScale = Math.min(4, Math.max(1, initialScaleRef.current * (distance / initialDistanceRef.current)));
       setScale(newScale);
-      
-      if (newScale === 1) {
-        setTranslate({ x: 0, y: 0 });
-      }
+      if (newScale === 1) setTranslate({ x: 0, y: 0 });
     }
   }, []);
 
@@ -499,17 +317,14 @@ function ZoomableLightbox({
     }
   }, [scale]);
 
-  // Double tap to zoom
   const handleDoubleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
-      // Double tap detected
       if (scale > 1) {
         setScale(1);
         setTranslate({ x: 0, y: 0 });
       } else {
         setScale(2.5);
-        // Zoom to tap point
         if ('touches' in e && e.touches[0]) {
           const rect = containerRef.current?.getBoundingClientRect();
           if (rect) {
@@ -523,59 +338,36 @@ function ZoomableLightbox({
     lastTapRef.current = now;
   }, [scale]);
 
-  const handlePanEnd = useCallback(
-    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (scale > 1.2) {
-        // When zoomed in, allow panning
-        setTranslate(prev => ({
-          x: prev.x + info.offset.x,
-          y: prev.y + info.offset.y,
-        }));
-        return;
-      }
-      
-      const absX = Math.abs(info.offset.x);
-      const absY = Math.abs(info.offset.y);
-      
-      if (absX > absY && absX > SWIPE_X) {
-        onNavigate(info.offset.x > 0 ? -1 : 1);
-        return;
-      }
-      if (absY > absX && info.offset.y > SWIPE_Y) {
-        onClose();
-      }
-    },
-    [scale, onNavigate, onClose]
-  );
+  const handlePanEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (scale > 1.2) {
+      setTranslate(prev => ({ x: prev.x + info.offset.x, y: prev.y + info.offset.y }));
+      return;
+    }
+    const absX = Math.abs(info.offset.x);
+    const absY = Math.abs(info.offset.y);
+    if (absX > absY && absX > SWIPE_X) {
+      onNavigate(info.offset.x > 0 ? -1 : 1);
+      return;
+    }
+    if (absY > absX && info.offset.y > SWIPE_Y) onClose();
+  }, [scale, onNavigate, onClose]);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center"
+      className="absolute inset-0 z-50 bg-black/95 backdrop-blur-2xl flex items-center justify-center"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
-      <button
-        aria-label="Закрыть"
-        onClick={onClose}
-        className="absolute top-4 right-4 z-10 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-      >
+      <button aria-label="Закрыть" onClick={onClose} className={`absolute top-4 right-4 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
         <X className="h-5 w-5 text-white" />
       </button>
 
-      <button
-        aria-label="Предыдущее"
-        onClick={() => onNavigate(-1)}
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-      >
+      <button aria-label="Предыдущее" onClick={() => onNavigate(-1)} className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
         <ChevronLeft className="h-5 w-5 text-white" />
       </button>
-      <button
-        aria-label="Следующее"
-        onClick={() => onNavigate(1)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-      >
+      <button aria-label="Следующее" onClick={() => onNavigate(1)} className={`absolute right-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
         <ChevronRight className="h-5 w-5 text-white" />
       </button>
 
@@ -591,7 +383,7 @@ function ZoomableLightbox({
         onTouchEnd={handleTouchEnd}
         onClick={handleDoubleTap}
         style={{ touchAction: scale > 1 ? "none" : "pan-y" }}
-        className="h-full w-full flex items-center justify-center p-4 cursor-zoom-in"
+        className="h-full w-full flex items-center justify-center p-4"
       >
         <motion.img
           src={src}
@@ -599,27 +391,19 @@ function ZoomableLightbox({
           className="max-h-full max-w-full object-contain rounded-xl select-none"
           draggable={false}
           decoding="async"
-          animate={{ 
-            scale,
-            x: translate.x,
-            y: translate.y,
-          }}
+          animate={{ scale, x: translate.x, y: translate.y }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
         />
       </motion.div>
 
-      <div
-        className="absolute left-1/2 -translate-x-1/2 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 px-5 py-2.5 text-sm font-semibold text-white/90"
-        style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}
-      >
+      <div className={`absolute left-1/2 -translate-x-1/2 rounded-full ${glassPanelLight} px-4 py-2 text-sm font-medium text-white/80`} style={{ bottom: "calc(24px + env(safe-area-inset-bottom))" }}>
         {currentIndex + 1} / {totalCount}
       </div>
-      
-      {/* Zoom hint */}
+
       {scale === 1 && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 text-xs text-white/50">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute bottom-16 left-1/2 -translate-x-1/2 text-xs text-white/40">
           Двойное касание для увеличения
-        </div>
+        </motion.div>
       )}
     </motion.div>
   );
@@ -629,12 +413,10 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [currentModelIndex, setCurrentModelIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [filter, setFilter] = useState<FilterType>("all");
-
   const [showGallery, setShowGallery] = useState(false);
   const [galleryTab, setGalleryTab] = useState<"photos" | "plans">("photos");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -646,190 +428,123 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
   const safeIndex = Math.min(currentModelIndex, Math.max(0, filteredModels.length - 1));
   const currentModel = filteredModels[safeIndex] ?? filteredModels[0];
-
   const allPhotos = useMemo(() => getAllPhotos(currentModel), [currentModel]);
   const floorPlans = useMemo(() => getFloorPlans(currentModel), [currentModel]);
   const mainPhoto = allPhotos[0] ?? `/catalog/${currentModel.catalogPath}/gallery/1.webp`;
 
   const triggerHaptic = useCallback(() => {
-    if ('vibrate' in navigator) {
-      navigator.vibrate(10);
-    }
+    if ('vibrate' in navigator) navigator.vibrate(8);
   }, []);
 
-  const goToModel = useCallback(
-    (dir: 1 | -1) => {
-      triggerHaptic();
-      setDirection(dir);
-      setCurrentModelIndex((prev) => {
-        const next = prev + dir;
-        if (next < 0) return filteredModels.length - 1;
-        if (next >= filteredModels.length) return 0;
-        return next;
-      });
-      setShowGallery(false);
-    },
-    [filteredModels.length, triggerHaptic]
-  );
+  const goToModel = useCallback((dir: 1 | -1) => {
+    triggerHaptic();
+    setDirection(dir);
+    setCurrentModelIndex((prev) => {
+      const next = prev + dir;
+      if (next < 0) return filteredModels.length - 1;
+      if (next >= filteredModels.length) return 0;
+      return next;
+    });
+    setShowGallery(false);
+  }, [filteredModels.length, triggerHaptic]);
 
-  const handlePanEnd = useCallback(
-    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (lightboxImage) return;
-      if (modelPickerOpen) return;
-      if (showGallery) return;
-
-      const absX = Math.abs(info.offset.x);
-      const absY = Math.abs(info.offset.y);
-
-      if (absX > absY && absX > SWIPE_X) {
-        goToModel(info.offset.x > 0 ? -1 : 1);
-        return;
-      }
-
-      if (absY > absX && info.offset.y < -SWIPE_Y) {
-        setShowGallery(true);
-      }
-    },
-    [goToModel, lightboxImage, modelPickerOpen, showGallery]
-  );
+  const handlePanEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (lightboxImage || modelPickerOpen || showGallery) return;
+    const absX = Math.abs(info.offset.x);
+    const absY = Math.abs(info.offset.y);
+    if (absX > absY && absX > SWIPE_X) {
+      goToModel(info.offset.x > 0 ? -1 : 1);
+      return;
+    }
+    if (absY > absX && info.offset.y < -SWIPE_Y) setShowGallery(true);
+  }, [goToModel, lightboxImage, modelPickerOpen, showGallery]);
 
   const lightboxPhotos = galleryTab === "photos" ? allPhotos : floorPlans;
-  const navigateLightbox = useCallback(
-    (dir: 1 | -1) => {
-      setLightboxIndex((prev) => {
-        const next = prev + dir;
-        if (next < 0) return lightboxPhotos.length - 1;
-        if (next >= lightboxPhotos.length) return 0;
-        return next;
-      });
-    },
-    [lightboxPhotos.length]
-  );
+  const navigateLightbox = useCallback((dir: 1 | -1) => {
+    setLightboxIndex((prev) => {
+      const next = prev + dir;
+      if (next < 0) return lightboxPhotos.length - 1;
+      if (next >= lightboxPhotos.length) return 0;
+      return next;
+    });
+  }, [lightboxPhotos.length]);
 
-  const handleCall = () => {
-    window.location.href = "tel:+996555123456";
-  };
-
+  const handleCall = () => { window.location.href = "tel:+996555123456"; };
   const handleWhatsApp = () => {
-    const text = encodeURIComponent(
-      `Здравствуйте! Интересует ${currentModel.name} ${currentModel.area}м²`
-    );
+    const text = encodeURIComponent(`Здравствуйте! Интересует ${currentModel.name} ${currentModel.area}м²`);
     window.open(`https://wa.me/996555123456?text=${text}`, "_blank");
   };
-
   const handleTelegram = () => {
     const text = encodeURIComponent(`Интересует ${currentModel.name} ${currentModel.area}м²`);
     window.open(`https://t.me/erahomes?text=${text}`, "_blank");
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-charcoal text-white"
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-charcoal text-white overflow-hidden">
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
 
-      {/* Stories-style progress indicator */}
-      <div 
-        className="absolute top-0 left-0 right-0 z-40 px-3 flex gap-1"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 10px)" }}
-      >
+      {/* Stories progress */}
+      <div className="absolute top-0 left-0 right-0 z-40 px-4 flex gap-1" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
         {filteredModels.map((model, idx) => (
           <button
             key={model.id}
-            onClick={() => {
-              triggerHaptic();
-              setDirection(idx > safeIndex ? 1 : -1);
-              setCurrentModelIndex(idx);
-            }}
-            className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/25"
+            onClick={() => { triggerHaptic(); setDirection(idx > safeIndex ? 1 : -1); setCurrentModelIndex(idx); }}
+            className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/20"
           >
             <motion.div
-              className="h-full bg-white rounded-full"
+              className="h-full bg-white rounded-full origin-left"
               initial={false}
-              animate={{ 
-                scaleX: idx === safeIndex ? 1 : 0,
-                originX: 0
-              }}
-              transition={{ 
-                duration: idx === safeIndex ? 0.3 : 0,
-                ease: "easeOut"
-              }}
+              animate={{ scaleX: idx === safeIndex ? 1 : idx < safeIndex ? 1 : 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
             />
           </button>
         ))}
       </div>
 
-      {/* Top bar */}
-      <header 
-        className="absolute top-0 left-0 right-0 z-30"
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 22px)" }}
-      >
-        <div className="px-3 pt-2 pb-2">
+      {/* Top controls */}
+      <header className="absolute top-0 left-0 right-0 z-30" style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}>
+        <div className="px-3 pt-2">
           <div className="flex items-center gap-2">
             {onClose && (
-              <button
-                aria-label="Закрыть"
-                onClick={onClose}
-                className="flex-none w-10 h-10 md:w-11 md:h-11 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-              >
-                <X className="h-5 w-5 text-white" />
+              <button aria-label="Закрыть" onClick={onClose} className={`flex-none w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+                <X className="h-5 w-5 text-white/80" />
               </button>
             )}
 
-            {/* Filters - clean glassmorphism */}
-            <nav className="flex-1 flex justify-center min-w-0">
-              <div className="inline-flex items-center gap-0.5 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 p-1">
+            {/* Filter pills */}
+            <nav className="flex-1 flex justify-center">
+              <div className={`inline-flex items-center gap-0.5 rounded-full ${glassPanel} p-1`}>
                 {([
                   { id: "all" as const, label: "Все" },
                   { id: "1-floor" as const, label: "1эт" },
                   { id: "2-floor" as const, label: "2эт" },
-                ] as const).map((f) => {
-                  const active = filter === f.id;
-                  return (
-                    <button
-                      key={f.id}
-                      onClick={() => {
-                        setFilter(f.id);
-                        setCurrentModelIndex(0);
-                      }}
-                      className={
-                        active
-                          ? "px-4 py-2 rounded-full bg-primary/90 text-charcoal text-xs md:text-sm font-semibold whitespace-nowrap"
-                          : "px-4 py-2 rounded-full text-white/80 text-xs md:text-sm font-semibold hover:text-white whitespace-nowrap"
-                      }
-                    >
-                      {f.label}
-                    </button>
-                  );
-                })}
+                ] as const).map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => { setFilter(f.id); setCurrentModelIndex(0); }}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      filter === f.id
+                        ? "bg-primary text-charcoal shadow-sm"
+                        : "text-white/70 hover:text-white"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
             </nav>
 
-            {/* Model picker - with schematic icon */}
-            <button
-              onClick={() => setModelPickerOpen(true)}
-              className="flex-none h-10 md:h-11 px-3 rounded-xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center gap-2"
-            >
-              <div className="text-white/80">
-                <ModelIcon model={currentModel} />
-              </div>
-              <span className="text-xs md:text-sm font-semibold text-white whitespace-nowrap">
-                {safeIndex + 1}/{filteredModels.length}
-              </span>
+            {/* Model counter */}
+            <button onClick={() => setModelPickerOpen(true)} className={`flex-none h-10 px-3 rounded-xl ${glassPanelLight} flex items-center gap-2`}>
+              <Layers className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-white">{safeIndex + 1}/{filteredModels.length}</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main stage */}
-      <motion.main
-        className="absolute inset-0"
-        onPanEnd={handlePanEnd}
-        style={{ touchAction: "none" }}
-      >
+      {/* Main photo stage */}
+      <motion.main className="absolute inset-0" onPanEnd={handlePanEnd} style={{ touchAction: "none" }}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={`${currentModel.id}-${currentModel.area}`}
@@ -838,110 +553,52 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
             className="absolute inset-0"
           >
-            <img
-              src={mainPhoto}
-              alt={`ERA barnhouse ${currentModel.name} ${currentModel.area}м² — фото`}
-              className="h-full w-full object-cover"
-              draggable={false}
-              loading="eager"
-              decoding="async"
-            />
-
-            {/* Light gradient - subtle, no heavy brown */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+            <img src={mainPhoto} alt={`${currentModel.name} ${currentModel.area}м²`} className="h-full w-full object-cover" draggable={false} loading="eager" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/40" />
           </motion.div>
         </AnimatePresence>
 
-        {/* Arrows - glass style */}
-        <button
-          aria-label="Предыдущая модель"
-          onClick={() => goToModel(-1)}
-          className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-        >
+        {/* Nav arrows */}
+        <button aria-label="Предыдущая" onClick={() => goToModel(-1)} className={`absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
           <ChevronLeft className="h-5 w-5 text-white" />
         </button>
-        <button
-          aria-label="Следующая модель"
-          onClick={() => goToModel(1)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center"
-        >
+        <button aria-label="Следующая" onClick={() => goToModel(1)} className={`absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
           <ChevronRight className="h-5 w-5 text-white" />
         </button>
 
-        {/* Action rail (TikTok-style) */}
-        <aside
-          className="absolute right-3 z-30 flex flex-col items-center gap-3"
-          style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
-        >
-          <ActionButton
-            icon={Images}
-            label="Фото"
-            onClick={() => setShowGallery(true)}
-          />
-          <ActionButton
-            icon={FileText}
-            label="Заявка"
-            variant="primary"
-            onClick={() => setContactOpen(true)}
-          />
+        {/* Action rail (right side) */}
+        <aside className="absolute right-3 z-30 flex flex-col items-center gap-2.5" style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}>
+          <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} />
+          <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setContactOpen(true)} />
           <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
           <ActionButton icon={Send} label="TG" onClick={handleTelegram} />
           <ActionButton icon={Phone} label="Call" onClick={handleCall} />
         </aside>
 
-        {/* Model info (caption) - bigger text */}
-        <section
-          className="absolute left-0 right-0 z-20"
-          style={{ bottom: "calc(16px + env(safe-area-inset-bottom))" }}
-        >
-          <div className="px-4 pr-24">
-            <div className="max-w-[400px]">
-              {/* Schematic icon with model name */}
-              <div className="flex items-center gap-3 mb-2">
-                <div className="text-white/90">
-                  <ModelIcon model={currentModel} />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-                    {currentModel.name}
-                  </h1>
-                  <div className="text-xl md:text-2xl font-bold text-primary">
-                    {currentModel.area}м²
+        {/* Bottom info panel */}
+        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}>
+          <div className="px-4">
+            <div className={`inline-block rounded-2xl ${glassPanel} p-4`}>
+              {/* Model header */}
+              <div className="flex items-center gap-3 mb-3">
+                <HouseSchematic model={currentModel} size="md" />
+                <div>
+                  <div className="flex items-baseline gap-2">
+                    <h1 className="text-xl font-bold text-white">{currentModel.name}</h1>
+                    <span className="text-xl font-bold text-primary">{currentModel.area}м²</span>
                   </div>
+                  <p className="text-sm text-white/50">{currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse</p>
                 </div>
               </div>
 
-              <p className="text-sm md:text-base text-white/60 mb-3">
-                {currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse
-              </p>
-
-              {/* Chips - glassmorphism, larger text */}
-              <div className="flex gap-2 flex-wrap">
-                <Chip icon={() => (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="4" y="10" width="16" height="10" rx="1" className="text-primary" />
-                    {currentModel.floors === 2 && <rect x="4" y="4" width="16" height="6" rx="1" className="text-primary" />}
-                    <path d="M12 2 L4 10 M12 2 L20 10" className="text-primary" strokeLinecap="round" />
-                  </svg>
-                )} value={String(currentModel.floors)} label="эт" />
-                <Chip icon={() => (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="8" width="18" height="12" rx="2" className="text-primary" />
-                    <path d="M3 16 L21 16" className="text-primary" />
-                    <circle cx="7" cy="12" r="1.5" className="text-primary" fill="currentColor" />
-                    <circle cx="12" cy="12" r="1.5" className="text-primary" fill="currentColor" />
-                  </svg>
-                )} value={String(currentModel.bedrooms)} label="сп" />
-                <Chip icon={() => (
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 md:h-5 md:w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 12 L4 20 L20 20 L20 12" className="text-primary" strokeLinecap="round" />
-                    <path d="M2 12 L22 12" className="text-primary" strokeLinecap="round" />
-                    <circle cx="8" cy="8" r="2" className="text-primary" />
-                  </svg>
-                )} value={String(currentModel.bathrooms)} label="с/у" />
+              {/* Info chips */}
+              <div className="flex flex-wrap gap-1.5">
+                <InfoChip icon={<FloorIcon floors={currentModel.floors} />} value={currentModel.floors} label="эт" />
+                <InfoChip icon={<BedroomIcon />} value={currentModel.bedrooms} label="сп" />
+                <InfoChip icon={<BathroomIcon />} value={currentModel.bathrooms} label="с/у" />
               </div>
             </div>
           </div>
@@ -955,84 +612,59 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="absolute inset-0 z-40 bg-charcoal/98 backdrop-blur-xl flex flex-col"
+              className="absolute inset-0 z-40 bg-charcoal/98 backdrop-blur-2xl flex flex-col"
               style={{ paddingTop: "env(safe-area-inset-top)" }}
             >
               <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <button
-                  aria-label="Закрыть галерею"
-                  onClick={() => setShowGallery(false)}
-                  className="w-11 h-11 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center"
-                >
-                  <X className="h-5 w-5 text-white" />
+                <button aria-label="Закрыть" onClick={() => setShowGallery(false)} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+                  <X className="h-5 w-5 text-white/80" />
                 </button>
-
                 <div className="text-center">
-                  <div className="text-base md:text-lg font-semibold text-white">
-                    {currentModel.name}{" "}
-                    <span className="text-primary">{currentModel.area}м²</span>
-                  </div>
-                  <div className="text-xs md:text-sm text-white/50">Сначала реальные фото</div>
+                  <div className="text-base font-semibold text-white">{currentModel.name} <span className="text-primary">{currentModel.area}м²</span></div>
+                  <div className="text-xs text-white/40">Реальные фото первыми</div>
                 </div>
-
-                <div className="w-11" />
+                <div className="w-10" />
               </div>
 
-              {/* Tabs - glassmorphism */}
               <div className="p-4">
-                <div className="flex gap-2 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/15 p-1">
+                <div className={`flex gap-1 rounded-xl ${glassPanel} p-1`}>
                   <button
                     onClick={() => setGalleryTab("photos")}
-                    className={
-                      galleryTab === "photos"
-                        ? "flex-1 py-3 rounded-xl bg-primary/90 text-charcoal text-sm md:text-base font-semibold"
-                        : "flex-1 py-3 rounded-xl text-white/70 text-sm md:text-base font-semibold"
-                    }
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                      galleryTab === "photos" ? "bg-primary text-charcoal shadow-sm" : "text-white/60"
+                    }`}
                   >
-                    <Grid3X3 className="h-4 w-4 md:h-5 md:w-5 inline mr-2" />
+                    <Grid3X3 className="h-4 w-4" />
                     Фото ({allPhotos.length})
                   </button>
                   <button
                     onClick={() => setGalleryTab("plans")}
                     disabled={floorPlans.length === 0}
-                    className={
-                      floorPlans.length === 0
-                        ? "flex-1 py-3 rounded-xl text-white/25 text-sm md:text-base font-semibold"
-                        : galleryTab === "plans"
-                        ? "flex-1 py-3 rounded-xl bg-primary/90 text-charcoal text-sm md:text-base font-semibold"
-                        : "flex-1 py-3 rounded-xl text-white/70 text-sm md:text-base font-semibold"
-                    }
+                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                      floorPlans.length === 0 ? "text-white/20 cursor-not-allowed" :
+                      galleryTab === "plans" ? "bg-primary text-charcoal shadow-sm" : "text-white/60"
+                    }`}
                   >
-                    <Ruler className="h-4 w-4 md:h-5 md:w-5 inline mr-2" />
-                    Планировки ({floorPlans.length})
+                    <Layers className="h-4 w-4" />
+                    Планы ({floorPlans.length})
                   </button>
                 </div>
               </div>
 
-              {/* Grid */}
-              <div className="flex-1 overflow-y-auto p-4 pb-8">
-                <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex-1 overflow-y-auto p-4 pt-0 pb-8">
+                <div className="grid grid-cols-2 gap-2">
                   {(galleryTab === "photos" ? allPhotos : floorPlans).map((photo, idx) => (
                     <motion.button
                       key={photo}
-                      initial={{ opacity: 0, scale: 0.96 }}
+                      initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.01 }}
-                      onClick={() => {
-                        setLightboxImage(photo);
-                        setLightboxIndex(idx);
-                      }}
-                      className="aspect-[4/3] rounded-2xl overflow-hidden relative group"
+                      transition={{ delay: idx * 0.02 }}
+                      onClick={() => { setLightboxImage(photo); setLightboxIndex(idx); }}
+                      className="aspect-[4/3] rounded-xl overflow-hidden relative group"
                     >
-                      <img
-                        src={photo}
-                        alt={`ERA ${currentModel.name} ${currentModel.area}м² — ${galleryTab === "photos" ? "фото" : "план"} ${idx + 1}`}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                      <div className="absolute bottom-2 right-2 w-9 h-9 rounded-xl bg-white/15 backdrop-blur-xl border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <img src={photo} alt={`${currentModel.name} — ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                      <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-lg ${glassPanelLight} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity`}>
                         <Maximize2 className="h-4 w-4 text-white" />
                       </div>
                     </motion.button>
@@ -1043,12 +675,12 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           )}
         </AnimatePresence>
 
-        {/* Lightbox with pinch-to-zoom and double-tap */}
+        {/* Lightbox */}
         <AnimatePresence>
           {lightboxImage && (
             <ZoomableLightbox
               src={lightboxPhotos[lightboxIndex]}
-              alt={`ERA ${currentModel.name} — полноэкранно`}
+              alt={`${currentModel.name} — fullscreen`}
               onClose={() => setLightboxImage(null)}
               onNavigate={navigateLightbox}
               currentIndex={lightboxIndex}
@@ -1057,7 +689,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           )}
         </AnimatePresence>
 
-        {/* Model picker sheet */}
+        {/* Model picker */}
         <ModelPickerSheet
           open={modelPickerOpen}
           onClose={() => setModelPickerOpen(false)}
