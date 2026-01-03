@@ -263,19 +263,13 @@ function BathroomIcon() {
 }
 
 // Model picker sheet with swipe-up gesture and full-screen grid
-function ModelPickerSheet({
-  open,
-  onClose,
-  models,
-  currentModelId,
-  onSelect,
-}: {
+const ModelPickerSheet = forwardRef<HTMLDivElement, {
   open: boolean;
   onClose: () => void;
   models: EraModel[];
   currentModelId: string;
   onSelect: (id: string) => void;
-}) {
+}>(function ModelPickerSheet({ open, onClose, models, currentModelId, onSelect }, ref) {
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // Swipe down to close
     if (info.offset.y > 80) {
@@ -288,98 +282,103 @@ function ModelPickerSheet({
     if (navigator.vibrate) navigator.vibrate(10);
   }, []);
 
+  if (!open) return null;
+
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40">
-          <button aria-label="Закрыть" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 350 }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={handleDragEnd}
-            className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95`}
-            style={{ 
-              paddingBottom: "env(safe-area-inset-bottom)",
-              height: "85vh",
-              maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
-            }}
-          >
-            {/* Drag handle */}
-            <div className="pt-3 pb-2 cursor-grab active:cursor-grabbing">
-              <div className="mx-auto h-1.5 w-12 rounded-full bg-white/30" />
-            </div>
+    <motion.div 
+      ref={ref}
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      className="absolute inset-0 z-40"
+    >
+      <button aria-label="Закрыть" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 30, stiffness: 350 }}
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.3 }}
+        onDragEnd={handleDragEnd}
+        className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95`}
+        style={{ 
+          paddingBottom: "env(safe-area-inset-bottom)",
+          height: "85vh",
+          maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
+        }}
+      >
+        {/* Drag handle */}
+        <div className="pt-3 pb-2 cursor-grab active:cursor-grabbing">
+          <div className="mx-auto h-1.5 w-12 rounded-full bg-white/30" />
+        </div>
 
-            {/* Header */}
-            <div className="px-5 pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <Grid3X3 className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg font-semibold text-white">Выбор модели</h3>
-                </div>
-                <button onClick={onClose} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
-                  <X className="h-5 w-5 text-white/80" />
-                </button>
-              </div>
+        {/* Header */}
+        <div className="px-5 pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Grid3X3 className="h-5 w-5 text-primary" />
+              <h3 className="text-lg font-semibold text-white">Выбор модели</h3>
             </div>
+            <button onClick={onClose} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+              <X className="h-5 w-5 text-white/80" />
+            </button>
+          </div>
+        </div>
 
-            {/* Grid of models */}
-            <div className="px-4 pb-4 grid grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: "calc(85vh - 100px)" }}>
-              {models.map((m) => {
-                const active = m.id === currentModelId;
-                const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={() => { triggerHaptic(); onSelect(m.id); }}
-                    className={`relative aspect-[4/3] rounded-2xl overflow-hidden transition-all ${
-                      active
-                        ? "ring-2 ring-primary ring-offset-2 ring-offset-charcoal shadow-lg shadow-primary/20"
-                        : "hover:ring-1 hover:ring-white/30"
-                    }`}
-                  >
-                    {/* Thumbnail with skeleton */}
-                    <ImageWithSkeleton 
-                      src={thumb} 
-                      alt={m.name} 
-                      className="absolute inset-0 w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    
-                    {/* Model info */}
-                    <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1.5">
-                          <HouseSchematic model={m} size="sm" />
-                          <span className="text-xs font-medium text-white/80">
-                            {m.floors}эт • {m.bedrooms}сп
-                          </span>
-                        </div>
-                        <span className="text-sm font-bold text-primary">{m.area}м²</span>
-                      </div>
+        {/* Grid of models - no scrolling, fits screen */}
+        <div className="px-4 pb-4 grid grid-cols-2 gap-2.5" style={{ maxHeight: "calc(85vh - 100px)" }}>
+          {models.map((m) => {
+            const active = m.id === currentModelId;
+            const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
+            return (
+              <button
+                key={m.id}
+                onClick={() => { triggerHaptic(); onSelect(m.id); }}
+                className={`relative aspect-[4/3] rounded-2xl overflow-hidden transition-all ${
+                  active
+                    ? "ring-2 ring-primary ring-offset-2 ring-offset-charcoal shadow-lg shadow-primary/20"
+                    : "hover:ring-1 hover:ring-white/30"
+                }`}
+              >
+                {/* Thumbnail with skeleton */}
+                <ImageWithSkeleton 
+                  src={thumb} 
+                  alt={m.name} 
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
+                
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                
+                {/* Model info */}
+                <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <HouseSchematic model={m} size="sm" />
+                      <span className="text-xs font-medium text-white/80">
+                        {m.floors}эт • {m.bedrooms}сп
+                      </span>
                     </div>
+                    <span className="text-sm font-bold text-primary">{m.area}м²</span>
+                  </div>
+                </div>
 
-                    {/* Active indicator */}
-                    {active && (
-                      <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+                {/* Active indicator */}
+                {active && (
+                  <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+    </motion.div>
   );
-}
+});
+ModelPickerSheet.displayName = "ModelPickerSheet";
 
 const slideVariants = {
   enter: (dir: 1 | -1) => ({ x: dir > 0 ? 60 : -60, opacity: 0, scale: 1.02 }),
@@ -940,17 +939,21 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
         </AnimatePresence>
 
         {/* Model picker */}
-        <ModelPickerSheet
-          open={modelPickerOpen}
-          onClose={() => setModelPickerOpen(false)}
-          models={filteredModels}
-          currentModelId={currentModel.id}
-          onSelect={(id) => {
-            const idx = filteredModels.findIndex((m) => m.id === id);
-            if (idx >= 0) setCurrentModelIndex(idx);
-            setModelPickerOpen(false);
-          }}
-        />
+        <AnimatePresence>
+          {modelPickerOpen && (
+            <ModelPickerSheet
+              open={modelPickerOpen}
+              onClose={() => setModelPickerOpen(false)}
+              models={filteredModels}
+              currentModelId={currentModel.id}
+              onSelect={(id) => {
+                const idx = filteredModels.findIndex((m) => m.id === id);
+                if (idx >= 0) setCurrentModelIndex(idx);
+                setModelPickerOpen(false);
+              }}
+            />
+          )}
+        </AnimatePresence>
       </motion.main>
     </motion.div>
   );
