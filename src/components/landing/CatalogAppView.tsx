@@ -645,34 +645,34 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               </button>
             )}
 
-            {/* Filter pills */}
+            {/* Filter pills with label */}
             <nav className="flex-1 flex justify-center">
-              <div className={`inline-flex items-center gap-0.5 rounded-full ${glassPanel} p-1`}>
-                {([
-                  { id: "all" as const, label: "Все" },
-                  { id: "1-floor" as const, label: "1эт" },
-                  { id: "2-floor" as const, label: "2эт" },
-                ] as const).map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => { setFilter(f.id); setCurrentModelIndex(0); }}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      filter === f.id
-                        ? "bg-primary text-charcoal shadow-sm"
-                        : "text-white/70 hover:text-white"
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+              <div className={`inline-flex items-center gap-2 rounded-full ${glassPanel} py-1 pl-3 pr-1`}>
+                <span className="text-xs font-medium text-white/50 whitespace-nowrap">Этажность:</span>
+                <div className="flex gap-0.5">
+                  {([
+                    { id: "all" as const, label: "Все" },
+                    { id: "1-floor" as const, label: "1эт" },
+                    { id: "2-floor" as const, label: "2эт" },
+                  ] as const).map((f) => (
+                    <button
+                      key={f.id}
+                      onClick={() => { setFilter(f.id); setCurrentModelIndex(0); }}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        filter === f.id
+                          ? "bg-primary text-charcoal shadow-sm"
+                          : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </nav>
 
-            {/* Model counter */}
-            <button onClick={() => setModelPickerOpen(true)} className={`flex-none h-10 px-3 rounded-xl ${glassPanelLight} flex items-center gap-2`}>
-              <Layers className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-white">{safeIndex + 1}/{filteredModels.length}</span>
-            </button>
+            {/* Spacer - no button here anymore */}
+            {!onClose && <div className="w-10" />}
           </div>
         </div>
       </header>
@@ -711,7 +711,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
         </button>
 
         {/* Action rail (right side) */}
-        <aside className="absolute right-3 z-30 flex flex-col items-center gap-2.5" style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}>
+        <aside className="absolute right-3 z-30 flex flex-col items-center gap-2.5" style={{ bottom: "calc(110px + env(safe-area-inset-bottom))" }}>
           <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} animated />
           <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setContactOpen(true)} />
           <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
@@ -720,7 +720,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
         </aside>
 
         {/* Bottom info panel */}
-        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}>
+        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(90px + env(safe-area-inset-bottom))" }}>
           <div className="px-4">
             <div className={`inline-block rounded-2xl ${glassPanel} p-4`}>
               {/* Model header */}
@@ -744,6 +744,63 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             </div>
           </div>
         </section>
+
+        {/* Pullable catalog handle at bottom */}
+        <button
+          onClick={() => setModelPickerOpen(true)}
+          className={`absolute left-4 right-4 z-30 rounded-t-2xl ${glassPanel} transition-all active:scale-[0.98]`}
+          style={{ bottom: 0, paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
+          <div className="flex flex-col items-center pt-2 pb-3">
+            {/* Handle bar */}
+            <div className="w-10 h-1 rounded-full bg-white/30 mb-2" />
+            
+            {/* Horizontal scroll of model previews */}
+            <div className="flex items-center gap-3 px-4 overflow-x-auto w-full scrollbar-hide">
+              {filteredModels.map((m, idx) => {
+                const isActive = idx === safeIndex;
+                const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={(e) => { 
+                      e.stopPropagation();
+                      triggerHaptic(); 
+                      setDirection(idx > safeIndex ? 1 : -1); 
+                      setCurrentModelIndex(idx); 
+                    }}
+                    className={`relative flex-shrink-0 rounded-xl overflow-hidden transition-all ${
+                      isActive ? "ring-2 ring-primary ring-offset-1 ring-offset-charcoal" : "opacity-60 hover:opacity-80"
+                    }`}
+                  >
+                    <img 
+                      src={thumb} 
+                      alt={m.name} 
+                      className="w-14 h-10 object-cover" 
+                      loading="lazy" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute bottom-0.5 left-0 right-0 text-center">
+                      <span className="text-[9px] font-bold text-white drop-shadow">{m.area}м²</span>
+                    </div>
+                  </button>
+                );
+              })}
+              {/* "More" indicator */}
+              <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-10 opacity-60">
+                <ChevronRight className="h-4 w-4 text-white/50" />
+                <span className="text-[9px] text-white/40">ещё</span>
+              </div>
+            </div>
+            
+            {/* Label */}
+            <div className="flex items-center gap-1.5 mt-2">
+              <Grid3X3 className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-medium text-white/60">Каталог моделей</span>
+              <span className="text-xs font-semibold text-primary">({safeIndex + 1}/{filteredModels.length})</span>
+            </div>
+          </div>
+        </button>
 
         {/* Gallery sheet */}
         <AnimatePresence>
