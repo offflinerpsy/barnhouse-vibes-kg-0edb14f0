@@ -283,8 +283,10 @@ function ModelPickerSheet({
     }
   };
 
-  // Calculate grid layout based on number of models to fit screen
-  const gridCols = models.length <= 6 ? 2 : models.length <= 9 ? 3 : 2;
+  // Haptic feedback
+  const triggerHaptic = useCallback(() => {
+    if (navigator.vibrate) navigator.vibrate(10);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -300,19 +302,20 @@ function ModelPickerSheet({
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.3 }}
             onDragEnd={handleDragEnd}
-            className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95 flex flex-col`}
+            className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95`}
             style={{ 
               paddingBottom: "env(safe-area-inset-bottom)",
-              maxHeight: "calc(100% - env(safe-area-inset-top) - 60px)",
+              height: "85vh",
+              maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
             }}
           >
             {/* Drag handle */}
-            <div className="flex-shrink-0 pt-3 pb-2 cursor-grab active:cursor-grabbing">
+            <div className="pt-3 pb-2 cursor-grab active:cursor-grabbing">
               <div className="mx-auto h-1.5 w-12 rounded-full bg-white/30" />
             </div>
 
             {/* Header */}
-            <div className="flex-shrink-0 px-5 pb-4">
+            <div className="px-5 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <Grid3X3 className="h-5 w-5 text-primary" />
@@ -324,60 +327,52 @@ function ModelPickerSheet({
               </div>
             </div>
 
-            {/* Grid of models - fits screen height without scroll */}
-            <div className="flex-1 px-4 pb-4">
-              <div 
-                className="h-full grid gap-2"
-                style={{ 
-                  gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
-                  gridAutoRows: `1fr`,
-                }}
-              >
-                {models.map((m) => {
-                  const active = m.id === currentModelId;
-                  const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
-                  return (
-                    <button
-                      key={m.id}
-                      onClick={() => onSelect(m.id)}
-                      className={`relative rounded-2xl overflow-hidden transition-all ${
-                        active
-                          ? "ring-2 ring-primary ring-offset-2 ring-offset-charcoal shadow-lg shadow-primary/20"
-                          : "hover:ring-1 hover:ring-white/30"
-                      }`}
-                    >
-                      {/* Thumbnail with skeleton */}
-                      <ImageWithSkeleton 
-                        src={thumb} 
-                        alt={m.name} 
-                        className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      
-                      {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      
-                      {/* Model info */}
-                      <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <HouseSchematic model={m} size="sm" />
-                            <span className="text-xs font-medium text-white/80">
-                              {m.floors}эт • {m.bedrooms}сп
-                            </span>
-                          </div>
-                          <span className="text-sm font-bold text-primary">{m.area}м²</span>
+            {/* Grid of models */}
+            <div className="px-4 pb-4 grid grid-cols-2 gap-2 overflow-y-auto" style={{ maxHeight: "calc(85vh - 100px)" }}>
+              {models.map((m) => {
+                const active = m.id === currentModelId;
+                const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => { triggerHaptic(); onSelect(m.id); }}
+                    className={`relative aspect-[4/3] rounded-2xl overflow-hidden transition-all ${
+                      active
+                        ? "ring-2 ring-primary ring-offset-2 ring-offset-charcoal shadow-lg shadow-primary/20"
+                        : "hover:ring-1 hover:ring-white/30"
+                    }`}
+                  >
+                    {/* Thumbnail with skeleton */}
+                    <ImageWithSkeleton 
+                      src={thumb} 
+                      alt={m.name} 
+                      className="absolute inset-0 w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    
+                    {/* Model info */}
+                    <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <HouseSchematic model={m} size="sm" />
+                          <span className="text-xs font-medium text-white/80">
+                            {m.floors}эт • {m.bedrooms}сп
+                          </span>
                         </div>
+                        <span className="text-sm font-bold text-primary">{m.area}м²</span>
                       </div>
+                    </div>
 
-                      {/* Active indicator */}
-                      {active && (
-                        <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                    {/* Active indicator */}
+                    {active && (
+                      <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </motion.div>
         </motion.div>
@@ -801,8 +796,8 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <ActionButton icon={Phone} label="Call" onClick={handleCall} />
         </aside>
 
-        {/* Bottom info panel */}
-        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(90px + env(safe-area-inset-bottom))" }}>
+        {/* Bottom info panel - positioned above catalog drawer */}
+        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(120px + env(safe-area-inset-bottom))" }}>
           <div className="px-4">
             <div className={`inline-block rounded-2xl ${glassPanel} p-4`}>
               {/* Model header */}
@@ -829,11 +824,12 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
         {/* Swipeable catalog handle at bottom */}
         <motion.button
-          onClick={() => setModelPickerOpen(true)}
-          className={`absolute left-4 right-4 z-30 rounded-t-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
-          style={{ bottom: 0, paddingBottom: "env(safe-area-inset-bottom)" }}
+          onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
+          className={`absolute left-4 right-4 z-30 rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
+          style={{ bottom: "calc(8px + env(safe-area-inset-bottom))" }}
           onPanEnd={(_, info) => {
             if (info.offset.y < -30 || info.velocity.y < -300) {
+              triggerHaptic();
               setModelPickerOpen(true);
             }
           }}
