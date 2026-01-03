@@ -19,53 +19,21 @@ import {
   Layers,
 } from "lucide-react";
 import { ContactModal } from "@/components/landing/ContactModal";
+import { 
+  CATALOG_MODELS, 
+  CatalogModel, 
+  FilterType, 
+  applyCatalogFilter,
+  getGalleryImages,
+} from "@/data/catalog-models";
 
 interface CatalogAppViewProps {
   onClose?: () => void;
 }
 
-type FilterType = "all" | "1-floor" | "2-floor" | "business";
-
-type EraModel = {
-  id: string;
-  name: string;
-  area: number;
-  floors: number;
-  bedrooms: number;
-  bathrooms: number;
-  catalogPath: string;
-  coverImage: string; // New: dedicated cover photo
-  galleryCount: number;
-  galleryExtraCount: number;
-  floorPlanCount: number;
-};
-
-// Models per CATALOG_GUIDE.md — Tesla-style naming (number = modules, 1 module ≈ 18m²)
-// Model 5 and Model 7 DO NOT EXIST — intentional per documentation
-const ERA_MODELS: EraModel[] = [
-  // Single-story models
-  { id: "model-1", name: "Model 1", area: 18, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-18", coverImage: "/catalog/covers/model-1.webp", galleryCount: 4, galleryExtraCount: 25, floorPlanCount: 3 },
-  { id: "model-2", name: "Model 2", area: 36, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-36", coverImage: "/catalog/covers/model-2.webp", galleryCount: 4, galleryExtraCount: 24, floorPlanCount: 1 },
-  { id: "model-3", name: "Model 3", area: 54, floors: 1, bedrooms: 2, bathrooms: 1, catalogPath: "model-1-54", coverImage: "/catalog/covers/model-3.webp", galleryCount: 8, galleryExtraCount: 33, floorPlanCount: 3 },
-  { id: "model-4", name: "Model 4", area: 81, floors: 1, bedrooms: 3, bathrooms: 2, catalogPath: "model-1-81", coverImage: "/catalog/covers/model-4.webp", galleryCount: 4, galleryExtraCount: 34, floorPlanCount: 0 },
-  { id: "model-6", name: "Model 6", area: 108, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-108", coverImage: "/catalog/covers/model-6.webp", galleryCount: 4, galleryExtraCount: 54, floorPlanCount: 3 },
-  { id: "model-8", name: "Model 8", area: 135, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-135", coverImage: "/catalog/covers/model-8.webp", galleryCount: 5, galleryExtraCount: 38, floorPlanCount: 3 },
-  // Two-story models (X = duplex)
-  { id: "model-2x", name: "Model 2X", area: 36, floors: 2, bedrooms: 1, bathrooms: 1, catalogPath: "model-2-36", coverImage: "/catalog/covers/model-2x.webp", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 0 },
-  { id: "model-4x", name: "Model 4X", area: 72, floors: 2, bedrooms: 2, bathrooms: 1, catalogPath: "model-2-72", coverImage: "/catalog/covers/model-4x.webp", galleryCount: 4, galleryExtraCount: 6, floorPlanCount: 0 },
-  { id: "model-7x", name: "Model 7X", area: 120, floors: 2, bedrooms: 3, bathrooms: 2, catalogPath: "model-2-120", coverImage: "/catalog/covers/model-7x.webp", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 3 },
-  { id: "model-12x", name: "Model 12X", area: 204, floors: 2, bedrooms: 5, bathrooms: 3, catalogPath: "model-2-204", coverImage: "/catalog/covers/model-12x.webp", galleryCount: 6, galleryExtraCount: 0, floorPlanCount: 0 },
-  // Commercial model
-  { id: "model-resto", name: "Model Resto", area: 72, floors: 1, bedrooms: 0, bathrooms: 2, catalogPath: "model-resto", coverImage: "/catalog/covers/model-resto.webp", galleryCount: 0, galleryExtraCount: 0, floorPlanCount: 0 },
-];
-
-function applyCatalogFilter(models: EraModel[], filter: FilterType): EraModel[] {
-  if (filter === "all") return models.filter((m) => m.id !== "model-resto");
-  if (filter === "1-floor") return models.filter((m) => m.floors === 1 && m.id !== "model-resto");
-  if (filter === "2-floor") return models.filter((m) => m.floors === 2);
-  if (filter === "business") return models.filter((m) => m.id === "model-resto");
-  return models;
-}
+// Alias for backward compatibility within this file
+type EraModel = CatalogModel;
+const ERA_MODELS = CATALOG_MODELS;
 
 const SWIPE_X = 70;
 const SWIPE_Y = 90;
@@ -83,11 +51,9 @@ function getAllPhotos(model: EraModel): string[] {
 }
 
 function getFloorPlans(model: EraModel): string[] {
-  const plans: string[] = [];
-  for (let i = 1; i <= model.floorPlanCount; i++) {
-    plans.push(`/catalog/${model.catalogPath}/floor-plan/plan-${i}.webp`);
-  }
-  return plans;
+  return model.floorPlanFiles
+    .filter(f => f.ext === "webp")
+    .map(f => `/catalog/${model.catalogPath}/floor-plan/${f.name}.${f.ext}`);
 }
 
 // Clean schematic house icon
@@ -104,8 +70,8 @@ function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" |
           <path d="M16 2 L4 11" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
           <path d="M16 2 L28 11" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
           <rect x="13" y="16" width="6" height="8" rx="1" fill="hsl(var(--primary) / 0.4)"/>
-          {model.bedrooms >= 2 && <rect x="6" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
-          {model.bedrooms >= 3 && <rect x="22" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
+          {parseInt(model.bedrooms) >= 2 && <rect x="6" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
+          {parseInt(model.bedrooms) >= 3 && <rect x="22" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
         </>
       ) : (
         <>

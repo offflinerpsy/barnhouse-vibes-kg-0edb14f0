@@ -49,40 +49,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { 
+  CATALOG_MODELS, 
+  CatalogModel, 
+  AREA_RANGES,
+  getGalleryImages,
+  getFloorPlanPaths,
+} from "@/data/catalog-models";
 
-// Типы проектов - теперь по этажности
+// Alias for backward compatibility
+type HouseModel = CatalogModel;
 type ProjectType = "all" | "single-floor" | "duplex";
-
-// Интерфейс файла планировки
-interface FloorPlanFile {
-  name: string;  // e.g., "plan-1"
-  ext: "webp" | "pdf";
-}
-
-// Интерфейс модели дома
-interface HouseModel {
-  id: string;
-  name: string;
-  projectType: Exclude<ProjectType, "all">;
-  projectLabel: string;
-  area: number;            // Общая площадь
-  heatedArea: number;      // Отапливаемая площадь
-  floors: number;          // Этажность
-  rooms: number;
-  bedrooms: string;        // Диапазон (например "1-2")
-  bathrooms: number;
-  hasVeranda: boolean;
-  verandaArea?: number;
-  // TODO: Раскомментировать когда будут готовы цены
-  // price: string;
-  // Путь к папке модели в /catalog/
-  catalogPath: string;
-  // Количество файлов в каждой папке
-  galleryCount: number;
-  galleryExtraCount: number;
-  // Файлы планировок с указанием расширения
-  floorPlanFiles: FloorPlanFile[];
-}
 
 // Хелпер для генерации массива путей к изображениям
 const generateImagePaths = (catalogPath: string, folder: string, count: number, prefix: string = ""): string[] => {
@@ -99,264 +76,10 @@ const projects: { value: ProjectType; label: string }[] = [
 ];
 
 // Диапазоны метража для подфильтра
-const areaRanges = [
-  { value: "all", label: "Все метражи" },
-  { value: "compact", label: "до 40м²", min: 0, max: 40 },
-  { value: "small", label: "40-80м²", min: 40, max: 80 },
-  { value: "medium", label: "80-130м²", min: 80, max: 130 },
-  { value: "large", label: "130м²+", min: 130, max: Infinity },
-];
+const areaRanges = AREA_RANGES;
 
-const houses: HouseModel[] = [
-  // ============================================
-  // ОДНОЭТАЖНЫЕ МОДЕЛИ (Single Floor)
-  // ============================================
-  
-  // Model 1 - Студия 18м²
-  {
-    id: "model-1",
-    name: "Model 1",
-    projectType: "single-floor",
-    projectLabel: "Одноэтажный",
-    area: 18,
-    heatedArea: 18,
-    floors: 1,
-    rooms: 1,
-    bedrooms: "студия",
-    bathrooms: 1,
-    hasVeranda: false,
-    catalogPath: "model-1-18",
-    galleryCount: 25,
-    galleryExtraCount: 4,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "webp" },
-      { name: "plan-2", ext: "webp" },
-      { name: "plan-3", ext: "webp" },
-      { name: "plan-4", ext: "pdf" },
-    ],
-  },
-  
-  // Model 2 - Компакт 36м²
-  {
-    id: "model-2",
-    name: "Model 2",
-    projectType: "single-floor",
-    projectLabel: "Одноэтажный",
-    area: 36,
-    heatedArea: 36,
-    floors: 1,
-    rooms: 2,
-    bedrooms: "1",
-    bathrooms: 1,
-    hasVeranda: true,
-    verandaArea: 12,
-    catalogPath: "model-1-36",
-    galleryCount: 24,
-    galleryExtraCount: 4,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "webp" },
-      { name: "plan-2", ext: "pdf" },
-      { name: "plan-3", ext: "pdf" },
-      { name: "plan-4", ext: "pdf" },
-    ],
-  },
-  
-  // Model 3 - Стандарт 54м²
-  {
-    id: "model-3",
-    name: "Model 3",
-    projectType: "single-floor",
-    projectLabel: "Одноэтажный",
-    area: 54,
-    heatedArea: 54,
-    floors: 1,
-    rooms: 3,
-    bedrooms: "1-2",
-    bathrooms: 1,
-    hasVeranda: true,
-    verandaArea: 15,
-    catalogPath: "model-1-54",
-    galleryCount: 33,
-    galleryExtraCount: 8,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "pdf" },
-      { name: "plan-2", ext: "webp" },
-      { name: "plan-3", ext: "webp" },
-      { name: "plan-4", ext: "webp" },
-    ],
-  },
-  
-  // Model 4 - Комфорт 81м²
-  {
-    id: "model-4",
-    name: "Model 4",
-    projectType: "single-floor",
-    projectLabel: "Одноэтажный",
-    area: 81,
-    heatedArea: 81,
-    floors: 1,
-    rooms: 4,
-    bedrooms: "2-3",
-    bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 20,
-    catalogPath: "model-1-81",
-    galleryCount: 34,
-    galleryExtraCount: 4,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "pdf" },
-      { name: "plan-2", ext: "pdf" },
-      { name: "plan-3", ext: "pdf" },
-    ],
-  },
-  
-  // Model 6 - Семейный 108м²
-  {
-    id: "model-6",
-    name: "Model 6",
-    projectType: "single-floor",
-    projectLabel: "Одноэтажный",
-    area: 108,
-    heatedArea: 108,
-    floors: 1,
-    rooms: 5,
-    bedrooms: "3-4",
-    bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 25,
-    catalogPath: "model-1-108",
-    galleryCount: 54,
-    galleryExtraCount: 4,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "webp" },
-      { name: "plan-2", ext: "webp" },
-      { name: "plan-3", ext: "webp" },
-      { name: "plan-4", ext: "pdf" },
-    ],
-  },
-  
-  // Model 8 - Премиум 135м²
-  {
-    id: "model-8",
-    name: "Model 8",
-    projectType: "single-floor",
-    projectLabel: "Одноэтажный",
-    area: 135,
-    heatedArea: 135,
-    floors: 1,
-    rooms: 6,
-    bedrooms: "4-5",
-    bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 30,
-    catalogPath: "model-1-135",
-    galleryCount: 38,
-    galleryExtraCount: 5,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "webp" },
-      { name: "plan-2", ext: "webp" },
-      { name: "plan-3", ext: "webp" },
-    ],
-  },
-  
-  // ============================================
-  // ДВУХЭТАЖНЫЕ МОДЕЛИ (Duplex)
-  // ============================================
-  
-  // Model 2X - Дуплекс компакт 36м²
-  {
-    id: "model-2x",
-    name: "Model 2X",
-    projectType: "duplex",
-    projectLabel: "Двухэтажный",
-    area: 36,
-    heatedArea: 36,
-    floors: 2,
-    rooms: 2,
-    bedrooms: "1",
-    bathrooms: 1,
-    hasVeranda: false,
-    catalogPath: "model-2-36",
-    galleryCount: 4,
-    galleryExtraCount: 0,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "pdf" },
-      { name: "plan-2", ext: "pdf" },
-    ],
-  },
-  
-  // Model 4X - Дуплекс стандарт 72м²
-  {
-    id: "model-4x",
-    name: "Model 4X",
-    projectType: "duplex",
-    projectLabel: "Двухэтажный",
-    area: 72,
-    heatedArea: 72,
-    floors: 2,
-    rooms: 4,
-    bedrooms: "2-3",
-    bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 18,
-    catalogPath: "model-2-72",
-    galleryCount: 6,
-    galleryExtraCount: 4,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "pdf" },
-      { name: "plan-2", ext: "pdf" },
-      { name: "plan-3", ext: "pdf" },
-      { name: "plan-4", ext: "pdf" },
-    ],
-  },
-  
-  // Model 7X - Дуплекс комфорт 120м²
-  {
-    id: "model-7x",
-    name: "Model 7X",
-    projectType: "duplex",
-    projectLabel: "Двухэтажный",
-    area: 120,
-    heatedArea: 120,
-    floors: 2,
-    rooms: 5,
-    bedrooms: "3-4",
-    bathrooms: 2,
-    hasVeranda: true,
-    verandaArea: 25,
-    catalogPath: "model-2-120",
-    galleryCount: 4,
-    galleryExtraCount: 0,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "webp" },
-      { name: "plan-2", ext: "webp" },
-      { name: "plan-3", ext: "webp" },
-    ],
-  },
-  
-  // Model 12X - Дуплекс премиум 204м²
-  {
-    id: "model-12x",
-    name: "Model 12X",
-    projectType: "duplex",
-    projectLabel: "Двухэтажный",
-    area: 204,
-    heatedArea: 204,
-    floors: 2,
-    rooms: 8,
-    bedrooms: "5-6",
-    bathrooms: 3,
-    hasVeranda: true,
-    verandaArea: 40,
-    catalogPath: "model-2-204",
-    galleryCount: 6,
-    galleryExtraCount: 0,
-    floorPlanFiles: [
-      { name: "plan-1", ext: "pdf" },
-      { name: "plan-2", ext: "pdf" },
-    ],
-  },
-];
+// Используем общий массив моделей (исключаем коммерческие для десктопной версии)
+const houses: HouseModel[] = CATALOG_MODELS.filter(m => m.projectType !== "commercial");
 
 // Компонент индикатора свайпа
 const SwipeIndicator = forwardRef<HTMLDivElement>((_, ref) => {
@@ -1141,13 +864,13 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     );
   }
 
-  // Стандартный вид с деталями дома
+  // Стандартный вид с деталями дома — НОВЫЙ ДИЗАЙН
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 lg:p-6"
+      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4"
       onClick={onClose}
     >
       <motion.div
@@ -1155,165 +878,206 @@ function HouseModal({ house, onClose }: HouseModalProps) {
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-5xl h-[96dvh] sm:h-auto sm:max-h-[88vh] lg:max-h-[85vh]"
+        className="relative w-full max-w-6xl h-[96dvh] sm:h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div 
-          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl h-full sm:h-auto"
+          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl h-full"
           style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
         >
-          <div className="relative bg-card rounded-2xl overflow-hidden h-full sm:h-auto">
+          <div className="relative bg-card rounded-2xl overflow-hidden h-full flex flex-col lg:flex-row">
+            {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-3 right-3 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-charcoal/60 hover:bg-charcoal/80 flex items-center justify-center transition-all hover:rotate-90 duration-300"
+              className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-charcoal/60 hover:bg-charcoal/80 flex items-center justify-center transition-all hover:rotate-90 duration-300"
             >
-              <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+              <X className="h-5 w-5 text-white" />
             </button>
 
-            <div className="flex flex-col lg:flex-row h-full sm:h-auto overflow-hidden">
-              {/* Image Gallery */}
-              <div 
-                className="relative w-full lg:w-[55%] h-[35dvh] sm:h-[300px] lg:h-[500px] xl:h-[550px] bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
-                onTouchStart={handleTouchStart}
-                onTouchEnd={handleTouchEnd}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseLeave}
-              >
-                  <AnimatePresence mode="wait">
-                  <motion.div
-                    key={`${viewMode}-${currentImageIndex}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    {renderGalleryContent()}
-                  </motion.div>
-                </AnimatePresence>
+            {/* Image Gallery — 65% width on desktop */}
+            <div 
+              className="relative w-full lg:w-[65%] h-[40dvh] lg:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${viewMode}-${currentImageIndex}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  {renderGalleryContent()}
+                </motion.div>
+              </AnimatePresence>
 
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                  {Array.from({ length: currentItemCount }).map((_, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setCurrentImageIndex(idx);
-                        setShowSwipeHint(false);
-                      }}
-                      className={`w-2.5 h-2.5 rounded-full transition-all ${
-                        idx === currentImageIndex 
-                          ? "bg-primary w-6" 
-                          : "bg-white/50 hover:bg-white/80"
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                <div className="hidden lg:flex absolute inset-0 items-center justify-between px-3 pointer-events-none">
-                  <button
-                    onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
-                    className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
-                      currentImageIndex === 0 ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    <ChevronLeft className="h-5 w-5 text-white" />
-                  </button>
-                  <button
-                    onClick={() => currentImageIndex < currentItemCount - 1 && setCurrentImageIndex(prev => prev + 1)}
-                    className={`p-2 bg-charcoal/50 hover:bg-charcoal/70 rounded-full transition-all pointer-events-auto ${
-                      currentImageIndex === currentItemCount - 1 ? "opacity-0" : "opacity-100"
-                    }`}
-                  >
-                    <ChevronRight className="h-5 w-5 text-white" />
-                  </button>
-                </div>
-
-                {showSwipeHint && currentItemCount > 1 && (
-                  <div className="lg:hidden">
-                    <SwipeIndicator />
-                  </div>
-                )}
-
-                <Badge className="absolute top-4 left-4 bg-primary text-primary-foreground font-semibold">
-                  {house.projectLabel}
-                </Badge>
+              {/* Navigation arrows */}
+              <div className="hidden lg:flex absolute inset-0 items-center justify-between px-4 pointer-events-none">
+                <button
+                  onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
+                  className={`p-3 bg-charcoal/60 hover:bg-charcoal/80 rounded-full transition-all pointer-events-auto ${
+                    currentImageIndex === 0 ? "opacity-0" : "opacity-100"
+                  }`}
+                >
+                  <ChevronLeft className="h-6 w-6 text-white" />
+                </button>
+                <button
+                  onClick={() => currentImageIndex < currentItemCount - 1 && setCurrentImageIndex(prev => prev + 1)}
+                  className={`p-3 bg-charcoal/60 hover:bg-charcoal/80 rounded-full transition-all pointer-events-auto ${
+                    currentImageIndex === currentItemCount - 1 ? "opacity-0" : "opacity-100"
+                  }`}
+                >
+                  <ChevronRight className="h-6 w-6 text-white" />
+                </button>
               </div>
 
-              {/* Content */}
-              <div className="w-full lg:w-[45%] p-4 sm:p-5 lg:p-6 flex flex-col overflow-y-auto flex-1 min-h-0">
-                <div className="mb-4">
-                  <h2 className="text-xl md:text-2xl font-bold text-foreground mb-1 font-rising">
+              {/* Dots pagination */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-charcoal/40 backdrop-blur-sm rounded-full px-3 py-2">
+                {Array.from({ length: Math.min(currentItemCount, 10) }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setCurrentImageIndex(idx);
+                      setShowSwipeHint(false);
+                    }}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      idx === currentImageIndex 
+                        ? "bg-primary w-5" 
+                        : "bg-white/50 hover:bg-white/80"
+                    }`}
+                  />
+                ))}
+                {currentItemCount > 10 && (
+                  <span className="text-white/60 text-xs ml-1">+{currentItemCount - 10}</span>
+                )}
+              </div>
+
+              {showSwipeHint && currentItemCount > 1 && (
+                <div className="lg:hidden">
+                  <SwipeIndicator />
+                </div>
+              )}
+
+              {/* Tab buttons on image — Gallery / Floor Plans */}
+              <div className="absolute top-4 left-4 flex gap-2 z-10">
+                <button
+                  onClick={() => {
+                    setViewMode("gallery");
+                    setCurrentImageIndex(0);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-sm ${
+                    viewMode === "gallery"
+                      ? "bg-primary text-white shadow-lg"
+                      : "bg-charcoal/60 text-white/80 hover:bg-charcoal/80"
+                  }`}
+                >
+                  Фото ({allGalleryImages.length})
+                </button>
+                {floorPlanItems.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setViewMode("floorplan");
+                      setCurrentImageIndex(0);
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-sm ${
+                      viewMode === "floorplan"
+                        ? "bg-primary text-white shadow-lg"
+                        : "bg-charcoal/60 text-white/80 hover:bg-charcoal/80"
+                    }`}
+                  >
+                    Планировки ({floorPlanItems.length})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Content Panel — 35% width */}
+            <div className="w-full lg:w-[35%] flex flex-col h-[56dvh] lg:h-full overflow-hidden">
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+                {/* Header */}
+                <div className="mb-5">
+                  <Badge className="mb-2 bg-primary/10 text-primary border-primary/20">
+                    {house.projectLabel}
+                  </Badge>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-foreground font-rising">
                     {house.name}
                   </h2>
-                  {/* TODO: Раскомментировать когда будут готовы цены */}
-                  {/* <p className="text-xl font-bold text-primary">{house.price}</p> */}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div className="bg-background rounded-lg p-3 border border-border">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                      <Maximize className="h-3.5 w-3.5" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Площадь</span>
+                {/* Main specs — large and clear */}
+                <div className="grid grid-cols-2 gap-3 mb-5">
+                  <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+                    <div className="flex items-center gap-2 text-primary mb-1">
+                      <Maximize className="h-5 w-5" />
+                      <span className="text-xs uppercase tracking-wide font-bold">Площадь</span>
                     </div>
-                    <p className="text-base font-bold text-foreground">{house.area} м²</p>
+                    <p className="text-2xl font-bold text-foreground">{house.area} м²</p>
                   </div>
-                  <div className="bg-background rounded-lg p-3 border border-border">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                      <Layers className="h-3.5 w-3.5" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Этажей</span>
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Layers className="h-5 w-5" />
+                      <span className="text-xs uppercase tracking-wide font-bold">Этажей</span>
                     </div>
-                    <p className="text-base font-bold text-foreground">{house.floors}</p>
+                    <p className="text-2xl font-bold text-foreground">{house.floors}</p>
                   </div>
-                  <div className="bg-background rounded-lg p-3 border border-border">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                      <BedDouble className="h-3.5 w-3.5" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Спальни</span>
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <BedDouble className="h-5 w-5" />
+                      <span className="text-xs uppercase tracking-wide font-bold">Спальни</span>
                     </div>
-                    <p className="text-base font-bold text-foreground">{house.bedrooms}</p>
+                    <p className="text-2xl font-bold text-foreground">{house.bedrooms}</p>
                   </div>
-                  <div className="bg-background rounded-lg p-3 border border-border">
-                    <div className="flex items-center gap-1.5 text-muted-foreground mb-0.5">
-                      <Bath className="h-3.5 w-3.5" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Санузлы</span>
+                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Bath className="h-5 w-5" />
+                      <span className="text-xs uppercase tracking-wide font-bold">Санузлы</span>
                     </div>
-                    <p className="text-base font-bold text-foreground">{house.bathrooms}</p>
+                    <p className="text-2xl font-bold text-foreground">{house.bathrooms}</p>
                   </div>
                 </div>
 
+                {/* Veranda */}
                 {house.hasVeranda ? (
-                  <div className="flex items-center gap-3 bg-primary/10 rounded-lg p-3 mb-4">
-                    <Trees className="h-4 w-4 text-primary" />
+                  <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-5 border border-primary/20">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Trees className="h-5 w-5 text-primary" />
+                    </div>
                     <div>
-                      <p className="font-semibold text-foreground text-sm">Веранда</p>
+                      <p className="font-bold text-foreground">Веранда</p>
                       {house.verandaArea && (
-                        <p className="text-xs text-muted-foreground">{house.verandaArea} м²</p>
+                        <p className="text-sm text-muted-foreground">{house.verandaArea} м²</p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-3 mb-4">
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Trees className="h-4 w-4 text-primary" />
+                  <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 mb-5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Trees className="h-5 w-5 text-primary" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground mb-2">
+                      <div className="flex-1">
+                        <p className="text-sm text-muted-foreground mb-2">
                           Веранда не предусмотрена. Хотите добавить?
                         </p>
                         <button
                           onClick={() => setWantsVeranda(!wantsVeranda)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all text-xs font-semibold ${
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-semibold ${
                             wantsVeranda
                               ? "bg-primary border-primary text-primary-foreground"
                               : "bg-background border-border text-foreground hover:border-primary/50"
                           }`}
                         >
                           {wantsVeranda ? (
-                            <Check className="h-3.5 w-3.5" />
+                            <Check className="h-4 w-4" />
                           ) : (
-                            <Plus className="h-3.5 w-3.5" />
+                            <Plus className="h-4 w-4" />
                           )}
                           <span>{wantsVeranda ? "Добавлена" : "Добавить веранду"}</span>
                         </button>
@@ -1321,49 +1085,37 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     </div>
                   </div>
                 )}
+              </div>
 
-                <div className="mt-auto pt-2 space-y-3">
-                  {/* Toggle между галереей и планировкой */}
-                  {floorPlanItems.length > 0 && (
-                    <div className="flex justify-center">
-                      <div className="flex bg-muted rounded-full p-1">
-                        <button
-                          onClick={() => {
-                            setViewMode("gallery");
-                            setCurrentImageIndex(0);
-                          }}
-                          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                            viewMode === "gallery"
-                              ? "bg-primary text-white shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          Галерея
-                        </button>
-                        <button
-                          onClick={() => {
-                            setViewMode("floorplan");
-                            setCurrentImageIndex(0);
-                          }}
-                          className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                            viewMode === "floorplan"
-                              ? "bg-primary text-white shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          }`}
-                        >
-                          Планировка
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  <Button
-                    onClick={() => setShowForm(true)}
-                    size="lg"
-                    className="w-full"
+              {/* Sticky bottom CTA */}
+              <div className="p-5 lg:p-6 pt-0 bg-card border-t border-border/50">
+                {/* Quick contact */}
+                <div className="flex gap-2 mb-3">
+                  <a
+                    href="https://wa.me/996551033960"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#25D366] text-white font-semibold text-sm hover:bg-[#20bd5a] transition-colors"
                   >
-                    Получить консультацию
-                  </Button>
+                    <MessageCircle className="h-4 w-4" />
+                    WhatsApp
+                  </a>
+                  <a
+                    href="tel:+996551033960"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-charcoal text-white font-semibold text-sm hover:bg-charcoal/80 transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
+                    Позвонить
+                  </a>
                 </div>
+                <Button
+                  onClick={() => setShowForm(true)}
+                  variant="modal"
+                  size="xl"
+                  className="w-full rounded-xl"
+                >
+                  Получить консультацию
+                </Button>
               </div>
             </div>
           </div>
@@ -1554,11 +1306,11 @@ export function Catalog() {
         </motion.div>
 
         {/* Houses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <AnimatePresence mode="popLayout">
             {filteredHouses.map((house, index) => {
-              // Генерируем путь к первому изображению для карточки
-              const cardImage = `/catalog/${house.catalogPath}/gallery/1.webp`;
+              // Используем coverImage из общего файла данных
+              const cardImage = house.coverImage;
               
               return (
               <motion.div
