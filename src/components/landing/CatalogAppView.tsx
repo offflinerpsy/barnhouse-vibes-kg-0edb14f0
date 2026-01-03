@@ -327,8 +327,8 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
           </div>
         </div>
 
-        {/* Grid of models - no scrolling, fits screen */}
-        <div className="px-4 pb-4 grid grid-cols-2 gap-2.5" style={{ maxHeight: "calc(85vh - 100px)" }}>
+        {/* List of models - single column */}
+        <div className="px-4 pb-4 flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: "calc(85vh - 100px)" }}>
           {models.map((m) => {
             const active = m.id === currentModelId;
             const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
@@ -336,39 +336,37 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
               <button
                 key={m.id}
                 onClick={() => { triggerHaptic(); onSelect(m.id); }}
-                className={`relative aspect-[4/3] rounded-2xl overflow-hidden transition-all ${
+                className={`relative flex items-center gap-3 p-2 rounded-xl transition-all ${
                   active
-                    ? "ring-2 ring-primary ring-offset-2 ring-offset-charcoal shadow-lg shadow-primary/20"
-                    : "hover:ring-1 hover:ring-white/30"
+                    ? "bg-primary/20 ring-2 ring-primary shadow-lg shadow-primary/20"
+                    : `${glassPanelLight} hover:bg-white/10`
                 }`}
               >
-                {/* Thumbnail with skeleton */}
-                <ImageWithSkeleton 
-                  src={thumb} 
-                  alt={m.name} 
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="lazy"
-                />
-                
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                {/* Thumbnail */}
+                <div className="relative w-16 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                  <ImageWithSkeleton 
+                    src={thumb} 
+                    alt={m.name} 
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
                 
                 {/* Model info */}
-                <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <HouseSchematic model={m} size="sm" />
-                      <span className="text-xs font-medium text-white/80">
-                        {m.floors}эт • {m.bedrooms}сп
-                      </span>
+                <div className="flex-1 flex items-center justify-between min-w-0">
+                  <div className="flex items-center gap-2">
+                    <HouseSchematic model={m} size="sm" />
+                    <div className="text-left">
+                      <div className="text-sm font-semibold text-white">{m.name}</div>
+                      <div className="text-xs text-white/50">{m.floors}эт • {m.bedrooms}сп • {m.bathrooms}с/у</div>
                     </div>
-                    <span className="text-sm font-bold text-primary">{m.area}м²</span>
                   </div>
+                  <span className="text-base font-bold text-primary">{m.area}м²</span>
                 </div>
 
                 {/* Active indicator */}
                 {active && (
-                  <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-primary shadow-lg shadow-primary/50" />
+                  <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
                 )}
               </button>
             );
