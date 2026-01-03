@@ -634,13 +634,88 @@ function ModalThankYouMessage({ onClose }: { onClose: () => void }) {
   );
 }
 
+// Компонент для изображения со скелетоном
+interface ImageWithSkeletonProps {
+  src: string;
+  alt: string;
+  className?: string;
+  loading?: "lazy" | "eager";
+  draggable?: boolean;
+}
+
+function ImageWithSkeleton({ src, alt, className = "", loading = "lazy", draggable = true }: ImageWithSkeletonProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      {/* Skeleton shimmer effect */}
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 bg-white/10 overflow-hidden">
+          <div 
+            className="absolute inset-0 animate-shimmer"
+            style={{
+              background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)"
+            }}
+          />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} ${isLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+        loading={loading}
+        draggable={draggable}
+        onLoad={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
+      />
+    </div>
+  );
+}
+
+// Компонент для изображения карточки со скелетоном
+interface CardImageWithSkeletonProps {
+  src: string;
+  alt: string;
+  className?: string;
+}
+
+function CardImageWithSkeleton({ src, alt, className = "" }: CardImageWithSkeletonProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  return (
+    <>
+      {/* Skeleton shimmer effect */}
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 bg-muted overflow-hidden z-0">
+          <div 
+            className="absolute inset-0 animate-shimmer"
+            style={{
+              background: "linear-gradient(90deg, transparent 0%, rgba(195,153,107,0.15) 50%, transparent 100%)"
+            }}
+          />
+        </div>
+      )}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} ${isLoaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+        loading="lazy"
+        onLoad={() => setIsLoaded(true)}
+        onError={() => setHasError(true)}
+      />
+    </>
+  );
+}
+
 // Компонент модального окна - унифицированный стиль
 interface HouseModalProps {
   house: HouseModel;
   onClose: () => void;
 }
 
-function HouseModal({ house, onClose }: HouseModalProps) {
+const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseModal({ house, onClose }, ref) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [showThankYou, setShowThankYou] = useState(false);
@@ -736,17 +811,17 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     onClose();
   };
 
-  // Рендер содержимого галереи - картинка или PDF
+  // Рендер содержимого галереи - картинка или PDF с skeleton
   const renderGalleryContent = () => {
     if (viewMode === "gallery") {
-      // Обычная галерея - только изображения
+      // Обычная галерея - с skeleton
       return (
-        <img
+        <ImageWithSkeleton
           src={allGalleryImages[currentImageIndex]}
           alt={house.name}
           className="w-full h-full object-contain pointer-events-none"
           draggable={false}
-          loading="lazy"
+          loading="eager"
         />
       );
     } else {
@@ -789,12 +864,12 @@ function HouseModal({ house, onClose }: HouseModalProps) {
         );
       } else {
         return (
-          <img
+          <ImageWithSkeleton
             src={currentItem.path}
             alt={`${house.name} планировка`}
             className="w-full h-full object-contain pointer-events-none"
             draggable={false}
-            loading="lazy"
+            loading="eager"
           />
         );
       }
@@ -958,10 +1033,10 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 )}
               </div>
 
-              {/* Thumbnail strip - hidden on mobile, visible on desktop */}
-              <div className="hidden lg:block flex-shrink-0 bg-black/30 backdrop-blur-sm border-t border-white/10 p-2">
+              {/* Thumbnail strip - hidden on mobile, visible on desktop - LARGER THUMBNAILS */}
+              <div className="hidden lg:block flex-shrink-0 bg-black/30 backdrop-blur-sm border-t border-white/10 p-3">
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                  {/* Gallery thumbnails */}
+                  {/* Gallery thumbnails - increased size */}
                   {allGalleryImages.map((img, idx) => (
                     <button
                       key={`gallery-${idx}`}
@@ -969,7 +1044,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                         setViewMode("gallery");
                         setCurrentImageIndex(idx);
                       }}
-                      className={`relative flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${
                         viewMode === "gallery" && currentImageIndex === idx
                           ? "border-primary ring-2 ring-primary/30 scale-105"
                           : "border-transparent hover:border-white/30 opacity-70 hover:opacity-100"
@@ -985,9 +1060,9 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   ))}
                   {/* Floor plan thumbnails separator */}
                   {floorPlanItems.length > 0 && allGalleryImages.length > 0 && (
-                    <div className="flex-shrink-0 w-px bg-white/20 mx-1" />
+                    <div className="flex-shrink-0 w-px bg-white/20 mx-2" />
                   )}
-                  {/* Floor plan thumbnails */}
+                  {/* Floor plan thumbnails - increased size */}
                   {floorPlanItems.map((item, idx) => (
                     <button
                       key={`plan-${idx}`}
@@ -995,7 +1070,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                         setViewMode("floorplan");
                         setCurrentImageIndex(idx);
                       }}
-                      className={`relative flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${
                         viewMode === "floorplan" && currentImageIndex === idx
                           ? "border-primary ring-2 ring-primary/30 scale-105"
                           : "border-transparent hover:border-white/30 opacity-70 hover:opacity-100"
@@ -1003,7 +1078,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     >
                       {item.isPdf ? (
                         <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                          <Layers className="h-4 w-4 text-white/60" />
+                          <Layers className="h-5 w-5 text-white/60" />
                         </div>
                       ) : (
                         <img
@@ -1014,8 +1089,8 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                         />
                       )}
                       {/* Plan badge */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                        <span className="text-[10px] text-white font-medium">План</span>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                        <span className="text-xs text-white font-medium">План</span>
                       </div>
                     </button>
                   ))}
@@ -1193,7 +1268,8 @@ function HouseModal({ house, onClose }: HouseModalProps) {
       </motion.div>
     </motion.div>
   );
-}
+});
+HouseModal.displayName = "HouseModal";
 
 // Модальное окно для индивидуального проекта - унифицированный стиль как ContactModal
 interface CustomProjectModalProps {
@@ -1395,13 +1471,12 @@ export function Catalog() {
               >
                 {/* Premium Card Design */}
                 <div className="relative bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-shadow duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(195,153,107,0.25)]">
-                  {/* Image Container - object-position center to keep houses centered */}
+                  {/* Image Container - with skeleton loading */}
                   <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
+                    <CardImageWithSkeleton
                       src={cardImage}
                       alt={house.name}
                       className="w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
-                      loading="lazy"
                     />
                     
                     {/* Premium hover overlay with gradient */}
