@@ -194,19 +194,25 @@ const ActionButton = forwardRef<HTMLButtonElement, {
   onClick: () => void;
   variant?: "default" | "primary";
   animated?: boolean;
-}>(({ icon: Icon, label, onClick, variant = "default", animated = false }, ref) => (
-  <button ref={ref} onClick={onClick} className="flex flex-col items-center gap-1">
+  disabled?: boolean;
+}>(({ icon: Icon, label, onClick, variant = "default", animated = false, disabled = false }, ref) => (
+  <button 
+    ref={ref} 
+    onClick={disabled ? undefined : onClick} 
+    disabled={disabled}
+    className={`flex flex-col items-center gap-1 ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+  >
     <motion.div 
       className={`relative ${
         variant === "primary"
           ? `w-11 h-11 rounded-[14px] bg-primary shadow-lg shadow-primary/30 flex items-center justify-center`
           : `w-11 h-11 rounded-[14px] ${glassPanelLight} flex items-center justify-center`
       }`}
-      variants={animated ? pressAnimation : undefined}
-      initial={animated ? "initial" : undefined}
-      animate={animated ? "animate" : undefined}
+      variants={animated && !disabled ? pressAnimation : undefined}
+      initial={animated && !disabled ? "initial" : undefined}
+      animate={animated && !disabled ? "animate" : undefined}
     >
-      {animated && <PhotoButtonAnimation />}
+      {animated && !disabled && <PhotoButtonAnimation />}
       <Icon className={variant === "primary" ? "h-5 w-5 text-charcoal" : "h-5 w-5 text-white/90"} />
     </motion.div>
     <span className="text-[10px] font-medium text-white/60 tracking-wide uppercase">{label}</span>
@@ -220,8 +226,8 @@ const InfoChip = forwardRef<HTMLDivElement, {
   value: string | number;
   label: string;
 }>(({ icon, value, label }, ref) => (
-  <div ref={ref} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full ${glassPanelLight}`}>
-    <span className="text-primary">{icon}</span>
+  <div ref={ref} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full whitespace-nowrap ${glassPanelLight}`}>
+    <span className="text-primary shrink-0">{icon}</span>
     <span className="text-sm font-semibold text-white">{value}</span>
     <span className="text-xs text-white/50">{label}</span>
   </div>
@@ -841,7 +847,8 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               setShowGallery(true); 
               setGalleryTab("plans"); 
             }} 
-            animated 
+            animated={floorPlans.length > 0}
+            disabled={floorPlans.length === 0}
           />
           <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} animated />
           <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setContactOpen(true)} />
