@@ -110,6 +110,37 @@ function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" |
 const glassPanel = "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.06] backdrop-blur-xl border border-white/[0.1]";
 
+// Skeleton loading component for images
+function ImageWithSkeleton({ 
+  src, 
+  alt, 
+  className = "", 
+  ...props 
+}: React.ImgHTMLAttributes<HTMLImageElement>) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  
+  return (
+    <div className="relative w-full h-full">
+      {/* Skeleton */}
+      {!loaded && !error && (
+        <div className="absolute inset-0 bg-white/5 animate-pulse">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+        </div>
+      )}
+      {/* Image */}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        {...props}
+      />
+    </div>
+  );
+}
+
 // Premium shimmer + press animation for photo button
 const PhotoButtonAnimation = () => (
   <motion.div
@@ -315,8 +346,8 @@ function ModelPickerSheet({
                           : "hover:ring-1 hover:ring-white/30"
                       }`}
                     >
-                      {/* Thumbnail */}
-                      <img 
+                      {/* Thumbnail with skeleton */}
+                      <ImageWithSkeleton 
                         src={thumb} 
                         alt={m.name} 
                         className="absolute inset-0 w-full h-full object-cover"
@@ -747,7 +778,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               className="absolute inset-0 w-full h-full cursor-pointer"
               aria-label="Открыть галерею"
             >
-              <img src={mainPhoto} alt={`${currentModel.name} ${currentModel.area}м²`} className="h-full w-full object-cover" draggable={false} loading="eager" />
+              <ImageWithSkeleton src={mainPhoto} alt={`${currentModel.name} ${currentModel.area}м²`} className="h-full w-full object-cover" draggable={false} loading="eager" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/40" />
             </button>
           </motion.div>
@@ -796,71 +827,37 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           </div>
         </section>
 
-        {/* Swipeable catalog drawer at bottom */}
-        <motion.div
-          className={`absolute left-4 right-4 z-30 rounded-t-2xl ${glassPanel} cursor-grab active:cursor-grabbing`}
+        {/* Swipeable catalog handle at bottom */}
+        <motion.button
+          onClick={() => setModelPickerOpen(true)}
+          className={`absolute left-4 right-4 z-30 rounded-t-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
           style={{ bottom: 0, paddingBottom: "env(safe-area-inset-bottom)" }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.5, bottom: 0 }}
-          onDragEnd={(_, info) => {
-            // Swipe up to open full catalog
-            if (info.offset.y < -40) {
+          onPanEnd={(_, info) => {
+            if (info.offset.y < -30 || info.velocity.y < -300) {
               setModelPickerOpen(true);
             }
           }}
-          onClick={() => setModelPickerOpen(true)}
         >
-          <div className="flex flex-col items-center pt-2 pb-3">
-            {/* Handle bar with upward hint animation */}
+          <div className="flex flex-col items-center py-4 px-6">
+            {/* Animated handle bar */}
             <motion.div 
-              className="w-10 h-1.5 rounded-full bg-white/40 mb-2"
-              animate={{ y: [0, -3, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 2 }}
+              className="w-12 h-1.5 rounded-full bg-white/40 mb-3"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
             />
             
-            {/* Compact preview of models */}
-            <div className="flex items-center justify-center gap-2 px-4 w-full">
-              {filteredModels.slice(0, 5).map((m, idx) => {
-                const isActive = idx === safeIndex;
-                const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
-                return (
-                  <button
-                    key={m.id}
-                    onClick={(e) => { 
-                      e.stopPropagation();
-                      triggerHaptic(); 
-                      setDirection(idx > safeIndex ? 1 : -1); 
-                      setCurrentModelIndex(idx); 
-                    }}
-                    className={`relative flex-shrink-0 rounded-lg overflow-hidden transition-all ${
-                      isActive ? "ring-2 ring-primary scale-110" : "opacity-50 hover:opacity-80"
-                    }`}
-                  >
-                    <img 
-                      src={thumb} 
-                      alt={m.name} 
-                      className="w-11 h-8 object-cover" 
-                      loading="lazy" 
-                    />
-                  </button>
-                );
-              })}
-              {filteredModels.length > 5 && (
-                <div className="flex-shrink-0 w-11 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <span className="text-xs font-bold text-white/60">+{filteredModels.length - 5}</span>
-                </div>
-              )}
+            {/* Text hint */}
+            <div className="flex items-center gap-2">
+              <Grid3X3 className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-white/80">Развернуть каталог моделей</span>
             </div>
             
-            {/* Label with swipe hint */}
-            <div className="flex items-center gap-2 mt-2">
-              <Grid3X3 className="h-3.5 w-3.5 text-primary" />
-              <span className="text-xs font-medium text-white/60">Потяните вверх</span>
-              <span className="text-xs font-semibold text-primary">• {filteredModels.length} моделей</span>
-            </div>
+            {/* Counter */}
+            <span className="text-xs text-white/50 mt-1">
+              {safeIndex + 1} из {filteredModels.length} • свайп вверх ↑
+            </span>
           </div>
-        </motion.div>
+        </motion.button>
 
         {/* Gallery sheet */}
         <AnimatePresence>
@@ -920,7 +917,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                       onClick={() => { setLightboxImage(photo); setLightboxIndex(idx); }}
                       className="aspect-[4/3] rounded-xl overflow-hidden relative group"
                     >
-                      <img src={photo} alt={`${currentModel.name} — ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                      <ImageWithSkeleton src={photo} alt={`${currentModel.name} — ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                       <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-lg ${glassPanelLight} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity`}>
                         <Maximize2 className="h-4 w-4 text-white" />
