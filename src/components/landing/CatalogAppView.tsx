@@ -3,7 +3,7 @@
  * Premium glassmorphism UI with refined spacing and hierarchy
  */
 
-import { useCallback, useMemo, useState, useRef, forwardRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, forwardRef } from "react";
 import { AnimatePresence, motion, PanInfo } from "framer-motion";
 import {
   ChevronLeft,
@@ -58,6 +58,14 @@ const ERA_MODELS: EraModel[] = [
   // Commercial model
   { id: "model-resto", name: "Model Resto", area: 72, floors: 1, bedrooms: 0, bathrooms: 2, catalogPath: "model-resto", coverImage: "/catalog/covers/model-resto.webp", galleryCount: 0, galleryExtraCount: 0, floorPlanCount: 0 },
 ];
+
+function applyCatalogFilter(models: EraModel[], filter: FilterType): EraModel[] {
+  if (filter === "all") return models.filter((m) => m.id !== "model-resto");
+  if (filter === "1-floor") return models.filter((m) => m.floors === 1 && m.id !== "model-resto");
+  if (filter === "2-floor") return models.filter((m) => m.floors === 2);
+  if (filter === "business") return models.filter((m) => m.id === "model-resto");
+  return models;
+}
 
 const SWIPE_X = 70;
 const SWIPE_Y = 90;
@@ -282,10 +290,27 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
   onClose: () => void;
   models: EraModel[];
   currentModelId: string;
-  onSelect: (id: string) => void;
-}>(function ModelPickerSheet({ open, onClose, models, currentModelId, onSelect }, ref) {
-  const [sheetFilter, setSheetFilter] = useState<"all" | "1-floor" | "2-floor" | "business">("all");
-  
+  activeFilter: FilterType;
+  onFilterChange: (filter: FilterType) => void;
+  onSelect: (id: string, filter: FilterType) => void;
+}>(function ModelPickerSheet(
+  { open, onClose, models, currentModelId, activeFilter, onFilterChange, onSelect },
+  ref
+) {
+  const [sheetFilter, setSheetFilter] = useState<FilterType>(activeFilter);
+
+  useEffect(() => {
+    if (open) setSheetFilter(activeFilter);
+  }, [activeFilter, open]);
+
+  const setAndSyncFilter = useCallback(
+    (next: FilterType) => {
+      setSheetFilter(next);
+      onFilterChange(next);
+    },
+    [onFilterChange]
+  );
+
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // Swipe down to close
     if (info.offset.y > 80) {
@@ -298,40 +323,40 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
     if (navigator.vibrate) navigator.vibrate(10);
   }, []);
 
-  // Filter models based on sheet filter
-  const filteredSheetModels = useMemo(() => {
-    if (sheetFilter === "all") return models.filter((m) => m.id !== "model-resto");
-    if (sheetFilter === "1-floor") return models.filter((m) => m.floors === 1 && m.id !== "model-resto");
-    if (sheetFilter === "2-floor") return models.filter((m) => m.floors === 2);
-    if (sheetFilter === "business") return models.filter((m) => m.id === "model-resto");
-    return models;
-  }, [models, sheetFilter]);
+  const filteredSheetModels = useMemo(
+    () => applyCatalogFilter(models, sheetFilter),
+    [models, sheetFilter]
+  );
 
   if (!open) return null;
 
   return (
-    <motion.div 
+    <motion.div
       ref={ref}
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }} 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="absolute inset-0 z-40"
     >
-      <button aria-label="Закрыть" onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <button
+        aria-label="Закрыть"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+      />
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 350 }}
         className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95 flex flex-col`}
-        style={{ 
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
+        style={{
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 28px)",
           height: "85vh",
           maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
         }}
       >
         {/* Drag handle - only this area handles drag to close */}
-        <motion.div 
+        <motion.div
           className="pt-3 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0"
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
@@ -348,7 +373,10 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
               <Grid3X3 className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-semibold text-white">Выбор модели</h3>
             </div>
-            <button onClick={onClose} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+            <button
+              onClick={onClose}
+              className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+            >
               <X className="h-5 w-5 text-white/80" />
             </button>
           </div>
@@ -362,10 +390,10 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
               { id: "1-floor" as const, label: "1эт" },
               { id: "2-floor" as const, label: "2эт" },
               { id: "business" as const, label: "Биз." },
-            ]).map((f) => (
+            ] as const).map((f) => (
               <button
                 key={f.id}
-                onClick={() => setSheetFilter(f.id)}
+                onClick={() => setAndSyncFilter(f.id)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                   sheetFilter === f.id
                     ? "bg-primary text-charcoal shadow-sm"
@@ -379,19 +407,19 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
         </div>
 
         {/* List of models - scrollable */}
-        <div className="px-4 pb-4 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y">
+        <div className="px-4 pb-8 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y">
           {filteredSheetModels.map((m) => {
             const active = m.id === currentModelId;
-            const thumb = m.coverImage; // Use dedicated cover photo
+            const thumb = m.coverImage;
             const isTwoFloors = m.floors === 2;
             return (
               <motion.button
                 key={m.id}
-                onClick={() => { triggerHaptic(); onSelect(m.id); }}
-                animate={{ 
-                  scale: active ? 1.02 : 1,
-                  y: active ? -1 : 0
+                onClick={() => {
+                  triggerHaptic();
+                  onSelect(m.id, sheetFilter);
                 }}
+                animate={{ scale: active ? 1.02 : 1, y: active ? -1 : 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 className={`relative flex items-center gap-4 p-3 rounded-xl transition-colors ${
                   active
@@ -399,48 +427,47 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
                     : `${glassPanelLight} hover:bg-white/10`
                 }`}
               >
-                {/* Thumbnail - larger and higher quality */}
+                {/* Thumbnail */}
                 <div className="relative w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-charcoal/50">
-                  <ImageWithSkeleton 
-                    src={thumb} 
-                    alt={m.name} 
+                  <ImageWithSkeleton
+                    src={thumb}
+                    alt={m.name}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
                   />
-                  {/* Two floors badge */}
                   {isTwoFloors && (
                     <div className="absolute top-1 right-1 bg-primary text-charcoal rounded px-1.5 py-0.5 text-[10px] font-bold shadow-lg">
                       2эт
                     </div>
                   )}
-                  {/* Commercial badge */}
                   {m.id === "model-resto" && (
                     <div className="absolute top-1 right-1 bg-amber-500 text-charcoal rounded px-1.5 py-0.5 text-[10px] font-bold shadow-lg">
                       HoReCa
                     </div>
                   )}
                 </div>
-                
-                {/* Model info - no house icons, larger text */}
+
+                {/* Model info */}
                 <div className="flex-1 flex items-center justify-between min-w-0">
                   <div className="text-left">
                     <div className="flex items-center gap-2">
                       <span className="text-base font-bold text-white">{m.name}</span>
                     </div>
                     <div className="text-sm text-white/60 mt-0.5">
-                      {m.id === "model-resto" 
-                        ? "Ресторан • Кафе" 
-                        : `${m.bedrooms}сп • ${m.bathrooms}с/у • ${m.floors}эт`
-                      }
+                      {m.id === "model-resto"
+                        ? "Ресторан • Кафе"
+                        : `${m.bedrooms}сп • ${m.bathrooms}с/у • ${m.floors}эт`}
                     </div>
                   </div>
-                  <span className="text-lg font-bold text-primary">{m.area}м²</span>
+                  <span className="text-lg font-bold text-primary leading-snug inline-block pb-[1px]">
+                    {m.area}м²
+                  </span>
                 </div>
 
                 {/* Active glow effect */}
                 {active && (
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 rounded-xl bg-primary/10 pointer-events-none"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -450,8 +477,7 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
               </motion.button>
             );
           })}
-          
-          {/* Empty state */}
+
           {filteredSheetModels.length === 0 && (
             <div className="flex-1 flex items-center justify-center py-12">
               <p className="text-white/40 text-sm">Нет моделей в этой категории</p>
@@ -669,7 +695,7 @@ function ZoomableLightbox({
                   <div>
                     <div className="flex items-baseline gap-2">
                       <span className="text-base font-bold text-white">{model.name}</span>
-                      <span className="text-base font-bold text-primary">{model.area}м²</span>
+                      <span className="text-base font-bold text-primary leading-snug inline-block pb-[1px]">{model.area}м²</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-white/50 mt-0.5">
                       <span className="flex items-center gap-1">
@@ -724,13 +750,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
 
-  const filteredModels = useMemo(() => {
-    if (filter === "all") return ERA_MODELS.filter((m) => m.id !== "model-resto");
-    if (filter === "1-floor") return ERA_MODELS.filter((m) => m.floors === 1 && m.id !== "model-resto");
-    if (filter === "2-floor") return ERA_MODELS.filter((m) => m.floors === 2);
-    if (filter === "business") return ERA_MODELS.filter((m) => m.id === "model-resto");
-    return ERA_MODELS;
-  }, [filter]);
+  const filteredModels = useMemo(() => applyCatalogFilter(ERA_MODELS, filter), [filter]);
 
   const safeIndex = Math.min(currentModelIndex, Math.max(0, filteredModels.length - 1));
   const currentModel = filteredModels[safeIndex] ?? filteredModels[0];
@@ -909,7 +929,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                 <div>
                   <div className="flex items-baseline gap-2">
                     <h1 className="text-xl font-bold text-white">{currentModel.name}</h1>
-                    <span className="text-xl font-bold text-primary">{currentModel.area}м²</span>
+                    <span className="text-xl font-bold text-primary leading-snug inline-block pb-[1px]">{currentModel.area}м²</span>
                   </div>
                   <p className="text-sm text-white/50">{currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse</p>
                 </div>
@@ -974,7 +994,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                   <X className="h-5 w-5 text-white/80" />
                 </button>
                 <div className="text-center">
-                  <div className="text-base font-semibold text-white">{currentModel.name} <span className="text-primary">{currentModel.area}м²</span></div>
+                  <div className="text-base font-semibold text-white">{currentModel.name} <span className="text-primary leading-snug inline-block pb-[1px]">{currentModel.area}м²</span></div>
                   <div className="text-xs text-white/40">Реальные фото первыми</div>
                 </div>
                 <div className="w-10" />
@@ -1048,10 +1068,17 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             <ModelPickerSheet
               open={modelPickerOpen}
               onClose={() => setModelPickerOpen(false)}
-              models={filteredModels}
+              models={ERA_MODELS}
               currentModelId={currentModel.id}
-              onSelect={(id) => {
-                const idx = filteredModels.findIndex((m) => m.id === id);
+              activeFilter={filter}
+              onFilterChange={(next) => {
+                setFilter(next);
+                setCurrentModelIndex(0);
+              }}
+              onSelect={(id, appliedFilter) => {
+                setFilter(appliedFilter);
+                const nextModels = applyCatalogFilter(ERA_MODELS, appliedFilter);
+                const idx = nextModels.findIndex((m) => m.id === id);
                 if (idx >= 0) setCurrentModelIndex(idx);
                 setModelPickerOpen(false);
               }}
