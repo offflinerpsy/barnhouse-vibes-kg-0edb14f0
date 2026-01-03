@@ -284,6 +284,8 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
   currentModelId: string;
   onSelect: (id: string) => void;
 }>(function ModelPickerSheet({ open, onClose, models, currentModelId, onSelect }, ref) {
+  const [sheetFilter, setSheetFilter] = useState<"all" | "1-floor" | "2-floor" | "business">("all");
+  
   const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     // Swipe down to close
     if (info.offset.y > 80) {
@@ -295,6 +297,15 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
   const triggerHaptic = useCallback(() => {
     if (navigator.vibrate) navigator.vibrate(10);
   }, []);
+
+  // Filter models based on sheet filter
+  const filteredSheetModels = useMemo(() => {
+    if (sheetFilter === "all") return models.filter((m) => m.id !== "model-resto");
+    if (sheetFilter === "1-floor") return models.filter((m) => m.floors === 1 && m.id !== "model-resto");
+    if (sheetFilter === "2-floor") return models.filter((m) => m.floors === 2);
+    if (sheetFilter === "business") return models.filter((m) => m.id === "model-resto");
+    return models;
+  }, [models, sheetFilter]);
 
   if (!open) return null;
 
@@ -314,7 +325,7 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
         transition={{ type: "spring", damping: 30, stiffness: 350 }}
         className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95 flex flex-col`}
         style={{ 
-          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingBottom: "calc(env(safe-area-inset-bottom) + 16px)",
           height: "85vh",
           maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
         }}
@@ -331,7 +342,7 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
         </motion.div>
 
         {/* Header */}
-        <div className="px-5 pb-4 flex-shrink-0">
+        <div className="px-5 pb-3 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Grid3X3 className="h-5 w-5 text-primary" />
@@ -343,9 +354,33 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
           </div>
         </div>
 
+        {/* Filter tabs */}
+        <div className="px-4 pb-3 flex-shrink-0">
+          <div className={`flex gap-1 rounded-xl ${glassPanelLight} p-1`}>
+            {([
+              { id: "all" as const, label: "Все" },
+              { id: "1-floor" as const, label: "1эт" },
+              { id: "2-floor" as const, label: "2эт" },
+              { id: "business" as const, label: "Биз." },
+            ]).map((f) => (
+              <button
+                key={f.id}
+                onClick={() => setSheetFilter(f.id)}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  sheetFilter === f.id
+                    ? "bg-primary text-charcoal shadow-sm"
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* List of models - scrollable */}
         <div className="px-4 pb-4 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y">
-          {models.map((m) => {
+          {filteredSheetModels.map((m) => {
             const active = m.id === currentModelId;
             const thumb = m.coverImage; // Use dedicated cover photo
             const isTwoFloors = m.floors === 2;
@@ -415,6 +450,13 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
               </motion.button>
             );
           })}
+          
+          {/* Empty state */}
+          {filteredSheetModels.length === 0 && (
+            <div className="flex-1 flex items-center justify-center py-12">
+              <p className="text-white/40 text-sm">Нет моделей в этой категории</p>
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>
