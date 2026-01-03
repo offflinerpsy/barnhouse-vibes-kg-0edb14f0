@@ -902,58 +902,125 @@ function HouseModal({ house, onClose }: HouseModalProps) {
 
           <div className="flex flex-col lg:flex-row h-full max-h-[85vh]">
             {/* Left: Image Gallery — 60% */}
-            <div 
-              className="relative w-full lg:w-[60%] h-[45vh] lg:h-[85vh] select-none cursor-grab active:cursor-grabbing flex-shrink-0 bg-black/20"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseLeave}
-            >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`${viewMode}-${currentImageIndex}`}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  {renderGalleryContent()}
-                </motion.div>
-              </AnimatePresence>
+            <div className="w-full lg:w-[60%] flex flex-col h-[45vh] lg:h-[85vh] flex-shrink-0">
+              {/* Main image area */}
+              <div 
+                className="relative flex-1 min-h-0 select-none cursor-grab active:cursor-grabbing bg-black/20"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseLeave}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${viewMode}-${currentImageIndex}`}
+                    initial={{ opacity: 0, scale: 1.02 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    {renderGalleryContent()}
+                  </motion.div>
+                </AnimatePresence>
 
-              {/* Navigation arrows */}
-              <div className="hidden lg:flex absolute inset-0 items-center justify-between px-4 pointer-events-none">
-                <button
-                  onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
-                  className={`p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full transition-all pointer-events-auto ${
-                    currentImageIndex === 0 ? "opacity-0" : "opacity-100"
-                  }`}
-                >
-                  <ChevronLeft className="h-6 w-6 text-white" />
-                </button>
-                <button
-                  onClick={() => currentImageIndex < currentItemCount - 1 && setCurrentImageIndex(prev => prev + 1)}
-                  className={`p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full transition-all pointer-events-auto ${
-                    currentImageIndex === currentItemCount - 1 ? "opacity-0" : "opacity-100"
-                  }`}
-                >
-                  <ChevronRight className="h-6 w-6 text-white" />
-                </button>
-              </div>
-
-              {/* Photo counter badge */}
-              <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">
-                {currentImageIndex + 1} / {currentItemCount}
-              </div>
-
-              {showSwipeHint && currentItemCount > 1 && (
-                <div className="lg:hidden">
-                  <SwipeIndicator />
+                {/* Navigation arrows */}
+                <div className="hidden lg:flex absolute inset-0 items-center justify-between px-4 pointer-events-none">
+                  <button
+                    onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
+                    className={`p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full transition-all pointer-events-auto ${
+                      currentImageIndex === 0 ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    <ChevronLeft className="h-6 w-6 text-white" />
+                  </button>
+                  <button
+                    onClick={() => currentImageIndex < currentItemCount - 1 && setCurrentImageIndex(prev => prev + 1)}
+                    className={`p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full transition-all pointer-events-auto ${
+                      currentImageIndex === currentItemCount - 1 ? "opacity-0" : "opacity-100"
+                    }`}
+                  >
+                    <ChevronRight className="h-6 w-6 text-white" />
+                  </button>
                 </div>
-              )}
+
+                {/* Photo counter badge */}
+                <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">
+                  {currentImageIndex + 1} / {currentItemCount}
+                </div>
+
+                {showSwipeHint && currentItemCount > 1 && (
+                  <div className="lg:hidden">
+                    <SwipeIndicator />
+                  </div>
+                )}
+              </div>
+
+              {/* Thumbnail strip - hidden on mobile, visible on desktop */}
+              <div className="hidden lg:block flex-shrink-0 bg-black/30 backdrop-blur-sm border-t border-white/10 p-2">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+                  {/* Gallery thumbnails */}
+                  {allGalleryImages.map((img, idx) => (
+                    <button
+                      key={`gallery-${idx}`}
+                      onClick={() => {
+                        setViewMode("gallery");
+                        setCurrentImageIndex(idx);
+                      }}
+                      className={`relative flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                        viewMode === "gallery" && currentImageIndex === idx
+                          ? "border-primary ring-2 ring-primary/30 scale-105"
+                          : "border-transparent hover:border-white/30 opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`Фото ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </button>
+                  ))}
+                  {/* Floor plan thumbnails separator */}
+                  {floorPlanItems.length > 0 && allGalleryImages.length > 0 && (
+                    <div className="flex-shrink-0 w-px bg-white/20 mx-1" />
+                  )}
+                  {/* Floor plan thumbnails */}
+                  {floorPlanItems.map((item, idx) => (
+                    <button
+                      key={`plan-${idx}`}
+                      onClick={() => {
+                        setViewMode("floorplan");
+                        setCurrentImageIndex(idx);
+                      }}
+                      className={`relative flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
+                        viewMode === "floorplan" && currentImageIndex === idx
+                          ? "border-primary ring-2 ring-primary/30 scale-105"
+                          : "border-transparent hover:border-white/30 opacity-70 hover:opacity-100"
+                      }`}
+                    >
+                      {item.isPdf ? (
+                        <div className="w-full h-full bg-white/10 flex items-center justify-center">
+                          <Layers className="h-4 w-4 text-white/60" />
+                        </div>
+                      ) : (
+                        <img
+                          src={item.path}
+                          alt={`Планировка ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      )}
+                      {/* Plan badge */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                        <span className="text-[10px] text-white font-medium">План</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Right: Content Panel — 40% */}
@@ -1328,12 +1395,12 @@ export function Catalog() {
               >
                 {/* Premium Card Design */}
                 <div className="relative bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-shadow duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(195,153,107,0.25)]">
-                  {/* Image Container */}
+                  {/* Image Container - object-position center to keep houses centered */}
                   <div className="relative aspect-[4/3] overflow-hidden">
                     <img
                       src={cardImage}
                       alt={house.name}
-                      className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-105"
+                      className="w-full h-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
                       loading="lazy"
                     />
                     
@@ -1354,13 +1421,6 @@ export function Catalog() {
                         Подробнее
                       </div>
                     </div>
-
-                    {/* TODO: Раскомментировать когда будут готовы цены */}
-                    {/* <div className="absolute bottom-3 left-3 right-3">
-                      <p className="text-xl font-bold text-white drop-shadow-lg">
-                        {house.price}
-                      </p>
-                    </div> */}
                   </div>
 
                   {/* Content */}
