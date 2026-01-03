@@ -332,13 +332,19 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
           {models.map((m) => {
             const active = m.id === currentModelId;
             const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
+            const isTwoFloors = m.floors === 2;
             return (
-              <button
+              <motion.button
                 key={m.id}
                 onClick={() => { triggerHaptic(); onSelect(m.id); }}
-                className={`relative flex items-center gap-3 p-2 rounded-xl transition-all ${
+                animate={{ 
+                  scale: active ? 1.03 : 1,
+                  y: active ? -2 : 0
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className={`relative flex items-center gap-3 p-2.5 rounded-xl transition-colors ${
                   active
-                    ? "bg-primary/20 ring-2 ring-primary shadow-lg shadow-primary/20"
+                    ? "bg-primary/25 ring-2 ring-primary shadow-xl shadow-primary/30"
                     : `${glassPanelLight} hover:bg-white/10`
                 }`}
               >
@@ -350,6 +356,18 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
                   />
+                  {/* Two floors badge - IKEA style */}
+                  {isTwoFloors && (
+                    <div className="absolute -top-1 -right-1 bg-primary text-charcoal rounded-md px-1 py-0.5 flex items-center gap-0.5 shadow-lg">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-charcoal">
+                        <rect x="4" y="12" width="16" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
+                        <rect x="6" y="4" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
+                        <line x1="12" y1="20" x2="12" y2="12" stroke="currentColor" strokeWidth="1.5"/>
+                        <line x1="12" y1="12" x2="12" y2="4" stroke="currentColor" strokeWidth="1.5"/>
+                      </svg>
+                      <span className="text-[8px] font-bold">2</span>
+                    </div>
+                  )}
                 </div>
                 
                 {/* Model info */}
@@ -357,18 +375,28 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
                   <div className="flex items-center gap-2">
                     <HouseSchematic model={m} size="sm" />
                     <div className="text-left">
-                      <div className="text-sm font-semibold text-white">{m.name}</div>
-                      <div className="text-xs text-white/50">{m.floors}эт • {m.bedrooms}сп • {m.bathrooms}с/у</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-white">{m.name}</span>
+                        {isTwoFloors && (
+                          <span className="text-[10px] font-medium text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded">2 этажа</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-white/50">{m.bedrooms}сп • {m.bathrooms}с/у</div>
                     </div>
                   </div>
                   <span className="text-base font-bold text-primary">{m.area}м²</span>
                 </div>
 
-                {/* Active indicator */}
+                {/* Active glow effect */}
                 {active && (
-                  <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50" />
+                  <motion.div 
+                    className="absolute inset-0 rounded-xl bg-primary/10 pointer-events-none"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0.3, 0.6, 0.3] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>
