@@ -298,24 +298,26 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 30, stiffness: 350 }}
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={{ top: 0, bottom: 0.3 }}
-        onDragEnd={handleDragEnd}
-        className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95`}
+        className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95 flex flex-col`}
         style={{ 
           paddingBottom: "env(safe-area-inset-bottom)",
           height: "85vh",
           maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
         }}
       >
-        {/* Drag handle */}
-        <div className="pt-3 pb-2 cursor-grab active:cursor-grabbing">
+        {/* Drag handle - only this area handles drag to close */}
+        <motion.div 
+          className="pt-3 pb-2 cursor-grab active:cursor-grabbing flex-shrink-0"
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.3 }}
+          onDragEnd={handleDragEnd}
+        >
           <div className="mx-auto h-1.5 w-12 rounded-full bg-white/30" />
-        </div>
+        </motion.div>
 
         {/* Header */}
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <Grid3X3 className="h-5 w-5 text-primary" />
@@ -327,8 +329,8 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
           </div>
         </div>
 
-        {/* List of models - single column */}
-        <div className="px-4 pb-4 flex flex-col gap-2 overflow-y-auto" style={{ maxHeight: "calc(85vh - 100px)" }}>
+        {/* List of models - scrollable */}
+        <div className="px-4 pb-4 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y">
           {models.map((m) => {
             const active = m.id === currentModelId;
             const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
