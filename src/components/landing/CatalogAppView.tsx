@@ -126,36 +126,34 @@ function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" |
 const glassPanel = "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.06] backdrop-blur-xl border border-white/[0.1]";
 
-// Skeleton loading component for images
-function ImageWithSkeleton({ 
-  src, 
-  alt, 
-  className = "", 
-  ...props 
-}: React.ImgHTMLAttributes<HTMLImageElement>) {
-  const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState(false);
-  
-  return (
-    <div className="relative w-full h-full">
-      {/* Skeleton */}
-      {!loaded && !error && (
-        <div className="absolute inset-0 bg-white/5 animate-pulse">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        </div>
-      )}
-      {/* Image */}
-      <img
-        src={src}
-        alt={alt}
-        className={`${className} transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        onLoad={() => setLoaded(true)}
-        onError={() => setError(true)}
-        {...props}
-      />
-    </div>
-  );
-}
+// Skeleton loading component for images (forwardRef for Framer Motion compatibility)
+const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
+  function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
+    const [loaded, setLoaded] = useState(false);
+    const [error, setError] = useState(false);
+
+    return (
+      <div ref={ref} className="relative w-full h-full">
+        {/* Skeleton */}
+        {!loaded && !error && (
+          <div className="absolute inset-0 bg-white/5 animate-pulse">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+          </div>
+        )}
+        {/* Image */}
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+          {...props}
+        />
+      </div>
+    );
+  }
+);
+ImageWithSkeleton.displayName = "ImageWithSkeleton";
 
 // Premium shimmer + press animation for photo button
 const PhotoButtonAnimation = () => (
@@ -350,7 +348,6 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
         transition={{ type: "spring", damping: 30, stiffness: 350 }}
         className={`absolute left-0 right-0 bottom-0 rounded-t-[28px] ${glassPanel} bg-charcoal/95 flex flex-col`}
         style={{
-          paddingBottom: "calc(env(safe-area-inset-bottom) + 28px)",
           height: "85vh",
           maxHeight: "calc(100% - env(safe-area-inset-top) - 40px)",
         }}
@@ -406,8 +403,8 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
           </div>
         </div>
 
-        {/* List of models - scrollable */}
-        <div className="px-4 pb-8 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y">
+        {/* List of models - scrollable with extra bottom padding to avoid clipping */}
+        <div className="px-4 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 100px)" }}>
           {filteredSheetModels.map((m) => {
             const active = m.id === currentModelId;
             const thumb = m.coverImage;
