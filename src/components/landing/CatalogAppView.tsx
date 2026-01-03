@@ -24,7 +24,7 @@ interface CatalogAppViewProps {
   onClose?: () => void;
 }
 
-type FilterType = "all" | "1-floor" | "2-floor";
+type FilterType = "all" | "1-floor" | "2-floor" | "business";
 
 type EraModel = {
   id: string;
@@ -677,9 +677,11 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [contactOpen, setContactOpen] = useState(false);
 
   const filteredModels = useMemo(() => {
-    if (filter === "all") return ERA_MODELS;
-    if (filter === "1-floor") return ERA_MODELS.filter((m) => m.floors === 1);
-    return ERA_MODELS.filter((m) => m.floors === 2);
+    if (filter === "all") return ERA_MODELS.filter((m) => m.id !== "model-resto");
+    if (filter === "1-floor") return ERA_MODELS.filter((m) => m.floors === 1 && m.id !== "model-resto");
+    if (filter === "2-floor") return ERA_MODELS.filter((m) => m.floors === 2);
+    if (filter === "business") return ERA_MODELS.filter((m) => m.id === "model-resto");
+    return ERA_MODELS;
   }, [filter]);
 
   const safeIndex = Math.min(currentModelIndex, Math.max(0, filteredModels.length - 1));
@@ -760,12 +762,13 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             {/* Filter pills with label */}
             <nav className="flex-1 flex justify-center">
               <div className={`inline-flex items-center gap-2 rounded-full ${glassPanel} py-1 pl-3 pr-1`}>
-                <span className="text-xs font-medium text-white/50 whitespace-nowrap">Этажность:</span>
+                <span className="text-xs font-medium text-white/50 whitespace-nowrap">Фильтр:</span>
                 <div className="flex gap-0.5">
                   {([
                     { id: "all" as const, label: "Все" },
                     { id: "1-floor" as const, label: "1эт" },
                     { id: "2-floor" as const, label: "2эт" },
+                    { id: "business" as const, label: "Биз." },
                   ] as const).map((f) => (
                     <button
                       key={f.id}
@@ -831,6 +834,15 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
         {/* Action rail (right side) */}
         <aside className="absolute right-3 z-30 flex flex-col items-center gap-2.5" style={{ bottom: "calc(110px + env(safe-area-inset-bottom))" }}>
+          <ActionButton 
+            icon={Layers} 
+            label="План" 
+            onClick={() => { 
+              setShowGallery(true); 
+              setGalleryTab("plans"); 
+            }} 
+            animated 
+          />
           <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} animated />
           <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setContactOpen(true)} />
           <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
@@ -854,8 +866,8 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                 </div>
               </div>
 
-              {/* Info chips */}
-              <div className="flex flex-wrap gap-1.5">
+              {/* Info chips - force nowrap to always show in one row */}
+              <div className="flex flex-nowrap gap-1.5">
                 <InfoChip icon={<FloorIcon floors={currentModel.floors} />} value={currentModel.floors} label="эт" />
                 <InfoChip icon={<BedroomIcon />} value={currentModel.bedrooms} label="сп" />
                 <InfoChip icon={<BathroomIcon />} value={currentModel.bathrooms} label="с/у" />
