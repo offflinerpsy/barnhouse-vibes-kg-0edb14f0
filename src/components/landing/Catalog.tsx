@@ -864,39 +864,46 @@ function HouseModal({ house, onClose }: HouseModalProps) {
     );
   }
 
-  // Стандартный вид с деталями дома — НОВЫЙ ДИЗАЙН
+  // Стандартный вид с деталями дома — GLASSMORPHISM ДИЗАЙН
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative w-full max-w-6xl h-[96dvh] sm:h-[90vh]"
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        transition={{ type: "spring", damping: 30, stiffness: 400 }}
+        className="relative w-full max-w-5xl max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Glassmorphism container */}
         <div 
-          className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl h-full"
-          style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
+          className="relative rounded-3xl overflow-hidden h-full"
+          style={{ 
+            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%)",
+            backdropFilter: "blur(40px)",
+            WebkitBackdropFilter: "blur(40px)",
+            border: "1px solid rgba(255,255,255,0.2)",
+            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.1)"
+          }}
         >
-          <div className="relative bg-card rounded-2xl overflow-hidden h-full flex flex-col lg:flex-row">
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-charcoal/60 hover:bg-charcoal/80 flex items-center justify-center transition-all hover:rotate-90 duration-300"
-            >
-              <X className="h-5 w-5 text-white" />
-            </button>
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 flex items-center justify-center transition-all hover:rotate-90 duration-300"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
 
-            {/* Image Gallery — 65% width on desktop */}
+          <div className="flex flex-col lg:flex-row h-full max-h-[85vh]">
+            {/* Left: Image Gallery — 60% */}
             <div 
-              className="relative w-full lg:w-[65%] h-[40dvh] lg:h-full bg-charcoal select-none cursor-grab active:cursor-grabbing flex-shrink-0"
+              className="relative w-full lg:w-[60%] h-[45vh] lg:h-[85vh] select-none cursor-grab active:cursor-grabbing flex-shrink-0 bg-black/20"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
               onMouseDown={handleMouseDown}
@@ -907,9 +914,9 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`${viewMode}-${currentImageIndex}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.3 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
@@ -921,7 +928,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
               <div className="hidden lg:flex absolute inset-0 items-center justify-between px-4 pointer-events-none">
                 <button
                   onClick={() => currentImageIndex > 0 && setCurrentImageIndex(prev => prev - 1)}
-                  className={`p-3 bg-charcoal/60 hover:bg-charcoal/80 rounded-full transition-all pointer-events-auto ${
+                  className={`p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full transition-all pointer-events-auto ${
                     currentImageIndex === 0 ? "opacity-0" : "opacity-100"
                   }`}
                 >
@@ -929,7 +936,7 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 </button>
                 <button
                   onClick={() => currentImageIndex < currentItemCount - 1 && setCurrentImageIndex(prev => prev + 1)}
-                  className={`p-3 bg-charcoal/60 hover:bg-charcoal/80 rounded-full transition-all pointer-events-auto ${
+                  className={`p-3 bg-black/40 hover:bg-black/60 backdrop-blur-sm border border-white/10 rounded-full transition-all pointer-events-auto ${
                     currentImageIndex === currentItemCount - 1 ? "opacity-0" : "opacity-100"
                   }`}
                 >
@@ -937,25 +944,9 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                 </button>
               </div>
 
-              {/* Dots pagination */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-charcoal/40 backdrop-blur-sm rounded-full px-3 py-2">
-                {Array.from({ length: Math.min(currentItemCount, 10) }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setCurrentImageIndex(idx);
-                      setShowSwipeHint(false);
-                    }}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      idx === currentImageIndex 
-                        ? "bg-primary w-5" 
-                        : "bg-white/50 hover:bg-white/80"
-                    }`}
-                  />
-                ))}
-                {currentItemCount > 10 && (
-                  <span className="text-white/60 text-xs ml-1">+{currentItemCount - 10}</span>
-                )}
+              {/* Photo counter badge */}
+              <div className="absolute bottom-4 left-4 z-10 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 text-white text-sm font-medium">
+                {currentImageIndex + 1} / {currentItemCount}
               </div>
 
               {showSwipeHint && currentItemCount > 1 && (
@@ -963,115 +954,83 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   <SwipeIndicator />
                 </div>
               )}
-
-              {/* Tab buttons on image — Gallery / Floor Plans */}
-              <div className="absolute top-4 left-4 flex gap-2 z-10">
-                <button
-                  onClick={() => {
-                    setViewMode("gallery");
-                    setCurrentImageIndex(0);
-                  }}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-sm ${
-                    viewMode === "gallery"
-                      ? "bg-primary text-white shadow-lg"
-                      : "bg-charcoal/60 text-white/80 hover:bg-charcoal/80"
-                  }`}
-                >
-                  Фото ({allGalleryImages.length})
-                </button>
-                {floorPlanItems.length > 0 && (
-                  <button
-                    onClick={() => {
-                      setViewMode("floorplan");
-                      setCurrentImageIndex(0);
-                    }}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all backdrop-blur-sm ${
-                      viewMode === "floorplan"
-                        ? "bg-primary text-white shadow-lg"
-                        : "bg-charcoal/60 text-white/80 hover:bg-charcoal/80"
-                    }`}
-                  >
-                    Планировки ({floorPlanItems.length})
-                  </button>
-                )}
-              </div>
             </div>
 
-            {/* Content Panel — 35% width */}
-            <div className="w-full lg:w-[35%] flex flex-col h-[56dvh] lg:h-full overflow-hidden">
+            {/* Right: Content Panel — 40% */}
+            <div className="w-full lg:w-[40%] flex flex-col h-[40vh] lg:h-[85vh] overflow-hidden">
               {/* Scrollable content */}
               <div className="flex-1 overflow-y-auto p-5 lg:p-6">
                 {/* Header */}
                 <div className="mb-5">
-                  <Badge className="mb-2 bg-primary/10 text-primary border-primary/20">
+                  <span className="inline-block mb-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30">
                     {house.projectLabel}
-                  </Badge>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-foreground font-rising">
+                  </span>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-white font-rising">
                     {house.name}
                   </h2>
                 </div>
 
-                {/* Main specs — large and clear */}
+                {/* Main specs — 2x2 grid with glassmorphism */}
                 <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="bg-primary/5 rounded-xl p-4 border border-primary/10">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
                     <div className="flex items-center gap-2 text-primary mb-1">
-                      <Maximize className="h-5 w-5" />
-                      <span className="text-xs uppercase tracking-wide font-bold">Площадь</span>
+                      <Maximize className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Площадь</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{house.area} м²</p>
+                    <p className="text-2xl font-bold text-white">{house.area} м²</p>
                   </div>
-                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Layers className="h-5 w-5" />
-                      <span className="text-xs uppercase tracking-wide font-bold">Этажей</span>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center gap-2 text-white/60 mb-1">
+                      <Layers className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Этажей</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{house.floors}</p>
+                    <p className="text-2xl font-bold text-white">{house.floors}</p>
                   </div>
-                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <BedDouble className="h-5 w-5" />
-                      <span className="text-xs uppercase tracking-wide font-bold">Спальни</span>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center gap-2 text-white/60 mb-1">
+                      <BedDouble className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Спальни</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{house.bedrooms}</p>
+                    <p className="text-2xl font-bold text-white">{house.bedrooms}</p>
                   </div>
-                  <div className="bg-muted/50 rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                      <Bath className="h-5 w-5" />
-                      <span className="text-xs uppercase tracking-wide font-bold">Санузлы</span>
+                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                    <div className="flex items-center gap-2 text-white/60 mb-1">
+                      <Bath className="h-4 w-4" />
+                      <span className="text-xs uppercase tracking-wide font-semibold">Санузлы</span>
                     </div>
-                    <p className="text-2xl font-bold text-foreground">{house.bathrooms}</p>
+                    <p className="text-2xl font-bold text-white">{house.bathrooms}</p>
                   </div>
                 </div>
 
                 {/* Veranda */}
                 {house.hasVeranda ? (
-                  <div className="flex items-center gap-3 bg-primary/10 rounded-xl p-4 mb-5 border border-primary/20">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <div className="flex items-center gap-3 bg-primary/20 backdrop-blur-sm rounded-xl p-4 mb-5 border border-primary/30">
+                    <div className="w-10 h-10 rounded-full bg-primary/30 flex items-center justify-center">
                       <Trees className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-bold text-foreground">Веранда</p>
+                      <p className="font-bold text-white">Веранда</p>
                       {house.verandaArea && (
-                        <p className="text-sm text-muted-foreground">{house.verandaArea} м²</p>
+                        <p className="text-sm text-white/60">{house.verandaArea} м²</p>
                       )}
                     </div>
                   </div>
                 ) : (
-                  <div className="rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 p-4 mb-5">
+                  <div className="rounded-xl border border-dashed border-white/20 bg-white/5 backdrop-blur-sm p-4 mb-5">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Trees className="h-5 w-5 text-primary" />
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                        <Trees className="h-5 w-5 text-white/60" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm text-muted-foreground mb-2">
+                        <p className="text-sm text-white/60 mb-2">
                           Веранда не предусмотрена. Хотите добавить?
                         </p>
                         <button
                           onClick={() => setWantsVeranda(!wantsVeranda)}
                           className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-semibold ${
                             wantsVeranda
-                              ? "bg-primary border-primary text-primary-foreground"
-                              : "bg-background border-border text-foreground hover:border-primary/50"
+                              ? "bg-primary border-primary text-white"
+                              : "bg-white/10 border-white/20 text-white hover:bg-white/20"
                           }`}
                         >
                           {wantsVeranda ? (
@@ -1085,10 +1044,56 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                     </div>
                   </div>
                 )}
+
+                {/* Floor Plans Thumbnails Section */}
+                {floorPlanItems.length > 0 && (
+                  <div className="mb-5">
+                    <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <Layers className="h-4 w-4" />
+                      Планировки
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {floorPlanItems.map((item, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            setViewMode("floorplan");
+                            setCurrentImageIndex(idx);
+                          }}
+                          className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                            viewMode === "floorplan" && currentImageIndex === idx
+                              ? "border-primary ring-2 ring-primary/30"
+                              : "border-white/10 hover:border-white/30"
+                          }`}
+                        >
+                          {item.isPdf ? (
+                            <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
+                              <div className="text-center">
+                                <Layers className="h-6 w-6 text-white/60 mx-auto mb-1" />
+                                <span className="text-xs text-white/60">PDF</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <img
+                              src={item.path}
+                              alt={`Планировка ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                          <span className="absolute bottom-2 left-2 text-xs font-medium text-white">
+                            План {idx + 1}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Sticky bottom CTA */}
-              <div className="p-5 lg:p-6 pt-0 bg-card border-t border-border/50">
+              <div className="p-5 lg:p-6 pt-4 bg-black/20 backdrop-blur-sm border-t border-white/10">
                 {/* Quick contact */}
                 <div className="flex gap-2 mb-3">
                   <a
@@ -1102,20 +1107,18 @@ function HouseModal({ house, onClose }: HouseModalProps) {
                   </a>
                   <a
                     href="tel:+996551033960"
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-charcoal text-white font-semibold text-sm hover:bg-charcoal/80 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/20 transition-colors"
                   >
                     <Phone className="h-4 w-4" />
                     Позвонить
                   </a>
                 </div>
-                <Button
+                <button
                   onClick={() => setShowForm(true)}
-                  variant="modal"
-                  size="xl"
-                  className="w-full rounded-xl"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-[hsl(var(--gold-dark))] text-white font-semibold text-base hover:opacity-90 transition-opacity shadow-lg"
                 >
                   Получить консультацию
-                </Button>
+                </button>
               </div>
             </div>
           </div>
