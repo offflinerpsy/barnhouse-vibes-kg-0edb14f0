@@ -110,21 +110,66 @@ function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" |
 const glassPanel = "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.06] backdrop-blur-xl border border-white/[0.1]";
 
+// Premium shimmer + press animation for photo button
+const PhotoButtonAnimation = () => (
+  <motion.div
+    className="absolute inset-0 rounded-[14px] overflow-hidden pointer-events-none"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
+    {/* Shimmer effect */}
+    <motion.div
+      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
+      initial={{ x: "-150%" }}
+      animate={{ x: "150%" }}
+      transition={{
+        duration: 1.8,
+        repeat: Infinity,
+        repeatDelay: 3,
+        ease: "easeInOut",
+      }}
+    />
+  </motion.div>
+);
+
+// Premium press animation keyframes
+const pressAnimation = {
+  initial: { scale: 1, y: 0 },
+  animate: {
+    scale: [1, 0.92, 1.02, 1],
+    y: [0, 2, -1, 0],
+    transition: {
+      duration: 0.8,
+      times: [0, 0.25, 0.6, 1],
+      repeat: Infinity,
+      repeatDelay: 4,
+      ease: "easeInOut" as const,
+    },
+  },
+};
+
 // Refined action button with better proportions
 const ActionButton = forwardRef<HTMLButtonElement, {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   onClick: () => void;
   variant?: "default" | "primary";
-}>(({ icon: Icon, label, onClick, variant = "default" }, ref) => (
+  animated?: boolean;
+}>(({ icon: Icon, label, onClick, variant = "default", animated = false }, ref) => (
   <button ref={ref} onClick={onClick} className="flex flex-col items-center gap-1">
-    <div className={
-      variant === "primary"
-        ? `w-11 h-11 rounded-[14px] bg-primary shadow-lg shadow-primary/30 flex items-center justify-center`
-        : `w-11 h-11 rounded-[14px] ${glassPanelLight} flex items-center justify-center`
-    }>
+    <motion.div 
+      className={`relative ${
+        variant === "primary"
+          ? `w-11 h-11 rounded-[14px] bg-primary shadow-lg shadow-primary/30 flex items-center justify-center`
+          : `w-11 h-11 rounded-[14px] ${glassPanelLight} flex items-center justify-center`
+      }`}
+      variants={animated ? pressAnimation : undefined}
+      initial={animated ? "initial" : undefined}
+      animate={animated ? "animate" : undefined}
+    >
+      {animated && <PhotoButtonAnimation />}
       <Icon className={variant === "primary" ? "h-5 w-5 text-charcoal" : "h-5 w-5 text-white/90"} />
-    </div>
+    </motion.div>
     <span className="text-[10px] font-medium text-white/60 tracking-wide uppercase">{label}</span>
   </button>
 ));
@@ -271,14 +316,17 @@ function ZoomableLightbox({
   currentIndex,
   onClose,
   onIndexChange,
+  model,
 }: {
   photos: string[];
   currentIndex: number;
   onClose: () => void;
   onIndexChange: (index: number) => void;
+  model: EraModel;
 }) {
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const [showInfo, setShowInfo] = useState(true);
   const lastTapRef = useRef<number>(0);
   const initialDistanceRef = useRef<number | null>(null);
   const initialScaleRef = useRef<number>(1);
@@ -323,23 +371,25 @@ function ZoomableLightbox({
     }
   }, [scale]);
 
-  const handleDoubleTap = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  const handleSingleTap = useCallback(() => {
     const now = Date.now();
-    if (now - lastTapRef.current < 300) {
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    // If it's a double tap, handle zoom
+    if (timeSinceLastTap < 300) {
       if (scale > 1) {
         setScale(1);
         setTranslate({ x: 0, y: 0 });
       } else {
         setScale(2.5);
-        if ('touches' in e && e.touches[0]) {
-          const rect = containerRef.current?.getBoundingClientRect();
-          if (rect) {
-            const x = e.touches[0].clientX - rect.left - rect.width / 2;
-            const y = e.touches[0].clientY - rect.top - rect.height / 2;
-            setTranslate({ x: -x * 0.6, y: -y * 0.6 });
-          }
-        }
       }
+    } else {
+      // Single tap - toggle info panel (with delay to distinguish from double tap)
+      setTimeout(() => {
+        if (Date.now() - lastTapRef.current >= 280) {
+          setShowInfo(prev => !prev);
+        }
+      }, 300);
     }
     lastTapRef.current = now;
   }, [scale]);
@@ -421,7 +471,7 @@ function ZoomableLightbox({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handleDoubleTap}
+        onClick={handleSingleTap}
         style={{ touchAction: scale > 1 ? "none" : "pan-x pan-y" }}
       >
         <AnimatePresence mode="wait">
@@ -440,15 +490,63 @@ function ZoomableLightbox({
         </AnimatePresence>
       </motion.div>
 
-      {/* Counter */}
-      <div className={`absolute left-1/2 -translate-x-1/2 rounded-full ${glassPanelLight} px-4 py-2 text-sm font-medium text-white/80`} style={{ bottom: "calc(24px + env(safe-area-inset-bottom))" }}>
-        {currentIndex + 1} / {totalCount}
-      </div>
+      {/* Bottom info panel with model details */}
+      <AnimatePresence>
+        {showInfo && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="absolute left-3 right-3 z-40"
+            style={{ bottom: "calc(24px + env(safe-area-inset-bottom))" }}
+          >
+            <div className={`rounded-2xl ${glassPanel} p-4`}>
+              <div className="flex items-center justify-between">
+                {/* Model info */}
+                <div className="flex items-center gap-3">
+                  <HouseSchematic model={model} size="sm" />
+                  <div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-base font-bold text-white">{model.name}</span>
+                      <span className="text-base font-bold text-primary">{model.area}м²</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-white/50 mt-0.5">
+                      <span className="flex items-center gap-1">
+                        <FloorIcon floors={model.floors} />
+                        {model.floors}эт
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <BedroomIcon />
+                        {model.bedrooms}сп
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <BathroomIcon />
+                        {model.bathrooms}с/у
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Counter */}
+                <div className={`rounded-full ${glassPanelLight} px-3 py-1.5 text-sm font-medium text-white/80`}>
+                  {currentIndex + 1}/{totalCount}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Hint */}
-      {scale === 1 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute left-1/2 -translate-x-1/2 text-xs text-white/40" style={{ bottom: "calc(64px + env(safe-area-inset-bottom))" }}>
-          ↕ свайп вверх/вниз • ↔ свайп влево/вправо
+      {/* Hint - shown when info is hidden */}
+      {scale === 1 && !showInfo && (
+        <motion.div 
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          className="absolute left-1/2 -translate-x-1/2 text-xs text-white/40" 
+          style={{ bottom: "calc(24px + env(safe-area-inset-bottom))" }}
+        >
+          нажмите для показа инфо
         </motion.div>
       )}
     </motion.div>
@@ -614,7 +712,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
         {/* Action rail (right side) */}
         <aside className="absolute right-3 z-30 flex flex-col items-center gap-2.5" style={{ bottom: "calc(20px + env(safe-area-inset-bottom))" }}>
-          <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} />
+          <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} animated />
           <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setContactOpen(true)} />
           <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
           <ActionButton icon={Send} label="TG" onClick={handleTelegram} />
@@ -726,6 +824,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               currentIndex={lightboxIndex}
               onClose={() => setLightboxImage(null)}
               onIndexChange={setLightboxIndex}
+              model={currentModel}
             />
           )}
         </AnimatePresence>
