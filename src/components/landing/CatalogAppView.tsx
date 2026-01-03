@@ -55,6 +55,8 @@ const ERA_MODELS: EraModel[] = [
   { id: "model-4x", name: "Model 4X", area: 72, floors: 2, bedrooms: 2, bathrooms: 1, catalogPath: "model-2-72", coverImage: "/catalog/covers/model-4x.webp", galleryCount: 4, galleryExtraCount: 6, floorPlanCount: 0 },
   { id: "model-7x", name: "Model 7X", area: 120, floors: 2, bedrooms: 3, bathrooms: 2, catalogPath: "model-2-120", coverImage: "/catalog/covers/model-7x.webp", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 3 },
   { id: "model-12x", name: "Model 12X", area: 204, floors: 2, bedrooms: 5, bathrooms: 3, catalogPath: "model-2-204", coverImage: "/catalog/covers/model-12x.webp", galleryCount: 6, galleryExtraCount: 0, floorPlanCount: 0 },
+  // Commercial model
+  { id: "model-resto", name: "Model Resto", area: 72, floors: 1, bedrooms: 0, bathrooms: 2, catalogPath: "model-resto", coverImage: "/catalog/covers/model-resto.webp", galleryCount: 0, galleryExtraCount: 0, floorPlanCount: 0 },
 ];
 
 const SWIPE_X = 70;
@@ -346,53 +348,53 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
                 key={m.id}
                 onClick={() => { triggerHaptic(); onSelect(m.id); }}
                 animate={{ 
-                  scale: active ? 1.03 : 1,
-                  y: active ? -2 : 0
+                  scale: active ? 1.02 : 1,
+                  y: active ? -1 : 0
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className={`relative flex items-center gap-3 p-2.5 rounded-xl transition-colors ${
+                className={`relative flex items-center gap-4 p-3 rounded-xl transition-colors ${
                   active
                     ? "bg-primary/25 ring-2 ring-primary shadow-xl shadow-primary/30"
                     : `${glassPanelLight} hover:bg-white/10`
                 }`}
               >
-                {/* Thumbnail */}
-                <div className="relative w-16 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                {/* Thumbnail - larger and higher quality */}
+                <div className="relative w-20 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-charcoal/50">
                   <ImageWithSkeleton 
                     src={thumb} 
                     alt={m.name} 
                     className="absolute inset-0 w-full h-full object-cover"
                     loading="lazy"
+                    decoding="async"
                   />
-                  {/* Two floors badge - IKEA style */}
+                  {/* Two floors badge */}
                   {isTwoFloors && (
-                    <div className="absolute -top-1 -right-1 bg-primary text-charcoal rounded-md px-1 py-0.5 flex items-center gap-0.5 shadow-lg">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="text-charcoal">
-                        <rect x="4" y="12" width="16" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
-                        <rect x="6" y="4" width="12" height="8" rx="1" stroke="currentColor" strokeWidth="2"/>
-                        <line x1="12" y1="20" x2="12" y2="12" stroke="currentColor" strokeWidth="1.5"/>
-                        <line x1="12" y1="12" x2="12" y2="4" stroke="currentColor" strokeWidth="1.5"/>
-                      </svg>
-                      <span className="text-[8px] font-bold">2</span>
+                    <div className="absolute top-1 right-1 bg-primary text-charcoal rounded px-1.5 py-0.5 text-[10px] font-bold shadow-lg">
+                      2эт
+                    </div>
+                  )}
+                  {/* Commercial badge */}
+                  {m.id === "model-resto" && (
+                    <div className="absolute top-1 right-1 bg-amber-500 text-charcoal rounded px-1.5 py-0.5 text-[10px] font-bold shadow-lg">
+                      HoReCa
                     </div>
                   )}
                 </div>
                 
-                {/* Model info */}
+                {/* Model info - no house icons, larger text */}
                 <div className="flex-1 flex items-center justify-between min-w-0">
-                  <div className="flex items-center gap-2">
-                    <HouseSchematic model={m} size="sm" />
-                    <div className="text-left">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-semibold text-white">{m.name}</span>
-                        {isTwoFloors && (
-                          <span className="text-[10px] font-medium text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded">2 этажа</span>
-                        )}
-                      </div>
-                      <div className="text-xs text-white/50">{m.bedrooms}сп • {m.bathrooms}с/у</div>
+                  <div className="text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-white">{m.name}</span>
+                    </div>
+                    <div className="text-sm text-white/60 mt-0.5">
+                      {m.id === "model-resto" 
+                        ? "Ресторан • Кафе" 
+                        : `${m.bedrooms}сп • ${m.bathrooms}с/у • ${m.floors}эт`
+                      }
                     </div>
                   </div>
-                  <span className="text-base font-bold text-primary">{m.area}м²</span>
+                  <span className="text-lg font-bold text-primary">{m.area}м²</span>
                 </div>
 
                 {/* Active glow effect */}
@@ -806,7 +808,14 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               className="absolute inset-0 w-full h-full cursor-pointer"
               aria-label="Открыть галерею"
             >
-              <ImageWithSkeleton src={mainPhoto} alt={`${currentModel.name} ${currentModel.area}м²`} className="h-full w-full object-cover" draggable={false} loading="eager" />
+              {/* object-contain on small screens to show full photo, object-cover on larger */}
+              <ImageWithSkeleton 
+                src={mainPhoto} 
+                alt={`${currentModel.name} ${currentModel.area}м²`} 
+                className="h-full w-full object-contain sm:object-cover" 
+                draggable={false} 
+                loading="eager" 
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/40" />
             </button>
           </motion.div>
