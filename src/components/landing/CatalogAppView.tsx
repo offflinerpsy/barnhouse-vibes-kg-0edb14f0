@@ -34,29 +34,35 @@ type EraModel = {
   bedrooms: number;
   bathrooms: number;
   catalogPath: string;
+  coverImage: string; // New: dedicated cover photo
   galleryCount: number;
   galleryExtraCount: number;
   floorPlanCount: number;
 };
 
+// Models per CATALOG_GUIDE.md — Tesla-style naming (number = modules, 1 module ≈ 18m²)
+// Model 5 and Model 7 DO NOT EXIST — intentional per documentation
 const ERA_MODELS: EraModel[] = [
-  { id: "model-1", name: "Model 1", area: 18, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-18", galleryCount: 4, galleryExtraCount: 25, floorPlanCount: 3 },
-  { id: "model-2", name: "Model 2", area: 36, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-36", galleryCount: 4, galleryExtraCount: 24, floorPlanCount: 1 },
-  { id: "model-3", name: "Model 3", area: 54, floors: 1, bedrooms: 2, bathrooms: 1, catalogPath: "model-1-54", galleryCount: 8, galleryExtraCount: 33, floorPlanCount: 3 },
-  { id: "model-4", name: "Model 4", area: 81, floors: 1, bedrooms: 3, bathrooms: 2, catalogPath: "model-1-81", galleryCount: 4, galleryExtraCount: 34, floorPlanCount: 0 },
-  { id: "model-5", name: "Model 5", area: 108, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-108", galleryCount: 4, galleryExtraCount: 54, floorPlanCount: 3 },
-  { id: "model-6", name: "Model 6", area: 135, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-135", galleryCount: 5, galleryExtraCount: 38, floorPlanCount: 3 },
-  { id: "model-2x-36", name: "Model 2X", area: 36, floors: 2, bedrooms: 1, bathrooms: 1, catalogPath: "model-2-36", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 0 },
-  { id: "model-2x-72", name: "Model 2X", area: 72, floors: 2, bedrooms: 2, bathrooms: 1, catalogPath: "model-2-72", galleryCount: 4, galleryExtraCount: 6, floorPlanCount: 0 },
-  { id: "model-2x-120", name: "Model 2X", area: 120, floors: 2, bedrooms: 3, bathrooms: 2, catalogPath: "model-2-120", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 3 },
-  { id: "model-2x-204", name: "Model 2X", area: 204, floors: 2, bedrooms: 5, bathrooms: 3, catalogPath: "model-2-204", galleryCount: 6, galleryExtraCount: 0, floorPlanCount: 0 },
+  // Single-story models
+  { id: "model-1", name: "Model 1", area: 18, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-18", coverImage: "/catalog/covers/model-1.webp", galleryCount: 4, galleryExtraCount: 25, floorPlanCount: 3 },
+  { id: "model-2", name: "Model 2", area: 36, floors: 1, bedrooms: 1, bathrooms: 1, catalogPath: "model-1-36", coverImage: "/catalog/covers/model-2.webp", galleryCount: 4, galleryExtraCount: 24, floorPlanCount: 1 },
+  { id: "model-3", name: "Model 3", area: 54, floors: 1, bedrooms: 2, bathrooms: 1, catalogPath: "model-1-54", coverImage: "/catalog/covers/model-3.webp", galleryCount: 8, galleryExtraCount: 33, floorPlanCount: 3 },
+  { id: "model-4", name: "Model 4", area: 81, floors: 1, bedrooms: 3, bathrooms: 2, catalogPath: "model-1-81", coverImage: "/catalog/covers/model-4.webp", galleryCount: 4, galleryExtraCount: 34, floorPlanCount: 0 },
+  { id: "model-6", name: "Model 6", area: 108, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-108", coverImage: "/catalog/covers/model-6.webp", galleryCount: 4, galleryExtraCount: 54, floorPlanCount: 3 },
+  { id: "model-8", name: "Model 8", area: 135, floors: 1, bedrooms: 4, bathrooms: 2, catalogPath: "model-1-135", coverImage: "/catalog/covers/model-8.webp", galleryCount: 5, galleryExtraCount: 38, floorPlanCount: 3 },
+  // Two-story models (X = duplex)
+  { id: "model-2x", name: "Model 2X", area: 36, floors: 2, bedrooms: 1, bathrooms: 1, catalogPath: "model-2-36", coverImage: "/catalog/covers/model-2x.webp", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 0 },
+  { id: "model-4x", name: "Model 4X", area: 72, floors: 2, bedrooms: 2, bathrooms: 1, catalogPath: "model-2-72", coverImage: "/catalog/covers/model-4x.webp", galleryCount: 4, galleryExtraCount: 6, floorPlanCount: 0 },
+  { id: "model-7x", name: "Model 7X", area: 120, floors: 2, bedrooms: 3, bathrooms: 2, catalogPath: "model-2-120", coverImage: "/catalog/covers/model-7x.webp", galleryCount: 4, galleryExtraCount: 0, floorPlanCount: 3 },
+  { id: "model-12x", name: "Model 12X", area: 204, floors: 2, bedrooms: 5, bathrooms: 3, catalogPath: "model-2-204", coverImage: "/catalog/covers/model-12x.webp", galleryCount: 6, galleryExtraCount: 0, floorPlanCount: 0 },
 ];
 
 const SWIPE_X = 70;
 const SWIPE_Y = 90;
 
+// Cover photo is FIRST, then gallery-extra, then gallery
 function getAllPhotos(model: EraModel): string[] {
-  const photos: string[] = [];
+  const photos: string[] = [model.coverImage]; // Cover is always first
   for (let i = 1; i <= model.galleryExtraCount; i++) {
     photos.push(`/catalog/${model.catalogPath}/gallery-extra/extra-${i}.webp`);
   }
@@ -333,7 +339,7 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
         <div className="px-4 pb-4 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y">
           {models.map((m) => {
             const active = m.id === currentModelId;
-            const thumb = `/catalog/${m.catalogPath}/gallery/1.webp`;
+            const thumb = m.coverImage; // Use dedicated cover photo
             const isTwoFloors = m.floors === 2;
             return (
               <motion.button
