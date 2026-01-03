@@ -403,8 +403,8 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
           </div>
         </div>
 
-        {/* List of models - scrollable with extra bottom padding to avoid clipping */}
-        <div className="px-4 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 100px)" }}>
+        {/* List of models - scrollable with extra top/bottom padding to avoid clipping when active */}
+        <div className="px-4 pt-3 flex flex-col gap-2 overflow-y-auto flex-1 overscroll-contain touch-pan-y" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 100px)" }}>
           {filteredSheetModels.map((m) => {
             const active = m.id === currentModelId;
             const thumb = m.coverImage;
@@ -416,7 +416,7 @@ const ModelPickerSheet = forwardRef<HTMLDivElement, {
                   triggerHaptic();
                   onSelect(m.id, sheetFilter);
                 }}
-                animate={{ scale: active ? 1.02 : 1, y: active ? -1 : 0 }}
+                animate={{ scale: active ? 1.02 : 1, y: active ? 1 : 0 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 className={`relative flex items-center gap-4 p-3 rounded-xl transition-colors ${
                   active
