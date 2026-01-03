@@ -265,21 +265,17 @@ const slideVariants = {
   exit: (dir: 1 | -1) => ({ x: dir > 0 ? -60 : 60, opacity: 0, scale: 0.98 }),
 };
 
-// Zoomable lightbox with pinch-to-zoom
+// Zoomable lightbox with pinch-to-zoom and TikTok-style swipes
 function ZoomableLightbox({
-  src,
-  alt,
-  onClose,
-  onNavigate,
+  photos,
   currentIndex,
-  totalCount,
+  onClose,
+  onIndexChange,
 }: {
-  src: string;
-  alt: string;
-  onClose: () => void;
-  onNavigate: (dir: 1 | -1) => void;
+  photos: string[];
   currentIndex: number;
-  totalCount: number;
+  onClose: () => void;
+  onIndexChange: (index: number) => void;
 }) {
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
@@ -287,6 +283,16 @@ function ZoomableLightbox({
   const initialDistanceRef = useRef<number | null>(null);
   const initialScaleRef = useRef<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const totalCount = photos.length;
+  const currentPhoto = photos[currentIndex];
+
+  const navigate = useCallback((dir: 1 | -1) => {
+    const next = currentIndex + dir;
+    if (next < 0) onIndexChange(totalCount - 1);
+    else if (next >= totalCount) onIndexChange(0);
+    else onIndexChange(next);
+  }, [currentIndex, totalCount, onIndexChange]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -345,64 +351,104 @@ function ZoomableLightbox({
     }
     const absX = Math.abs(info.offset.x);
     const absY = Math.abs(info.offset.y);
-    if (absX > absY && absX > SWIPE_X) {
-      onNavigate(info.offset.x > 0 ? -1 : 1);
+    
+    // Horizontal swipe → prev/next photo
+    if (absX > SWIPE_X) {
+      navigate(info.offset.x > 0 ? -1 : 1);
       return;
     }
-    if (absY > absX && info.offset.y > SWIPE_Y) onClose();
-  }, [scale, onNavigate, onClose]);
+    // Vertical swipe → prev/next OR close (down to close)
+    if (absY > SWIPE_Y) {
+      if (info.offset.y > 0) {
+        // Swipe down → close lightbox
+        onClose();
+      } else {
+        // Swipe up → next photo
+        navigate(1);
+      }
+      return;
+    }
+  }, [scale, navigate, onClose]);
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 bg-black/95 backdrop-blur-2xl flex items-center justify-center"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      className="absolute inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col"
     >
-      <button aria-label="Закрыть" onClick={onClose} className={`absolute top-4 right-4 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+      {/* Stories-style progress bar */}
+      <div className="absolute top-0 left-0 right-0 z-40 px-3 flex gap-1" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
+        {photos.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => onIndexChange(idx)}
+            className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/20"
+          >
+            <motion.div
+              className="h-full bg-white rounded-full origin-left"
+              initial={false}
+              animate={{ scaleX: idx === currentIndex ? 1 : idx < currentIndex ? 1 : 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            />
+          </button>
+        ))}
+      </div>
+
+      {/* Close button */}
+      <button
+        aria-label="Закрыть"
+        onClick={onClose}
+        className={`absolute z-50 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+        style={{ top: "calc(env(safe-area-inset-top) + 24px)", right: 12 }}
+      >
         <X className="h-5 w-5 text-white" />
       </button>
 
-      <button aria-label="Предыдущее" onClick={() => onNavigate(-1)} className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+      {/* Nav arrows */}
+      <button aria-label="Предыдущее" onClick={() => navigate(-1)} className={`absolute left-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
         <ChevronLeft className="h-5 w-5 text-white" />
       </button>
-      <button aria-label="Следующее" onClick={() => onNavigate(1)} className={`absolute right-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+      <button aria-label="Следующее" onClick={() => navigate(1)} className={`absolute right-3 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
         <ChevronRight className="h-5 w-5 text-white" />
       </button>
 
+      {/* Photo container */}
       <motion.div
         ref={containerRef}
-        key={src}
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.98 }}
+        className="flex-1 flex items-center justify-center"
         onPanEnd={handlePanEnd}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         onClick={handleDoubleTap}
-        style={{ touchAction: scale > 1 ? "none" : "pan-y" }}
-        className="h-full w-full flex items-center justify-center p-4"
+        style={{ touchAction: scale > 1 ? "none" : "pan-x pan-y" }}
       >
-        <motion.img
-          src={src}
-          alt={alt}
-          className="max-h-full max-w-full object-contain rounded-xl select-none"
-          draggable={false}
-          decoding="async"
-          animate={{ scale, x: translate.x, y: translate.y }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        />
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentPhoto}
+            src={currentPhoto}
+            alt={`Photo ${currentIndex + 1}`}
+            className="max-h-full max-w-full object-contain rounded-xl select-none px-4"
+            draggable={false}
+            decoding="async"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: scale, x: translate.x, y: translate.y }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          />
+        </AnimatePresence>
       </motion.div>
 
+      {/* Counter */}
       <div className={`absolute left-1/2 -translate-x-1/2 rounded-full ${glassPanelLight} px-4 py-2 text-sm font-medium text-white/80`} style={{ bottom: "calc(24px + env(safe-area-inset-bottom))" }}>
         {currentIndex + 1} / {totalCount}
       </div>
 
+      {/* Hint */}
       {scale === 1 && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute bottom-16 left-1/2 -translate-x-1/2 text-xs text-white/40">
-          Двойное касание для увеличения
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="absolute left-1/2 -translate-x-1/2 text-xs text-white/40" style={{ bottom: "calc(64px + env(safe-area-inset-bottom))" }}>
+          ↕ свайп вверх/вниз • ↔ свайп влево/вправо
         </motion.div>
       )}
     </motion.div>
@@ -460,14 +506,11 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   }, [goToModel, lightboxImage, modelPickerOpen, showGallery]);
 
   const lightboxPhotos = galleryTab === "photos" ? allPhotos : floorPlans;
-  const navigateLightbox = useCallback((dir: 1 | -1) => {
-    setLightboxIndex((prev) => {
-      const next = prev + dir;
-      if (next < 0) return lightboxPhotos.length - 1;
-      if (next >= lightboxPhotos.length) return 0;
-      return next;
-    });
-  }, [lightboxPhotos.length]);
+
+  // Open gallery when tapping on the main photo
+  const handleMainPhotoTap = useCallback(() => {
+    setShowGallery(true);
+  }, []);
 
   const handleCall = () => { window.location.href = "tel:+996555123456"; };
   const handleWhatsApp = () => {
@@ -483,21 +526,14 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-charcoal text-white overflow-hidden">
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
 
-      {/* Stories progress */}
-      <div className="absolute top-0 left-0 right-0 z-40 px-4 flex gap-1" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
+      {/* Model indicator dots (compact) */}
+      <div className="absolute top-0 left-0 right-0 z-40 px-4 flex justify-center gap-1.5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
         {filteredModels.map((model, idx) => (
           <button
             key={model.id}
             onClick={() => { triggerHaptic(); setDirection(idx > safeIndex ? 1 : -1); setCurrentModelIndex(idx); }}
-            className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/20"
-          >
-            <motion.div
-              className="h-full bg-white rounded-full origin-left"
-              initial={false}
-              animate={{ scaleX: idx === safeIndex ? 1 : idx < safeIndex ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            />
-          </button>
+            className={`w-2 h-2 rounded-full transition-all ${idx === safeIndex ? "bg-primary w-6" : "bg-white/30"}`}
+          />
         ))}
       </div>
 
@@ -556,8 +592,15 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
             className="absolute inset-0"
           >
-            <img src={mainPhoto} alt={`${currentModel.name} ${currentModel.area}м²`} className="h-full w-full object-cover" draggable={false} loading="eager" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/40" />
+            {/* Tap on photo opens gallery */}
+            <button 
+              onClick={handleMainPhotoTap} 
+              className="absolute inset-0 w-full h-full cursor-pointer"
+              aria-label="Открыть галерею"
+            >
+              <img src={mainPhoto} alt={`${currentModel.name} ${currentModel.area}м²`} className="h-full w-full object-cover" draggable={false} loading="eager" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/40" />
+            </button>
           </motion.div>
         </AnimatePresence>
 
@@ -679,12 +722,10 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
         <AnimatePresence>
           {lightboxImage && (
             <ZoomableLightbox
-              src={lightboxPhotos[lightboxIndex]}
-              alt={`${currentModel.name} — fullscreen`}
-              onClose={() => setLightboxImage(null)}
-              onNavigate={navigateLightbox}
+              photos={lightboxPhotos}
               currentIndex={lightboxIndex}
-              totalCount={lightboxPhotos.length}
+              onClose={() => setLightboxImage(null)}
+              onIndexChange={setLightboxIndex}
             />
           )}
         </AnimatePresence>
