@@ -16,9 +16,9 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
-
 // Фотореалистичные изображения барнхаусов в Киргизии (все сезоны)
-// Ken Burns с минимальным зумом (1.0-1.05) для сохранения чёткости изображений
+// Ken Burns v2 - минимальный зум (1.0-1.04) для максимальной чёткости
+const KENBURNS_VERSION = 2; // Cache buster
 const slides = [
   {
     // Лето - панорамные окна
