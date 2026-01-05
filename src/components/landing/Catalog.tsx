@@ -740,8 +740,8 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
     isPdf: file.ext === "pdf",
   }));
   
-  // Все изображения для галереи (основные + дополнительные)
-  const allGalleryImages = [...galleryImages, ...galleryExtraImages];
+  // Все изображения для галереи: обложка → реальные фото (extra) → рендеры (gallery)
+  const allGalleryImages = [house.coverImage, ...galleryExtraImages, ...galleryImages];
   
   // Для галереи - просто массив путей, для планировок - объекты с info
   const currentItemCount = viewMode === "gallery" ? allGalleryImages.length : floorPlanItems.length;
@@ -1476,7 +1476,7 @@ export function Catalog() {
                 {/* Premium Card Design */}
                 <div className="relative bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-shadow duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(195,153,107,0.25)]">
                   {/* Image Container - with skeleton loading */}
-                  <div className="relative aspect-[4/3] overflow-hidden">
+                  <div className="relative aspect-[3/4] overflow-hidden">
                     <CardImageWithSkeleton
                       src={cardImage}
                       alt={house.name}
@@ -1548,7 +1548,7 @@ export function Catalog() {
             >
               <div className="relative h-full bg-card rounded-2xl overflow-hidden border border-border/50 shadow-sm transition-shadow duration-500 group-hover:shadow-[0_20px_50px_-12px_rgba(195,153,107,0.25)]">
                 {/* Animated House Container */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-[hsl(var(--charcoal))] via-[hsl(30,12%,15%)] to-[hsl(var(--charcoal))]">
+                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-[hsl(var(--charcoal))] via-[hsl(30,12%,15%)] to-[hsl(var(--charcoal))]">
                   {/* Decorative background elements */}
                   <div className="absolute inset-0">
                     <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-[hsl(var(--gold))]/5 rounded-full blur-3xl" />

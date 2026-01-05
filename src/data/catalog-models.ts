@@ -294,11 +294,14 @@ export function applyCatalogFilter(models: CatalogModel[], filter: FilterType): 
 }
 
 // Хелпер для генерации путей к изображениям галереи
+// Порядок: обложка → реальные фото (gallery-extra) → рендеры (gallery)
 export function getGalleryImages(model: CatalogModel): string[] {
   const images: string[] = [model.coverImage];
+  // Сначала реальные фото
   for (let i = 1; i <= model.galleryExtraCount; i++) {
     images.push(`/catalog/${model.catalogPath}/gallery-extra/extra-${i}.webp`);
   }
+  // Потом рендеры
   for (let i = 1; i <= model.galleryCount; i++) {
     images.push(`/catalog/${model.catalogPath}/gallery/${i}.webp`);
   }
