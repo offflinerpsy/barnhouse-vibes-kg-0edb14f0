@@ -18,61 +18,62 @@ import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
 
 // Фотореалистичные изображения барнхаусов в Киргизии (все сезоны)
+// Ken Burns с минимальным зумом (1.0-1.05) для сохранения чёткости изображений
 const slides = [
   {
     // Лето - панорамные окна
     image: "/utp/barnhouse-panoramic-windows-tian-shan-summer.jpg",
     animation: {
       initial: { scale: 1.0, x: "0%", y: "0%" },
-      animate: { scale: 1.15, x: "-3%", y: "-2%" },
+      animate: { scale: 1.04, x: "-1%", y: "-0.5%" },
     },
   },
   {
     // Зима - снежный пейзаж
     image: "/utp/barnhouse-winter-snow-kyrgyzstan.jpg",
     animation: {
-      initial: { scale: 1.2, x: "3%", y: "2%" },
-      animate: { scale: 1.05, x: "-2%", y: "-1%" },
+      initial: { scale: 1.04, x: "0.5%", y: "0.5%" },
+      animate: { scale: 1.0, x: "-0.5%", y: "-0.5%" },
     },
   },
   {
     // Лето - скандинавский стиль
     image: "/utp/scandinavian-barnhouse-kyrgyzstan-nature-panoramic.jpg",
     animation: {
-      initial: { scale: 1.05, x: "-2%", y: "2%" },
-      animate: { scale: 1.18, x: "2%", y: "-2%" },
+      initial: { scale: 1.0, x: "-0.5%", y: "0.5%" },
+      animate: { scale: 1.04, x: "0.5%", y: "-0.5%" },
     },
   },
   {
     // Осень - золотой пейзаж
     image: "/utp/barnhouse-autumn-golden-kyrgyzstan.jpg",
     animation: {
-      initial: { scale: 1.15, x: "2%", y: "-2%" },
-      animate: { scale: 1.0, x: "-3%", y: "1%" },
+      initial: { scale: 1.03, x: "0.5%", y: "-0.5%" },
+      animate: { scale: 1.0, x: "-0.5%", y: "0.3%" },
     },
   },
   {
     // Закат - драматичный
     image: "/utp/barnhouse-sunset-dramatic-kyrgyzstan.jpg",
     animation: {
-      initial: { scale: 1.0, x: "0%", y: "3%" },
-      animate: { scale: 1.12, x: "0%", y: "-2%" },
+      initial: { scale: 1.0, x: "0%", y: "0.5%" },
+      animate: { scale: 1.03, x: "0%", y: "-0.5%" },
     },
   },
   {
     // Строительство
     image: "/utp/barnhouse-construction-kyrgyzstan-mountains-workers.jpg",
     animation: {
-      initial: { scale: 1.1, x: "-3%", y: "-1%" },
-      animate: { scale: 1.0, x: "2%", y: "2%" },
+      initial: { scale: 1.03, x: "-0.5%", y: "0%" },
+      animate: { scale: 1.0, x: "0.5%", y: "0.3%" },
     },
   },
   {
     // Премиум материалы
     image: "/utp/premium-timber-construction-materials-barnhouse.jpg",
     animation: {
-      initial: { scale: 1.18, x: "2%", y: "1%" },
-      animate: { scale: 1.05, x: "-2%", y: "-2%" },
+      initial: { scale: 1.04, x: "0.3%", y: "0.3%" },
+      animate: { scale: 1.01, x: "-0.3%", y: "-0.3%" },
     },
   },
 ];
