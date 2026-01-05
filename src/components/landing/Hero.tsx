@@ -17,39 +17,67 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
 
-// Фотореалистичные изображения барнхаусов в Киргизии
+// Фотореалистичные изображения барнхаусов в Киргизии (все сезоны)
 const slides = [
   {
+    // Лето - панорамные окна
     image: "/utp/barnhouse-panoramic-windows-tian-shan-summer.jpg",
     animation: {
-      initial: { scale: 1, x: 0, y: 0 },
-      animate: { scale: 1.12, x: -25, y: -15 },
+      initial: { scale: 1.0, x: "0%", y: "0%" },
+      animate: { scale: 1.15, x: "-3%", y: "-2%" },
     },
   },
   {
+    // Зима - снежный пейзаж
+    image: "/utp/barnhouse-winter-snow-kyrgyzstan.jpg",
+    animation: {
+      initial: { scale: 1.2, x: "3%", y: "2%" },
+      animate: { scale: 1.05, x: "-2%", y: "-1%" },
+    },
+  },
+  {
+    // Лето - скандинавский стиль
     image: "/utp/scandinavian-barnhouse-kyrgyzstan-nature-panoramic.jpg",
     animation: {
-      initial: { scale: 1.15, x: 20, y: 10 },
-      animate: { scale: 1, x: -15, y: -10 },
+      initial: { scale: 1.05, x: "-2%", y: "2%" },
+      animate: { scale: 1.18, x: "2%", y: "-2%" },
     },
   },
   {
+    // Осень - золотой пейзаж
+    image: "/utp/barnhouse-autumn-golden-kyrgyzstan.jpg",
+    animation: {
+      initial: { scale: 1.15, x: "2%", y: "-2%" },
+      animate: { scale: 1.0, x: "-3%", y: "1%" },
+    },
+  },
+  {
+    // Закат - драматичный
+    image: "/utp/barnhouse-sunset-dramatic-kyrgyzstan.jpg",
+    animation: {
+      initial: { scale: 1.0, x: "0%", y: "3%" },
+      animate: { scale: 1.12, x: "0%", y: "-2%" },
+    },
+  },
+  {
+    // Строительство
     image: "/utp/barnhouse-construction-kyrgyzstan-mountains-workers.jpg",
     animation: {
-      initial: { scale: 1, x: -10, y: -10 },
-      animate: { scale: 1.1, x: 15, y: 10 },
+      initial: { scale: 1.1, x: "-3%", y: "-1%" },
+      animate: { scale: 1.0, x: "2%", y: "2%" },
     },
   },
   {
+    // Премиум материалы
     image: "/utp/premium-timber-construction-materials-barnhouse.jpg",
     animation: {
-      initial: { scale: 1.1, x: 15, y: 15 },
-      animate: { scale: 1, x: -10, y: -10 },
+      initial: { scale: 1.18, x: "2%", y: "1%" },
+      animate: { scale: 1.05, x: "-2%", y: "-2%" },
     },
   },
 ];
 
-const SLIDE_DURATION = 7000;
+const SLIDE_DURATION = 8000; // Увеличено для более плавного эффекта
 
 export function Hero() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -188,12 +216,12 @@ export function Hero() {
                 animate={slides[currentSlide].animation.animate}
                 transition={{
                   duration: SLIDE_DURATION / 1000,
-                  ease: "linear",
+                  ease: [0.25, 0.1, 0.25, 1], // Плавный easing для Ken Burns
                 }}
-                className="absolute inset-0"
+                className="absolute inset-[-20%]"
               >
                 <div
-                  className="absolute inset-[-15%] bg-cover bg-center"
+                  className="absolute inset-0 bg-cover bg-center will-change-transform"
                   style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
                 />
               </motion.div>
@@ -250,12 +278,12 @@ export function Hero() {
               animate={slides[currentSlide].animation.animate}
               transition={{
                 duration: SLIDE_DURATION / 1000,
-                ease: "linear",
+                ease: [0.25, 0.1, 0.25, 1], // Плавный easing для Ken Burns
               }}
-              className="absolute inset-0"
+              className="absolute inset-[-20%]"
             >
               <div
-                className="absolute inset-[-15%] bg-cover bg-center"
+                className="absolute inset-0 bg-cover bg-center will-change-transform"
                 style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
               />
             </motion.div>
