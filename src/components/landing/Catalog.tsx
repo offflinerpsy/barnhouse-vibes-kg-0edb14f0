@@ -924,6 +924,26 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
   // Для галереи - просто массив путей, для планировок - объекты с info
   const currentItemCount = viewMode === "gallery" ? allGalleryImages.length : floorPlanItems.length;
 
+  // Preload adjacent images for instant switching
+  useEffect(() => {
+    const imagesToPreload: string[] = [];
+    const currentImages = viewMode === "gallery" ? allGalleryImages : floorPlanItems.filter(item => !item.isPdf).map(item => item.path);
+    
+    // Preload previous 2 and next 3 images
+    for (let i = -2; i <= 3; i++) {
+      const idx = currentImageIndex + i;
+      if (idx >= 0 && idx < currentImages.length && idx !== currentImageIndex) {
+        const src = viewMode === "gallery" ? currentImages[idx] : currentImages[idx];
+        if (src) imagesToPreload.push(src);
+      }
+    }
+    
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [currentImageIndex, viewMode, allGalleryImages, floorPlanItems]);
+
   useEffect(() => {
     const timer = setTimeout(() => setShowSwipeHint(false), 4000);
     return () => clearTimeout(timer);
