@@ -634,6 +634,150 @@ function ModalThankYouMessage({ onClose }: { onClose: () => void }) {
   );
 }
 
+// Inline форма для glassmorphism модалки (встроенная в правую панель)
+interface InlineConsultationFormProps {
+  houseName: string;
+  onSuccess: () => void;
+  wantsVeranda?: boolean;
+}
+
+function InlineConsultationForm({ houseName, onSuccess, wantsVeranda = false }: InlineConsultationFormProps) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactMethods, setContactMethods] = useState<string[]>(["phone"]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [needsArchitect, setNeedsArchitect] = useState(wantsVeranda);
+
+  const toggleContactMethod = (method: string) => {
+    setContactMethods(prev => 
+      prev.includes(method) 
+        ? prev.filter(m => m !== method)
+        : [...prev, method]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim() || contactMethods.length === 0) return;
+    
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    console.log("Form submitted:", { name, phone, contactMethods, houseName, wantsVeranda, needsArchitect });
+    setIsSubmitting(false);
+    onSuccess();
+  };
+
+  const contactMethodsList = [
+    { id: "phone", label: "Телефон", icon: Phone },
+    { id: "telegram", label: "Telegram", icon: Send },
+    { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  ];
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Name */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-white/80">Ваше имя</label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Введите имя"
+          required
+          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-primary focus:ring-primary/30"
+        />
+      </div>
+
+      {/* Phone */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-white/80">Телефон</label>
+        <Input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="+996 XXX XXX XXX"
+          type="tel"
+          required
+          className="h-12 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-primary focus:ring-primary/30"
+        />
+      </div>
+
+      {/* Contact Methods */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold text-white/80">
+          Как с вами связаться? <span className="text-primary">*</span>
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {contactMethodsList.map((method) => {
+            const isSelected = contactMethods.includes(method.id);
+            return (
+              <button
+                key={method.id}
+                type="button"
+                onClick={() => toggleContactMethod(method.id)}
+                className={`relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl transition-all ${
+                  isSelected
+                    ? "bg-primary text-white"
+                    : "bg-white/10 text-white/70 hover:bg-white/20"
+                }`}
+              >
+                {isSelected && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 text-primary" />
+                  </div>
+                )}
+                <method.icon className="w-5 h-5" />
+                <span className="text-xs font-semibold">{method.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Architect checkbox */}
+      {wantsVeranda && (
+        <button
+          type="button"
+          onClick={() => setNeedsArchitect(!needsArchitect)}
+          className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all ${
+            needsArchitect
+              ? "bg-primary/20 border-primary/30"
+              : "bg-white/5 border-white/20 hover:border-white/30"
+          }`}
+        >
+          <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${
+            needsArchitect ? "bg-primary" : "bg-white/20"
+          }`}>
+            {needsArchitect && <Check className="h-3 w-3 text-white" />}
+          </div>
+          <span className="text-sm font-semibold text-white">
+            Консультация с архитектором (веранда)
+          </span>
+        </button>
+      )}
+
+      {/* Submit */}
+      <Button
+        type="submit"
+        disabled={isSubmitting || !name.trim() || !phone.trim() || contactMethods.length === 0}
+        className="w-full py-3.5 bg-gradient-to-r from-primary to-[hsl(var(--gold-dark))] text-white font-semibold hover:opacity-90 disabled:opacity-50"
+      >
+        {isSubmitting ? (
+          <span className="flex items-center gap-2">
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Отправляем...
+          </span>
+        ) : (
+          "Отправить заявку"
+        )}
+      </Button>
+
+      <p className="text-center text-white/40 text-xs">
+        Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
+      </p>
+    </form>
+  );
+}
+
 // Компонент для изображения со скелетоном
 interface ImageWithSkeletonProps {
   src: string;
@@ -729,6 +873,40 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
   
   const dragStartX = useRef<number | null>(null);
   const isDragging = useRef(false);
+  
+  // Thumbnails scroll
+  const thumbnailsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  
+  // Check scroll state
+  const updateScrollState = () => {
+    if (thumbnailsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = thumbnailsRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+  
+  // Scroll thumbnails
+  const scrollThumbnails = (direction: "left" | "right") => {
+    if (thumbnailsRef.current) {
+      const scrollAmount = 300;
+      thumbnailsRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+  
+  useEffect(() => {
+    updateScrollState();
+    const el = thumbnailsRef.current;
+    if (el) {
+      el.addEventListener("scroll", updateScrollState);
+      return () => el.removeEventListener("scroll", updateScrollState);
+    }
+  }, [viewMode]);
 
   // Генерируем пути к изображениям
   const galleryImages = generateImagePaths(house.catalogPath, "gallery", house.galleryCount);
@@ -880,70 +1058,7 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
     }
   };
 
-  // Если показываем форму или благодарность - используем золотой стиль
-  if (showForm || showThankYou) {
-    return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-lg"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div 
-            className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl"
-            style={{ boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px" }}
-          >
-            <div className="relative bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-radial from-white/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-radial from-white/10 to-transparent rounded-full blur-xl translate-y-1/2 -translate-x-1/2" />
-
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-4 z-10 w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all hover:rotate-90 duration-300"
-              >
-                <X className="h-5 w-5 text-white" />
-              </button>
-
-              <div className="relative px-6 pt-8 pb-6 text-center">
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
-                  {house.name}
-                </h2>
-                <p className="text-white/80 text-sm">
-                  Мы свяжемся с вами в течение 15 минут
-                </p>
-              </div>
-
-              <div className="relative px-6 pb-8">
-                <AnimatePresence mode="wait">
-                  {showThankYou ? (
-                    <ModalThankYouMessage key="thank-you" onClose={handleCloseAll} />
-                  ) : (
-                    <ModalConsultationForm 
-                      key="form"
-                      houseName={house.name} 
-                      onSuccess={handleFormSuccess}
-                      wantsVeranda={wantsVeranda}
-                    />
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </motion.div>
-    );
-  }
-
-  // Стандартный вид с деталями дома — GLASSMORPHISM ДИЗАЙН
+  // Стандартный вид с деталями дома — GLASSMORPHISM ДИЗАЙН (с морфингом формы)
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1037,10 +1152,34 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                 )}
               </div>
 
-              {/* Thumbnail strip - hidden on mobile, visible on desktop - LARGER THUMBNAILS */}
-              <div className="hidden lg:block flex-shrink-0 bg-black/30 backdrop-blur-sm border-t border-white/10 p-3">
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-                  {/* Gallery thumbnails - increased size */}
+              {/* Thumbnail strip - hidden on mobile, visible on desktop - 2X LARGER THUMBNAILS with arrows */}
+              <div className="hidden lg:block flex-shrink-0 bg-black/30 backdrop-blur-sm border-t border-white/10 p-3 relative">
+                {/* Left scroll arrow */}
+                <button
+                  onClick={() => scrollThumbnails("left")}
+                  className={`absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center transition-all ${
+                    canScrollLeft ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <ChevronLeft className="h-4 w-4 text-white" />
+                </button>
+                
+                {/* Right scroll arrow */}
+                <button
+                  onClick={() => scrollThumbnails("right")}
+                  className={`absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 border border-white/20 flex items-center justify-center transition-all ${
+                    canScrollRight ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <ChevronRight className="h-4 w-4 text-white" />
+                </button>
+                
+                <div 
+                  ref={thumbnailsRef}
+                  className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-10"
+                  style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+                >
+                  {/* Gallery thumbnails - 2X size: 160x112px */}
                   {allGalleryImages.map((img, idx) => (
                     <button
                       key={`gallery-${idx}`}
@@ -1048,10 +1187,10 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                         setViewMode("gallery");
                         setCurrentImageIndex(idx);
                       }}
-                      className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 w-40 h-28 rounded-xl overflow-hidden border-2 transition-all ${
                         viewMode === "gallery" && currentImageIndex === idx
                           ? "border-primary ring-2 ring-primary/30 scale-105"
-                          : "border-transparent hover:border-white/30 opacity-70 hover:opacity-100"
+                          : "border-transparent hover:border-white/40 opacity-80 hover:opacity-100"
                       }`}
                     >
                       <img
@@ -1060,13 +1199,17 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
+                      {/* Number badge */}
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/60 text-xs text-white font-medium">
+                        {idx + 1}
+                      </span>
                     </button>
                   ))}
                   {/* Floor plan thumbnails separator */}
                   {floorPlanItems.length > 0 && allGalleryImages.length > 0 && (
-                    <div className="flex-shrink-0 w-px bg-white/20 mx-2" />
+                    <div className="flex-shrink-0 w-0.5 bg-gradient-to-b from-transparent via-white/30 to-transparent mx-2 self-stretch" />
                   )}
-                  {/* Floor plan thumbnails - increased size */}
+                  {/* Floor plan thumbnails - 2X size: 160x112px */}
                   {floorPlanItems.map((item, idx) => (
                     <button
                       key={`plan-${idx}`}
@@ -1074,15 +1217,15 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                         setViewMode("floorplan");
                         setCurrentImageIndex(idx);
                       }}
-                      className={`relative flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`relative flex-shrink-0 w-40 h-28 rounded-xl overflow-hidden border-2 transition-all ${
                         viewMode === "floorplan" && currentImageIndex === idx
                           ? "border-primary ring-2 ring-primary/30 scale-105"
-                          : "border-transparent hover:border-white/30 opacity-70 hover:opacity-100"
+                          : "border-transparent hover:border-white/40 opacity-80 hover:opacity-100"
                       }`}
                     >
                       {item.isPdf ? (
                         <div className="w-full h-full bg-white/10 flex items-center justify-center">
-                          <Layers className="h-5 w-5 text-white/60" />
+                          <Layers className="h-8 w-8 text-white/60" />
                         </div>
                       ) : (
                         <img
@@ -1093,179 +1236,251 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                         />
                       )}
                       {/* Plan badge */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <span className="text-xs text-white font-medium">План</span>
-                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded bg-primary/80 text-xs text-white font-semibold">
+                        План {idx + 1}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Right: Content Panel — 40% */}
+            {/* Right: Content Panel — 40% with morphing form */}
             <div className="w-full lg:w-[40%] flex flex-col h-[40vh] lg:h-[85vh] overflow-hidden">
-              {/* Scrollable content */}
-              <div className="flex-1 overflow-y-auto p-5 lg:p-6">
-                {/* Header */}
-                <div className="mb-5">
-                  <span className="inline-block mb-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30">
-                    {house.projectLabel}
-                  </span>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-white font-rising">
-                    {house.name}
-                  </h2>
-                </div>
+              <AnimatePresence mode="wait">
+                {showThankYou ? (
+                  /* Thank You state */
+                  <motion.div
+                    key="thank-you"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex-1 flex flex-col items-center justify-center p-6"
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                      className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-6"
+                    >
+                      <CheckCircle className="h-10 w-10 text-primary" />
+                    </motion.div>
+                    <h3 className="text-2xl font-bold text-white mb-3 font-rising">Спасибо!</h3>
+                    <p className="text-white/60 text-center mb-6">Мы свяжемся с вами в течение 15 минут</p>
+                    <Button
+                      onClick={handleCloseAll}
+                      className="bg-primary hover:bg-primary/90 text-white px-8"
+                    >
+                      Закрыть
+                    </Button>
+                  </motion.div>
+                ) : showForm ? (
+                  /* Form state - morphed inside the modal */
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -30 }}
+                    className="flex-1 flex flex-col overflow-hidden"
+                  >
+                    {/* Form header */}
+                    <div className="p-5 lg:p-6 pb-3 flex items-center gap-3">
+                      <button 
+                        onClick={() => setShowForm(false)}
+                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                      >
+                        <ChevronLeft className="h-5 w-5 text-white" />
+                      </button>
+                      <div>
+                        <h3 className="text-lg font-bold text-white font-rising">Получить консультацию</h3>
+                        <p className="text-sm text-white/60">{house.name}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Form content - scrollable */}
+                    <div className="flex-1 overflow-y-auto px-5 lg:px-6 pb-6">
+                      <InlineConsultationForm 
+                        houseName={house.name}
+                        onSuccess={handleFormSuccess}
+                        wantsVeranda={wantsVeranda}
+                      />
+                    </div>
+                  </motion.div>
+                ) : (
+                  /* Default house info state */
+                  <motion.div
+                    key="info"
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 30 }}
+                    className="flex-1 flex flex-col overflow-hidden"
+                  >
+                    {/* Scrollable content */}
+                    <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+                      {/* Header */}
+                      <div className="mb-5">
+                        <span className="inline-block mb-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30">
+                          {house.projectLabel}
+                        </span>
+                        <h2 className="text-2xl lg:text-3xl font-bold text-white font-rising">
+                          {house.name}
+                        </h2>
+                      </div>
 
-                {/* Main specs — 2x2 grid with glassmorphism */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <div className="flex items-center gap-2 text-primary mb-1">
-                      <Maximize className="h-4 w-4" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Площадь</span>
-                    </div>
-                    <p className="text-2xl font-bold text-white">{house.area} м²</p>
-                  </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <div className="flex items-center gap-2 text-white/60 mb-1">
-                      <Layers className="h-4 w-4" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Этажей</span>
-                    </div>
-                    <p className="text-2xl font-bold text-white">{house.floors}</p>
-                  </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <div className="flex items-center gap-2 text-white/60 mb-1">
-                      <BedDouble className="h-4 w-4" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Спальни</span>
-                    </div>
-                    <p className="text-2xl font-bold text-white">{house.bedrooms}</p>
-                  </div>
-                  <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-                    <div className="flex items-center gap-2 text-white/60 mb-1">
-                      <Bath className="h-4 w-4" />
-                      <span className="text-xs uppercase tracking-wide font-semibold">Санузлы</span>
-                    </div>
-                    <p className="text-2xl font-bold text-white">{house.bathrooms}</p>
-                  </div>
-                </div>
+                      {/* Main specs — 2x2 grid with glassmorphism */}
+                      <div className="grid grid-cols-2 gap-3 mb-5">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 text-primary mb-1">
+                            <Maximize className="h-4 w-4" />
+                            <span className="text-xs uppercase tracking-wide font-semibold">Площадь</span>
+                          </div>
+                          <p className="text-2xl font-bold text-white">{house.area} м²</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 text-white/60 mb-1">
+                            <Layers className="h-4 w-4" />
+                            <span className="text-xs uppercase tracking-wide font-semibold">Этажей</span>
+                          </div>
+                          <p className="text-2xl font-bold text-white">{house.floors}</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 text-white/60 mb-1">
+                            <BedDouble className="h-4 w-4" />
+                            <span className="text-xs uppercase tracking-wide font-semibold">Спальни</span>
+                          </div>
+                          <p className="text-2xl font-bold text-white">{house.bedrooms}</p>
+                        </div>
+                        <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+                          <div className="flex items-center gap-2 text-white/60 mb-1">
+                            <Bath className="h-4 w-4" />
+                            <span className="text-xs uppercase tracking-wide font-semibold">Санузлы</span>
+                          </div>
+                          <p className="text-2xl font-bold text-white">{house.bathrooms}</p>
+                        </div>
+                      </div>
 
-                {/* Veranda */}
-                {house.hasVeranda ? (
-                  <div className="flex items-center gap-3 bg-primary/20 backdrop-blur-sm rounded-xl p-4 mb-5 border border-primary/30">
-                    <div className="w-10 h-10 rounded-full bg-primary/30 flex items-center justify-center">
-                      <Trees className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-white">Веранда</p>
-                      {house.verandaArea && (
-                        <p className="text-sm text-white/60">{house.verandaArea} м²</p>
+                      {/* Veranda */}
+                      {house.hasVeranda ? (
+                        <div className="flex items-center gap-3 bg-primary/20 backdrop-blur-sm rounded-xl p-4 mb-5 border border-primary/30">
+                          <div className="w-10 h-10 rounded-full bg-primary/30 flex items-center justify-center">
+                            <Trees className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-white">Веранда</p>
+                            {house.verandaArea && (
+                              <p className="text-sm text-white/60">{house.verandaArea} м²</p>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="rounded-xl border border-dashed border-white/20 bg-white/5 backdrop-blur-sm p-4 mb-5">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                              <Trees className="h-5 w-5 text-white/60" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-white/60 mb-2">
+                                Веранда не предусмотрена. Хотите добавить?
+                              </p>
+                              <button
+                                onClick={() => setWantsVeranda(!wantsVeranda)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-semibold ${
+                                  wantsVeranda
+                                    ? "bg-primary border-primary text-white"
+                                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                                }`}
+                              >
+                                {wantsVeranda ? (
+                                  <Check className="h-4 w-4" />
+                                ) : (
+                                  <Plus className="h-4 w-4" />
+                                )}
+                                <span>{wantsVeranda ? "Добавлена" : "Добавить веранду"}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Floor Plans Thumbnails Section */}
+                      {floorPlanItems.length > 0 && (
+                        <div className="mb-5">
+                          <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide mb-3 flex items-center gap-2">
+                            <Layers className="h-4 w-4" />
+                            Планировки
+                          </h3>
+                          <div className="grid grid-cols-2 gap-2">
+                            {floorPlanItems.map((item, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  setViewMode("floorplan");
+                                  setCurrentImageIndex(idx);
+                                }}
+                                className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                                  viewMode === "floorplan" && currentImageIndex === idx
+                                    ? "border-primary ring-2 ring-primary/30"
+                                    : "border-white/10 hover:border-white/30"
+                                }`}
+                              >
+                                {item.isPdf ? (
+                                  <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
+                                    <div className="text-center">
+                                      <Layers className="h-6 w-6 text-white/60 mx-auto mb-1" />
+                                      <span className="text-xs text-white/60">PDF</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={item.path}
+                                    alt={`Планировка ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                  />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                                <span className="absolute bottom-2 left-2 text-xs font-medium text-white">
+                                  План {idx + 1}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-white/20 bg-white/5 backdrop-blur-sm p-4 mb-5">
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                        <Trees className="h-5 w-5 text-white/60" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-white/60 mb-2">
-                          Веранда не предусмотрена. Хотите добавить?
-                        </p>
-                        <button
-                          onClick={() => setWantsVeranda(!wantsVeranda)}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all text-sm font-semibold ${
-                            wantsVeranda
-                              ? "bg-primary border-primary text-white"
-                              : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-                          }`}
-                        >
-                          {wantsVeranda ? (
-                            <Check className="h-4 w-4" />
-                          ) : (
-                            <Plus className="h-4 w-4" />
-                          )}
-                          <span>{wantsVeranda ? "Добавлена" : "Добавить веранду"}</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
 
-                {/* Floor Plans Thumbnails Section */}
-                {floorPlanItems.length > 0 && (
-                  <div className="mb-5">
-                    <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <Layers className="h-4 w-4" />
-                      Планировки
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {floorPlanItems.map((item, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            setViewMode("floorplan");
-                            setCurrentImageIndex(idx);
-                          }}
-                          className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
-                            viewMode === "floorplan" && currentImageIndex === idx
-                              ? "border-primary ring-2 ring-primary/30"
-                              : "border-white/10 hover:border-white/30"
-                          }`}
+                    {/* Sticky bottom CTA */}
+                    <div className="p-5 lg:p-6 pt-4 bg-black/20 backdrop-blur-sm border-t border-white/10">
+                      {/* Quick contact */}
+                      <div className="flex gap-2 mb-3">
+                        <a
+                          href="https://wa.me/996551033960"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#25D366] text-white font-semibold text-sm hover:bg-[#20bd5a] transition-colors"
                         >
-                          {item.isPdf ? (
-                            <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
-                              <div className="text-center">
-                                <Layers className="h-6 w-6 text-white/60 mx-auto mb-1" />
-                                <span className="text-xs text-white/60">PDF</span>
-                              </div>
-                            </div>
-                          ) : (
-                            <img
-                              src={item.path}
-                              alt={`Планировка ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                              loading="lazy"
-                            />
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                          <span className="absolute bottom-2 left-2 text-xs font-medium text-white">
-                            План {idx + 1}
-                          </span>
-                        </button>
-                      ))}
+                          <MessageCircle className="h-4 w-4" />
+                          WhatsApp
+                        </a>
+                        <a
+                          href="tel:+996551033960"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/20 transition-colors"
+                        >
+                          <Phone className="h-4 w-4" />
+                          Позвонить
+                        </a>
+                      </div>
+                      <button
+                        onClick={() => setShowForm(true)}
+                        className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-[hsl(var(--gold-dark))] text-white font-semibold text-base hover:opacity-90 transition-opacity shadow-lg"
+                      >
+                        Получить консультацию
+                      </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
-              </div>
-
-              {/* Sticky bottom CTA */}
-              <div className="p-5 lg:p-6 pt-4 bg-black/20 backdrop-blur-sm border-t border-white/10">
-                {/* Quick contact */}
-                <div className="flex gap-2 mb-3">
-                  <a
-                    href="https://wa.me/996551033960"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#25D366] text-white font-semibold text-sm hover:bg-[#20bd5a] transition-colors"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    WhatsApp
-                  </a>
-                  <a
-                    href="tel:+996551033960"
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/20 transition-colors"
-                  >
-                    <Phone className="h-4 w-4" />
-                    Позвонить
-                  </a>
-                </div>
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary to-[hsl(var(--gold-dark))] text-white font-semibold text-base hover:opacity-90 transition-opacity shadow-lg"
-                >
-                  Получить консультацию
-                </button>
-              </div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
