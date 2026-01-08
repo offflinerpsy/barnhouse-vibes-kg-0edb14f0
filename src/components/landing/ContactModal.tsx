@@ -1,12 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Phone, MessageCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogPortal,
-} from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import logoEra from "@/assets/logo-era.png";
 
@@ -27,6 +24,40 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const [message, setMessage] = useState("");
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+
+  // iOS Safari fix: Get portal container after mount and lock body scroll when open
+  useEffect(() => {
+    const container = document.getElementById("portal-root") || document.body;
+    setPortalContainer(container);
+  }, []);
+
+  // Lock body scroll when modal is open (iOS Safari compatible)
+  useEffect(() => {
+    if (open) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+      // iOS Safari needs this
+      document.body.style.webkitOverflowScrolling = 'touch';
+    } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      document.body.style.webkitOverflowScrolling = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+  }, [open]);
 
   const toggleMethod = (methodId: string) => {
     setSelectedMethods((prev) =>
@@ -64,20 +95,36 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
     onOpenChange(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPortal>
-        {/* Custom gold gradient overlay - z-[200] to be above locked catalog */}
-        <div 
-          className="fixed inset-0 z-[200] bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm animate-in fade-in-0 duration-300"
-          onClick={() => onOpenChange(false)}
-        />
+  // Don't render if not open or no container
+  if (!open || !portalContainer) return null;
 
-        {/* Modal content with animation - scrollable for mobile */}
-        <div 
-          className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto overscroll-contain"
-          style={{ paddingTop: "env(safe-area-inset-top, 16px)", paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
-        >
+  const modalContent = (
+    <>
+      {/* Custom gold gradient overlay - CRITICAL: z-[9999] for iOS Safari stacking context escape */}
+      <div 
+        className="fixed inset-0 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm animate-in fade-in-0 duration-300"
+        style={{ 
+          zIndex: 9999,
+          // iOS Safari: force new stacking context at root level
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)',
+          isolation: 'isolate'
+        }}
+        onClick={() => onOpenChange(false)}
+      />
+
+      {/* Modal content with animation - scrollable for mobile */}
+      <div 
+        className="fixed inset-0 flex items-start justify-center overflow-y-auto overscroll-contain"
+        style={{ 
+          zIndex: 9999,
+          paddingTop: "env(safe-area-inset-top, 16px)", 
+          paddingBottom: "env(safe-area-inset-bottom, 16px)",
+          // iOS Safari: force GPU layer
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)'
+        }}
+      >
           <div className="w-full max-w-lg px-4 py-4 my-auto min-h-fit">
             <div
               className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl animate-in fade-in-0 zoom-in-90 duration-500 ease-out"
@@ -233,9 +280,8 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
               </form>
             </div>
           </div>
-          </div>
         </div>
-      </DialogPortal>
+      </div>
 
       {/* Custom keyframes for pulse animation */}
       <style>{`
@@ -262,6 +308,10 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
           }
         }
       `}</style>
-    </Dialog>
+    </>
   );
+
+  // CRITICAL: Use createPortal to render OUTSIDE any stacking context
+  // This ensures modal appears above catalog even when locked with position:fixed
+  return createPortal(modalContent, portalContainer);
 }

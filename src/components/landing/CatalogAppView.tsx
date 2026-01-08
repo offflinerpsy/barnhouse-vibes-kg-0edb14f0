@@ -774,10 +774,50 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
   const catalogRef = useRef<HTMLDivElement>(null);
 
   // Автофиксация каталога при 30% видимости на экране
+  // iOS Safari FIX: IntersectionObserver has bugs with transform, use scroll event as fallback
   useEffect(() => {
     const el = catalogRef.current;
     if (!el) return;
 
+    // iOS Safari detection
+    const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && 
+                        !('MSStream' in window) &&
+                        /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+    // Use scroll event listener for iOS Safari (more reliable)
+    if (isIOSSafari) {
+      const handleScroll = () => {
+        if (isLockedRef.current) return;
+        
+        const rect = el.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
+        const elementHeight = rect.height;
+        const visibilityRatio = Math.max(0, visibleHeight / elementHeight);
+        
+        // Lock when 30% visible
+        if (visibilityRatio >= 0.3) {
+          isLockedRef.current = true;
+          setIsLocked(true);
+          triggerHaptic();
+        }
+      };
+
+      // Use passive listener for better scroll performance
+      window.addEventListener('scroll', handleScroll, { passive: true });
+      // Also check on touch events for iOS
+      document.addEventListener('touchmove', handleScroll, { passive: true });
+      
+      // Initial check
+      handleScroll();
+      
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        document.removeEventListener('touchmove', handleScroll);
+      };
+    }
+
+    // For non-iOS browsers, use IntersectionObserver (more efficient)
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.intersectionRatio >= 0.3 && !isLockedRef.current) {
@@ -786,7 +826,11 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
           triggerHaptic();
         }
       },
-      { threshold: [0, 0.3, 0.5, 0.7, 1], rootMargin: "-10% 0px" }
+      { 
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5], 
+        // iOS Safari fix: avoid percentage rootMargin
+        rootMargin: "0px 0px 0px 0px" 
+      }
     );
 
     observer.observe(el);
@@ -840,13 +884,11 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
 
   return (
       // Каталог с ручным режимом закрепления (isLocked)
-      <motion.section 
+      // iOS Safari FIX: Use regular section instead of motion.section to avoid transform issues
+      <section 
         ref={catalogRef}
         id="catalog"
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        exit={{ opacity: 0 }} 
-        className={`bg-charcoal text-white overflow-hidden ${
+        className={`bg-charcoal text-white overflow-hidden animate-in fade-in-0 duration-500 ${
           isLocked 
             ? 'fixed z-[100]' 
             : 'relative h-screen snap-start z-[60]'
@@ -859,7 +901,10 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
           width: '100%',
           height: '100%',
           overscrollBehavior: 'contain',
-          touchAction: 'none'
+          touchAction: 'none',
+          // iOS Safari: force GPU compositing without breaking stacking
+          WebkitTransform: 'translateZ(0)',
+          transform: 'translateZ(0)'
         } : { 
           height: '100dvh',
           overscrollBehavior: 'contain',
@@ -1194,6 +1239,6 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
           )}
         </AnimatePresence>
       </motion.main>
-    </motion.section>
+    </section>
   );
 }

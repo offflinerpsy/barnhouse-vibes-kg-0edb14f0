@@ -264,36 +264,37 @@ export function Hero() {
         </motion.div>
       </div>
 
-      {/* Mobile: Image Gallery below content */}
+      {/* Mobile: Image Gallery below content - CSS animation for iOS Safari compatibility */}
       <div className="lg:hidden absolute bottom-0 left-0 right-0 h-[280px] sm:h-[340px] overflow-hidden z-10">
         <div className="absolute inset-0 overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`mobile-${currentSlide}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1 }}
-              className="absolute inset-0 overflow-hidden"
+          {slides.map((slide, index) => (
+            <div
+              key={`mobile-slide-${index}`}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                index === currentSlide ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{ 
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden',
+              }}
             >
-              <motion.img
-                key={`mob-${currentSlide}`}
-                src={`${slides[currentSlide].image}?v=${KENBURNS_VERSION}`}
+              <img
+                src={`${slide.image}?v=${KENBURNS_VERSION}`}
                 alt="ERA Concept Home"
-                initial={slides[currentSlide].animation.initial}
-                animate={slides[currentSlide].animation.animate}
-                transition={{
-                  duration: SLIDE_DURATION / 1000,
-                  ease: [0.25, 0.1, 0.25, 1],
+                className={`absolute inset-0 w-full h-full object-cover ${
+                  index === currentSlide ? 'animate-kenburns-mobile' : ''
+                }`}
+                style={{
+                  WebkitTransform: 'translateZ(0)',
+                  transform: 'translateZ(0)',
                 }}
-                className="absolute inset-0 w-full h-full object-cover scale-[1.15] will-change-transform"
                 decoding="async"
-                loading="eager"
+                loading={index === 0 ? "eager" : "lazy"}
               />
               {/* Gradient overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent pointer-events-none" />
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          ))}
         </div>
 
         {/* Progress bar */}
