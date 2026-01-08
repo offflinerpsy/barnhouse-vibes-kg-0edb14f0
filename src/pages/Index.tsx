@@ -29,7 +29,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden max-w-full">
       {/* ============================================
           HEADER - Фиксированная навигация
           Содержит: логотип, меню, контакты, CTA
