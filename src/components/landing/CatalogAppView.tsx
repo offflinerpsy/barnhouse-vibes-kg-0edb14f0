@@ -18,7 +18,6 @@ import {
   Maximize2,
   Layers,
 } from "lucide-react";
-import { ContactModal } from "@/components/landing/ContactModal";
 import { 
   CATALOG_MODELS, 
   CatalogModel, 
@@ -29,6 +28,8 @@ import {
 
 interface CatalogAppViewProps {
   onClose?: () => void;
+  contactOpen: boolean;
+  onContactChange: (open: boolean) => void;
 }
 
 // Alias for backward compatibility within this file
@@ -703,7 +704,7 @@ function ZoomableLightbox({
   );
 }
 
-export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
+export default function CatalogAppView({ onClose, contactOpen, onContactChange }: CatalogAppViewProps) {
   const [currentModelIndex, setCurrentModelIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [filter, setFilter] = useState<FilterType>("all");
@@ -712,11 +713,10 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
-  // Ручной режим "закрепления" каталога - fullscreen locked mode
+  // Автоматическая фиксация каталога при 30% видимости
   const [isLocked, setIsLocked] = useState(false);
-  const [showLockTooltip, setShowLockTooltip] = useState(false);
   const [showUnlockTooltip, setShowUnlockTooltip] = useState(false);
+  const isLockedRef = useRef(false);
 
   const filteredModels = useMemo(() => applyCatalogFilter(ERA_MODELS, filter), [filter]);
 
@@ -772,44 +772,70 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
   // Ref для каталога
   const catalogRef = useRef<HTMLDivElement>(null);
-  const scrollRestoreRef = useRef(0);
 
-  // Жёстко блокируем скролл страницы, когда каталог закреплён
+  // Автофиксация каталога при 30% видимости на экране
+  useEffect(() => {
+    const el = catalogRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.intersectionRatio >= 0.3 && !isLockedRef.current) {
+          isLockedRef.current = true;
+          setIsLocked(true);
+          triggerHaptic();
+        }
+      },
+      { threshold: [0, 0.3, 0.5, 0.7, 1], rootMargin: "-10% 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [triggerHaptic]);
+
+  // Блокируем скролл страницы, когда каталог закреплён
   useEffect(() => {
     if (!isLocked) return;
 
     const html = document.documentElement;
     const body = document.body;
-    const prevHtmlOverscroll = html.style.overscrollBehaviorY;
-    const prevBodyOverscroll = body.style.overscrollBehaviorY;
-    const prevBodyOverflow = body.style.overflow;
-    const prevBodyPosition = body.style.position;
-    const prevBodyTop = body.style.top;
-    const prevBodyWidth = body.style.width;
 
-    scrollRestoreRef.current = window.scrollY;
-    html.style.overscrollBehaviorY = "none";
-    body.style.overscrollBehaviorY = "none";
+    // Сохраняем предыдущие значения
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlOverscroll = html.style.overscrollBehavior;
+    const prevBodyOverscroll = body.style.overscrollBehavior;
+    const prevTouchAction = body.style.touchAction;
+
+    // Блокируем скролл
+    html.style.overflow = "hidden";
     body.style.overflow = "hidden";
-    body.style.position = "fixed";
-    body.style.width = "100%";
-    body.style.top = `-${scrollRestoreRef.current}px`;
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+    body.style.touchAction = "none";
 
     return () => {
-      html.style.overscrollBehaviorY = prevHtmlOverscroll;
-      body.style.overscrollBehaviorY = prevBodyOverscroll;
+      html.style.overflow = prevHtmlOverflow;
       body.style.overflow = prevBodyOverflow;
-      body.style.position = prevBodyPosition;
-      body.style.width = prevBodyWidth;
-      body.style.top = prevBodyTop;
-      window.scrollTo(0, scrollRestoreRef.current);
+      html.style.overscrollBehavior = prevHtmlOverscroll;
+      body.style.overscrollBehavior = prevBodyOverscroll;
+      body.style.touchAction = prevTouchAction;
     };
   }, [isLocked]);
 
-  // Функция для навигации к другим секциям
-  const navigateToSection = useCallback((targetId: string) => {
+  // Плавный выход из каталога - скролл на следующий блок
+  const handleExitCatalog = useCallback(() => {
     triggerHaptic();
-    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth" });
+    setIsLocked(false);
+    isLockedRef.current = false;
+    
+    // Плавно скроллим на следующий блок после каталога
+    setTimeout(() => {
+      const nextSection = document.getElementById('benefits') || document.getElementById('advantages');
+      if (nextSection) {
+        nextSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   }, [triggerHaptic]);
 
   return (
@@ -820,19 +846,26 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
         initial={{ opacity: 0 }} 
         animate={{ opacity: 1 }} 
         exit={{ opacity: 0 }} 
-        className={`relative h-screen bg-charcoal text-white overflow-hidden ${
+        className={`bg-charcoal text-white overflow-hidden ${
           isLocked 
-            ? 'fixed inset-0 z-[100]' 
-            : 'snap-start z-[60]'
+            ? 'fixed z-[100]' 
+            : 'relative h-screen snap-start z-[60]'
         }`}
-        style={{ 
+        style={isLocked ? { 
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          overscrollBehavior: 'contain',
+          touchAction: 'none'
+        } : { 
           height: '100dvh',
           overscrollBehavior: 'contain',
           touchAction: 'pan-y'
         }}
       >
-      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
-
       {/* Model indicator dots (compact) */}
       <div className="absolute top-0 left-0 right-0 z-40 px-4 flex justify-center gap-1.5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
         {filteredModels.map((model, idx) => (
@@ -885,54 +918,23 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             {!onClose && <div className="w-10" />}
           </div>
           
-          {/* Lock/Unlock buttons - right aligned */}
-          <div className="flex justify-end px-3 mt-2 gap-2">
-            {!isLocked ? (
-              <div className="relative">
-                <motion.button
-                  onClick={() => { 
-                    triggerHaptic(); 
-                    setIsLocked(true); 
-                    setShowLockTooltip(false);
-                  }}
-                  onPointerEnter={() => setShowLockTooltip(true)}
-                  onPointerLeave={() => setShowLockTooltip(false)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl ${glassPanel}`}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Maximize2 className="w-4 h-4 text-primary" />
-                  <span className="text-xs font-medium text-white/80">Закрепить</span>
-                </motion.button>
-                {/* Tooltip */}
-                <AnimatePresence>
-                  {showLockTooltip && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      className={`absolute top-full right-0 mt-2 px-3 py-2 rounded-lg ${glassPanel} max-w-[200px] z-50`}
-                    >
-                      <p className="text-xs text-white/70">Каталог займёт весь экран и не будет прокручиваться</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            ) : (
-              <div className="relative">
-                <motion.button
-                  onClick={() => { 
-                    triggerHaptic(); 
-                    setIsLocked(false); 
-                    setShowUnlockTooltip(false);
-                  }}
-                  onPointerEnter={() => setShowUnlockTooltip(true)}
-                  onPointerLeave={() => setShowUnlockTooltip(false)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-primary`}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <X className="w-4 h-4 text-charcoal" />
-                  <span className="text-xs font-medium text-charcoal">Выйти</span>
-                </motion.button>
+          {/* Кнопка выхода - показывается только когда каталог закреплён */}
+          {isLocked && (
+            <div className="flex justify-end px-3 mt-2">
+              <motion.button
+                onClick={() => { 
+                  handleExitCatalog();
+                  setShowUnlockTooltip(false);
+                }}
+                onPointerEnter={() => setShowUnlockTooltip(true)}
+                onPointerLeave={() => setShowUnlockTooltip(false)}
+                className={`relative flex items-center gap-2 px-3 py-2 rounded-xl bg-primary`}
+                whileTap={{ scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <X className="w-4 h-4 text-charcoal" />
+                <span className="text-xs font-medium text-charcoal">Выйти из каталога</span>
                 {/* Tooltip */}
                 <AnimatePresence>
                   {showUnlockTooltip && (
@@ -942,13 +944,13 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                       exit={{ opacity: 0, y: 5 }}
                       className={`absolute top-full right-0 mt-2 px-3 py-2 rounded-lg ${glassPanel} max-w-[200px] z-50`}
                     >
-                      <p className="text-xs text-white/70">Вернуться к обычному просмотру сайта</p>
+                      <p className="text-xs text-white/70">Продолжить просмотр сайта</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-            )}
-          </div>
+              </motion.button>
+            </div>
+          )}
         </div>
       </header>
 
@@ -1005,7 +1007,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             disabled={floorPlans.length === 0}
           />
           <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} animated />
-          <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setContactOpen(true)} />
+          <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => onContactChange(true)} />
           <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
           <ActionButton icon={Send} label="TG" onClick={handleTelegram} />
           <ActionButton icon={Phone} label="Call" onClick={handleCall} />
@@ -1065,7 +1067,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
           {/* Submit application button */}
           <motion.button
-            onClick={() => { triggerHaptic(); setContactOpen(true); }}
+            onClick={() => { triggerHaptic(); onContactChange(true); }}
             className={`flex-none rounded-2xl bg-primary active:scale-[0.98] transition-transform`}
             whileTap={{ scale: 0.95 }}
             animate={{ 

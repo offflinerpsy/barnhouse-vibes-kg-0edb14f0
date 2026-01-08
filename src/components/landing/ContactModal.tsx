@@ -67,15 +67,15 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
-        {/* Custom gold gradient overlay */}
+        {/* Custom gold gradient overlay - z-[200] to be above locked catalog */}
         <div 
-          className="fixed inset-0 z-50 bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm animate-in fade-in-0 duration-300"
+          className="fixed inset-0 z-[200] bg-gradient-to-br from-[hsl(var(--charcoal))]/90 via-[hsl(var(--gold-dark))]/40 to-[hsl(var(--charcoal))]/95 backdrop-blur-sm animate-in fade-in-0 duration-300"
           onClick={() => onOpenChange(false)}
         />
 
         {/* Modal content with animation - scrollable for mobile */}
         <div 
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain"
+          className="fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto overscroll-contain"
           style={{ paddingTop: "env(safe-area-inset-top, 16px)", paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
         >
           <div className="w-full max-w-lg px-4 py-4 my-auto min-h-fit">

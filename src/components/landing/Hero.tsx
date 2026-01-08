@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, MotionConfig } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
 // Фотореалистичные изображения барнхаусов в Киргизии (все сезоны)
@@ -103,6 +103,7 @@ export function Hero() {
   }, [nextSlide]);
 
   return (
+    <MotionConfig reducedMotion="never">
     <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden max-w-full snap-start">
       {/* Left Content Panel - Brown/Dark */}
       <motion.div 
@@ -212,20 +213,20 @@ export function Hero() {
               transition={{ duration: 1.2 }}
               className="absolute inset-0 overflow-hidden"
             >
-              <motion.div
+              <motion.img
+                key={`desk-${currentSlide}`}
+                src={`${slides[currentSlide].image}?v=${KENBURNS_VERSION}`}
+                alt="ERA Concept Home"
                 initial={slides[currentSlide].animation.initial}
                 animate={slides[currentSlide].animation.animate}
                 transition={{
                   duration: SLIDE_DURATION / 1000,
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
-                className="absolute inset-0 scale-[1.15]"
-              >
-                <div
-                  className="absolute inset-0 bg-cover bg-center will-change-transform"
-                  style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
-                />
-              </motion.div>
+                className="absolute inset-0 w-full h-full object-cover scale-[1.15] will-change-transform"
+                decoding="async"
+                loading="eager"
+              />
               {/* Subtle vignette overlay */}
               <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-charcoal/30 pointer-events-none" />
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal/20 via-transparent to-charcoal/10 pointer-events-none" />
@@ -275,20 +276,20 @@ export function Hero() {
               transition={{ duration: 1 }}
               className="absolute inset-0 overflow-hidden"
             >
-              <motion.div
+              <motion.img
+                key={`mob-${currentSlide}`}
+                src={`${slides[currentSlide].image}?v=${KENBURNS_VERSION}`}
+                alt="ERA Concept Home"
                 initial={slides[currentSlide].animation.initial}
                 animate={slides[currentSlide].animation.animate}
                 transition={{
                   duration: SLIDE_DURATION / 1000,
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
-                className="absolute inset-0 scale-[1.15]"
-              >
-                <div
-                  className="absolute inset-0 bg-cover bg-center will-change-transform"
-                  style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
-                />
-              </motion.div>
+                className="absolute inset-0 w-full h-full object-cover scale-[1.15] will-change-transform"
+                decoding="async"
+                loading="eager"
+              />
               {/* Gradient overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent pointer-events-none" />
             </motion.div>
@@ -325,5 +326,6 @@ export function Hero() {
 
       <ContactModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </section>
+    </MotionConfig>
   );
 }

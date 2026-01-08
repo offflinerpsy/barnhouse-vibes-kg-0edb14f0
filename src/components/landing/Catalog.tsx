@@ -19,6 +19,7 @@
 import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import CatalogAppView from "@/components/landing/CatalogAppView";
+import { ContactModal } from "@/components/landing/ContactModal";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -1605,12 +1606,14 @@ export function Catalog() {
   const [activeAreaRange, setActiveAreaRange] = useState("all");
   const [selectedHouse, setSelectedHouse] = useState<HouseModel | null>(null);
   const [showCustomModal, setShowCustomModal] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
 
   // На мобильных устройствах показываем CatalogAppView
   if (isMobile) {
     return (
       <section id="catalog" className="relative">
-        <CatalogAppView />
+        <CatalogAppView contactOpen={contactOpen} onContactChange={setContactOpen} />
+        <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
       </section>
     );
   }

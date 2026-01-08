@@ -8,9 +8,11 @@ import { ArrowLeft, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import CatalogAppView from "@/components/landing/CatalogAppView";
+import { ContactModal } from "@/components/landing/ContactModal";
 
 export default function TestModals() {
   const [open, setOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-charcoal">
@@ -80,10 +82,16 @@ export default function TestModals() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50"
           >
-            <CatalogAppView onClose={() => setOpen(false)} />
+            <CatalogAppView
+              contactOpen={contactOpen}
+              onContactChange={setContactOpen}
+              onClose={() => setOpen(false)}
+            />
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </div>
   );
 }
