@@ -311,7 +311,7 @@ export function Advantages() {
   const isInView = useInView(containerRef, { once: false, margin: "-100px" });
 
   return (
-    <section id="advantages" className="py-24 md:py-32 relative overflow-hidden">
+    <section id="advantages" className="py-24 md:py-32 relative overflow-hidden snap-start">
       {/* Blueprint/drafting table background */}
       <BlueprintGrid />
 

@@ -768,11 +768,11 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
   return (
     <motion.div 
-      data-catalog-overlay
+      id="catalog"
       initial={{ opacity: 0 }} 
       animate={{ opacity: 1 }} 
       exit={{ opacity: 0 }} 
-      className="fixed inset-0 z-50 bg-charcoal text-white overflow-hidden"
+      className="relative h-screen bg-charcoal text-white overflow-hidden snap-start"
     >
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
 
@@ -918,15 +918,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <motion.button
             onClick={() => {
               triggerHaptic();
-              // Скрываем fixed overlay и скроллим к hero
-              const catalogOverlay = document.querySelector('[data-catalog-overlay]') as HTMLElement;
-              if (catalogOverlay) {
-                catalogOverlay.style.position = 'absolute';
-                catalogOverlay.style.height = '100vh';
-              }
-              setTimeout(() => {
-                document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
+              document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
             }}
             className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
             animate={{ 
@@ -975,15 +967,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <motion.button
             onClick={() => {
               triggerHaptic();
-              // Скрываем fixed overlay и скроллим к advantages
-              const catalogOverlay = document.querySelector('[data-catalog-overlay]') as HTMLElement;
-              if (catalogOverlay) {
-                catalogOverlay.style.position = 'absolute';
-                catalogOverlay.style.height = '100vh';
-              }
-              setTimeout(() => {
-                document.getElementById("advantages")?.scrollIntoView({ behavior: "smooth" });
-              }, 50);
+              document.getElementById("advantages")?.scrollIntoView({ behavior: "smooth" });
             }}
             className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
             animate={{ 

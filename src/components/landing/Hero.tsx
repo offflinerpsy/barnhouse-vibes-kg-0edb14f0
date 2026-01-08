@@ -103,7 +103,7 @@ export function Hero() {
   }, [nextSlide]);
 
   return (
-    <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden max-w-full">
+    <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden max-w-full snap-start">
       {/* Left Content Panel - Brown/Dark */}
       <motion.div 
         style={{ y: contentY }}
