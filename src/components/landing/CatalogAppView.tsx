@@ -713,6 +713,10 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  // Ручной режим "закрепления" каталога - fullscreen locked mode
+  const [isLocked, setIsLocked] = useState(false);
+  const [showLockTooltip, setShowLockTooltip] = useState(false);
+  const [showUnlockTooltip, setShowUnlockTooltip] = useState(false);
 
   const filteredModels = useMemo(() => applyCatalogFilter(ERA_MODELS, filter), [filter]);
 
@@ -766,14 +770,67 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
     window.open(`https://t.me/erahomes?text=${text}`, "_blank");
   };
 
+  // Ref для каталога
+  const catalogRef = useRef<HTMLDivElement>(null);
+  const scrollRestoreRef = useRef(0);
+
+  // Жёстко блокируем скролл страницы, когда каталог закреплён
+  useEffect(() => {
+    if (!isLocked) return;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverscroll = html.style.overscrollBehaviorY;
+    const prevBodyOverscroll = body.style.overscrollBehaviorY;
+    const prevBodyOverflow = body.style.overflow;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyWidth = body.style.width;
+
+    scrollRestoreRef.current = window.scrollY;
+    html.style.overscrollBehaviorY = "none";
+    body.style.overscrollBehaviorY = "none";
+    body.style.overflow = "hidden";
+    body.style.position = "fixed";
+    body.style.width = "100%";
+    body.style.top = `-${scrollRestoreRef.current}px`;
+
+    return () => {
+      html.style.overscrollBehaviorY = prevHtmlOverscroll;
+      body.style.overscrollBehaviorY = prevBodyOverscroll;
+      body.style.overflow = prevBodyOverflow;
+      body.style.position = prevBodyPosition;
+      body.style.width = prevBodyWidth;
+      body.style.top = prevBodyTop;
+      window.scrollTo(0, scrollRestoreRef.current);
+    };
+  }, [isLocked]);
+
+  // Функция для навигации к другим секциям
+  const navigateToSection = useCallback((targetId: string) => {
+    triggerHaptic();
+    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth" });
+  }, [triggerHaptic]);
+
   return (
-    <motion.div 
-      id="catalog"
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }} 
-      className="relative h-screen bg-charcoal text-white overflow-hidden snap-start"
-    >
+      // Каталог с ручным режимом закрепления (isLocked)
+      <motion.section 
+        ref={catalogRef}
+        id="catalog"
+        initial={{ opacity: 0 }} 
+        animate={{ opacity: 1 }} 
+        exit={{ opacity: 0 }} 
+        className={`relative h-screen bg-charcoal text-white overflow-hidden ${
+          isLocked 
+            ? 'fixed inset-0 z-[100]' 
+            : 'snap-start z-[60]'
+        }`}
+        style={{ 
+          height: '100dvh',
+          overscrollBehavior: 'contain',
+          touchAction: 'pan-y'
+        }}
+      >
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
 
       {/* Model indicator dots (compact) */}
@@ -826,6 +883,71 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
             {/* Spacer - no button here anymore */}
             {!onClose && <div className="w-10" />}
+          </div>
+          
+          {/* Lock/Unlock buttons - right aligned */}
+          <div className="flex justify-end px-3 mt-2 gap-2">
+            {!isLocked ? (
+              <div className="relative">
+                <motion.button
+                  onClick={() => { 
+                    triggerHaptic(); 
+                    setIsLocked(true); 
+                    setShowLockTooltip(false);
+                  }}
+                  onPointerEnter={() => setShowLockTooltip(true)}
+                  onPointerLeave={() => setShowLockTooltip(false)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl ${glassPanel}`}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Maximize2 className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-medium text-white/80">Закрепить</span>
+                </motion.button>
+                {/* Tooltip */}
+                <AnimatePresence>
+                  {showLockTooltip && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      className={`absolute top-full right-0 mt-2 px-3 py-2 rounded-lg ${glassPanel} max-w-[200px] z-50`}
+                    >
+                      <p className="text-xs text-white/70">Каталог займёт весь экран и не будет прокручиваться</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <div className="relative">
+                <motion.button
+                  onClick={() => { 
+                    triggerHaptic(); 
+                    setIsLocked(false); 
+                    setShowUnlockTooltip(false);
+                  }}
+                  onPointerEnter={() => setShowUnlockTooltip(true)}
+                  onPointerLeave={() => setShowUnlockTooltip(false)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-primary`}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <X className="w-4 h-4 text-charcoal" />
+                  <span className="text-xs font-medium text-charcoal">Выйти</span>
+                </motion.button>
+                {/* Tooltip */}
+                <AnimatePresence>
+                  {showUnlockTooltip && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 5 }}
+                      className={`absolute top-full right-0 mt-2 px-3 py-2 rounded-lg ${glassPanel} max-w-[200px] z-50`}
+                    >
+                      <p className="text-xs text-white/70">Вернуться к обычному просмотру сайта</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -912,31 +1034,9 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           </div>
         </section>
 
-        {/* Swipeable catalog handle at bottom + exit buttons */}
+        {/* Bottom buttons - Catalog picker + Submit application */}
         <div className="absolute left-3 right-3 z-30 flex items-center gap-2" style={{ bottom: "calc(8px + env(safe-area-inset-bottom))" }}>
-          {/* Exit up button - go to hero */}
-          <motion.button
-            onClick={() => {
-              triggerHaptic();
-              document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
-            animate={{ 
-              boxShadow: [
-                "0 0 0 0 rgba(var(--primary), 0)",
-                "0 0 0 6px rgba(var(--primary), 0.15)",
-                "0 0 0 0 rgba(var(--primary), 0)"
-              ]
-            }}
-            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
-            aria-label="Вверх к началу"
-          >
-            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="18 15 12 9 6 15"/>
-            </svg>
-          </motion.button>
-
-          {/* Catalog picker button */}
+          {/* Catalog picker button - positioned on the left */}
           <motion.button
             onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
             className={`flex-1 rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
@@ -963,26 +1063,24 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             </div>
           </motion.button>
 
-          {/* Exit down button - go to next section */}
+          {/* Submit application button */}
           <motion.button
-            onClick={() => {
-              triggerHaptic();
-              document.getElementById("advantages")?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+            onClick={() => { triggerHaptic(); setContactOpen(true); }}
+            className={`flex-none rounded-2xl bg-primary active:scale-[0.98] transition-transform`}
+            whileTap={{ scale: 0.95 }}
             animate={{ 
               boxShadow: [
                 "0 0 0 0 rgba(var(--primary), 0)",
-                "0 0 0 6px rgba(var(--primary), 0.15)",
+                "0 0 0 8px rgba(var(--primary), 0.2)",
                 "0 0 0 0 rgba(var(--primary), 0)"
               ]
             }}
-            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, delay: 0.3 }}
-            aria-label="Вниз к преимуществам"
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1.5 }}
           >
-            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            <div className="flex flex-col items-center py-3 px-5">
+              <Send className="h-5 w-5 text-charcoal mb-1" />
+              <span className="text-sm font-semibold text-charcoal whitespace-nowrap">Оставить заявку!</span>
+            </div>
           </motion.button>
         </div>
 
@@ -1094,6 +1192,6 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           )}
         </AnimatePresence>
       </motion.main>
-    </motion.div>
+    </motion.section>
   );
 }
