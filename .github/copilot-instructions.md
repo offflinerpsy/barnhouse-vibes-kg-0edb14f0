@@ -187,3 +187,120 @@ Instagram: @eraconcepthome
 ---
 
 *ERA Concept Home — Модульные дома в Кыргызстане*
+
+---
+
+## 🔐 GitHub Authentication
+
+```
+Repository: offflinerpsy/barnhouse-vibes-kg-0edb14f0
+```
+
+**Токен хранится локально:** `~/.github_token`
+
+```powershell
+# Загрузить токен
+$env:GH_TOKEN = Get-Content $env:USERPROFILE\.github_token
+```
+
+---
+
+## 🌐 Production Server
+
+```
+Server IP:  185.196.117.49
+Domain:     era-home.kg
+Web Root:   /var/www/era-home.kg/
+SSH:        ssh root@185.196.117.49
+```
+
+---
+
+## 📋 Git Workflow (ОБЯЗАТЕЛЬНО!)
+
+### Branch Naming
+```
+fix/      — баг фиксы (fix/ios-modal-zindex)
+feature/  — новые фичи (feature/catalog-inline-form)
+refactor/ — рефакторинг (refactor/remove-autoscroll)
+hotfix/   — срочные фиксы на проде
+```
+
+### Commit Message Format
+```
+<type>(<scope>): <short description>
+
+[optional body with details]
+
+Closes #<issue-number>
+```
+
+**Types:** `fix`, `feat`, `refactor`, `style`, `docs`, `chore`
+
+### Полный Workflow
+
+1. **Создать Issue** (если нет):
+   ```bash
+   gh issue create --title "Bug: описание" --body "Детали..."
+   ```
+
+2. **Создать ветку**:
+   ```bash
+   git checkout main && git pull origin main
+   git checkout -b fix/issue-description
+   ```
+
+3. **Коммитить изменения**:
+   ```bash
+   git add <конкретные-файлы>  # НЕ git add .
+   git commit -m "fix(scope): description"
+   ```
+
+4. **Push и PR**:
+   ```bash
+   git push origin fix/issue-description
+   gh pr create --title "Fix: description" --body "Closes #N"
+   ```
+
+5. **Merge в main**:
+   ```bash
+   git checkout main && git pull origin main
+   git merge fix/issue-description --no-ff
+   git push origin main
+   ```
+
+6. **Deploy** (ТОЛЬКО изменённые файлы!):
+   ```bash
+   npm run build
+   scp dist/index.html root@185.196.117.49:/var/www/era-home.kg/
+   scp dist/assets/index-*.js dist/assets/index-*.css root@185.196.117.49:/var/www/era-home.kg/assets/
+   ```
+
+---
+
+## 🐛 Bug Tracking
+
+### Issue #3: iOS Safari Mobile Bugs
+
+**Проблемы:**
+1. ContactModal открывается ПОД каталогом — BLOCKING
+2. Auto-lock не срабатывает при скролле — BLOCKING
+
+**Решение:**
+- Заменить модалку на встроенную форму внутри CatalogAppView
+- Убрать JS автофиксацию, использовать CSS scroll-snap
+
+**Тестировать на:**
+- iPhone (Safari)
+- Samsung Galaxy (Chrome)
+
+---
+
+## 📁 Ключевые файлы для мобильных багов
+
+```
+src/components/landing/CatalogAppView.tsx  — Мобильный каталог
+src/components/landing/Catalog.tsx         — Desktop + роутинг
+src/components/landing/ContactModal.tsx    — Модалка
+src/components/landing/Hero.tsx            — Hero секция
+```
