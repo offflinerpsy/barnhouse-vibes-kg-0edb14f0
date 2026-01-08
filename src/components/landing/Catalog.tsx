@@ -17,6 +17,8 @@
  */
 
 import React, { useState, useEffect, useRef, forwardRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import CatalogAppView from "@/components/landing/CatalogAppView";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -1598,10 +1600,20 @@ function CustomProjectModal({ onClose }: CustomProjectModalProps) {
 }
 
 export function Catalog() {
+  const isMobile = useIsMobile();
   const [activeProject, setActiveProject] = useState<ProjectType>("all");
   const [activeAreaRange, setActiveAreaRange] = useState("all");
   const [selectedHouse, setSelectedHouse] = useState<HouseModel | null>(null);
   const [showCustomModal, setShowCustomModal] = useState(false);
+
+  // На мобильных устройствах показываем CatalogAppView
+  if (isMobile) {
+    return (
+      <section id="catalog" className="relative">
+        <CatalogAppView />
+      </section>
+    );
+  }
 
   // Фильтрация по проекту
   const projectFilteredHouses = activeProject === "all" 
