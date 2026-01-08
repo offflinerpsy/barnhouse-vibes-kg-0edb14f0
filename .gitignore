@@ -10,6 +10,14 @@ lerna-debug.log*
 # MCP Memory (личные данные)
 .memory/
 
+# =============================================================================
+# TEST PAGES - НЕ ДЛЯ ПРОДАКШЕНА (только локальная разработка)
+# =============================================================================
+src/pages/CatalogV2.tsx
+src/pages/CatalogMobile.tsx
+src/pages/TestCatalog.tsx
+src/components/catalog/
+
 node_modules
 dist
 dist-ssr
