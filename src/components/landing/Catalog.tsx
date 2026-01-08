@@ -1609,11 +1609,11 @@ export function Catalog() {
   const [contactOpen, setContactOpen] = useState(false);
 
   // На мобильных устройствах показываем CatalogAppView
+  // (ContactModal is now embedded inside CatalogAppView as InlineMobileContactForm)
   if (isMobile) {
     return (
       <section id="catalog" className="relative">
-        <CatalogAppView contactOpen={contactOpen} onContactChange={setContactOpen} />
-        <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
+        <CatalogAppView />
       </section>
     );
   }

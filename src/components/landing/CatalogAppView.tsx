@@ -1,6 +1,7 @@
 /**
- * ERA Mobile Catalog — Instagram/TikTok style (v2 - Polished)
- * Premium glassmorphism UI with refined spacing and hierarchy
+ * ERA Mobile Catalog — Instagram/TikTok style (v3 - Inline Form)
+ * Fixed iOS Safari issues: form is now INSIDE the catalog section
+ * No z-index battles, no stacking context issues
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, forwardRef } from "react";
@@ -17,7 +18,11 @@ import {
   X,
   Maximize2,
   Layers,
+  CheckCircle,
+  ArrowDown,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { 
   CATALOG_MODELS, 
   CatalogModel, 
@@ -28,8 +33,6 @@ import {
 
 interface CatalogAppViewProps {
   onClose?: () => void;
-  contactOpen: boolean;
-  onContactChange: (open: boolean) => void;
 }
 
 // Alias for backward compatibility within this file
@@ -704,7 +707,206 @@ function ZoomableLightbox({
   );
 }
 
-export default function CatalogAppView({ onClose, contactOpen, onContactChange }: CatalogAppViewProps) {
+// ================================
+// INLINE CONTACT FORM (iOS FIX)
+// ================================
+// This form renders INSIDE the catalog section
+// Same stacking context = no z-index issues on iOS Safari
+
+interface InlineMobileFormProps {
+  modelName: string;
+  modelArea: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+function InlineMobileContactForm({ modelName, modelArea, onClose, onSuccess }: InlineMobileFormProps) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contactMethods, setContactMethods] = useState<string[]>(["phone"]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  const toggleMethod = (method: string) => {
+    setContactMethods(prev => 
+      prev.includes(method) 
+        ? prev.filter(m => m !== method)
+        : [...prev, method]
+    );
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    
+    if (!name.trim()) {
+      setError("Введите ваше имя");
+      return;
+    }
+    if (!phone.trim() || phone.length < 10) {
+      setError("Введите корректный номер телефона");
+      return;
+    }
+    if (contactMethods.length === 0) {
+      setError("Выберите способ связи");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    console.log("Form submitted:", { name, phone, contactMethods, modelName, modelArea });
+    setIsSubmitting(false);
+    onSuccess();
+  };
+
+  return (
+    <motion.div 
+      className="absolute inset-0 z-[100] bg-charcoal flex flex-col"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      style={{ 
+        paddingTop: "calc(env(safe-area-inset-top) + 16px)",
+        paddingBottom: "env(safe-area-inset-bottom)"
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pb-4">
+        <button 
+          onClick={onClose}
+          className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center"
+        >
+          <X className="w-5 h-5 text-white" />
+        </button>
+        <h2 className="text-lg font-semibold text-white">Заявка на консультацию</h2>
+        <div className="w-10" />
+      </div>
+
+      {/* Model info */}
+      <div className="px-4 pb-4">
+        <div className="bg-white/5 rounded-2xl p-4">
+          <p className="text-sm text-white/60">Выбранная модель:</p>
+          <p className="text-lg font-semibold text-primary">{modelName} — {modelArea}м²</p>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="flex-1 flex flex-col px-4 overflow-y-auto">
+        <div className="space-y-4 flex-1">
+          <div>
+            <label className="block text-sm text-white/60 mb-2">Ваше имя</label>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Введите имя"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-white/60 mb-2">Телефон</label>
+            <Input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+996 XXX XXX XXX"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-white/60 mb-3">Как с вами связаться?</label>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { id: "phone", label: "Звонок", icon: Phone },
+                { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+                { id: "telegram", label: "Telegram", icon: Send },
+              ].map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => toggleMethod(id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full transition-all ${
+                    contactMethods.includes(id)
+                      ? "bg-primary text-charcoal"
+                      : "bg-white/5 text-white/60 border border-white/10"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <motion.p 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-red-400 text-sm"
+            >
+              {error}
+            </motion.p>
+          )}
+        </div>
+
+        {/* Submit button */}
+        <div className="pt-4 pb-4">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full h-14 rounded-2xl bg-primary text-charcoal font-semibold text-lg hover:bg-primary/90 disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-6 h-6 border-2 border-charcoal/30 border-t-charcoal rounded-full"
+              />
+            ) : (
+              "Отправить заявку"
+            )}
+          </Button>
+        </div>
+      </form>
+    </motion.div>
+  );
+}
+
+// Success screen after form submission
+function SuccessScreen({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div 
+      className="absolute inset-0 z-[100] bg-charcoal flex flex-col items-center justify-center px-4"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+    >
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.2, type: "spring" }}
+        className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
+      >
+        <CheckCircle className="w-10 h-10 text-green-500" />
+      </motion.div>
+      <h2 className="text-2xl font-bold text-white mb-2">Заявка отправлена!</h2>
+      <p className="text-white/60 text-center mb-8">Мы свяжемся с вами в ближайшее время</p>
+      <Button
+        onClick={onClose}
+        className="px-8 py-3 rounded-full bg-primary text-charcoal font-semibold"
+      >
+        Закрыть
+      </Button>
+    </motion.div>
+  );
+}
+
+export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   const [currentModelIndex, setCurrentModelIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [filter, setFilter] = useState<FilterType>("all");
@@ -713,10 +915,9 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [modelPickerOpen, setModelPickerOpen] = useState(false);
-  // Автоматическая фиксация каталога при 30% видимости
-  const [isLocked, setIsLocked] = useState(false);
-  const [showUnlockTooltip, setShowUnlockTooltip] = useState(false);
-  const isLockedRef = useRef(false);
+  // Inline form state (iOS Safari fix: form is inside catalog, not external modal)
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   const filteredModels = useMemo(() => applyCatalogFilter(ERA_MODELS, filter), [filter]);
 
@@ -773,142 +974,26 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
   // Ref для каталога
   const catalogRef = useRef<HTMLDivElement>(null);
 
-  // Автофиксация каталога при 30% видимости на экране
-  // iOS Safari FIX: IntersectionObserver has bugs with transform, use scroll event as fallback
-  useEffect(() => {
-    const el = catalogRef.current;
-    if (!el) return;
-
-    // iOS Safari detection
-    const isIOSSafari = /iPad|iPhone|iPod/.test(navigator.userAgent) && 
-                        !('MSStream' in window) &&
-                        /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-    // Use scroll event listener for iOS Safari (more reliable)
-    if (isIOSSafari) {
-      const handleScroll = () => {
-        if (isLockedRef.current) return;
-        
-        const rect = el.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const visibleHeight = Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0);
-        const elementHeight = rect.height;
-        const visibilityRatio = Math.max(0, visibleHeight / elementHeight);
-        
-        // Lock when 30% visible
-        if (visibilityRatio >= 0.3) {
-          isLockedRef.current = true;
-          setIsLocked(true);
-          triggerHaptic();
-        }
-      };
-
-      // Use passive listener for better scroll performance
-      window.addEventListener('scroll', handleScroll, { passive: true });
-      // Also check on touch events for iOS
-      document.addEventListener('touchmove', handleScroll, { passive: true });
-      
-      // Initial check
-      handleScroll();
-      
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-        document.removeEventListener('touchmove', handleScroll);
-      };
-    }
-
-    // For non-iOS browsers, use IntersectionObserver (more efficient)
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.intersectionRatio >= 0.3 && !isLockedRef.current) {
-          isLockedRef.current = true;
-          setIsLocked(true);
-          triggerHaptic();
-        }
-      },
-      { 
-        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5], 
-        // iOS Safari fix: avoid percentage rootMargin
-        rootMargin: "0px 0px 0px 0px" 
-      }
-    );
-
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [triggerHaptic]);
-
-  // Блокируем скролл страницы, когда каталог закреплён
-  useEffect(() => {
-    if (!isLocked) return;
-
-    const html = document.documentElement;
-    const body = document.body;
-
-    // Сохраняем предыдущие значения
-    const prevHtmlOverflow = html.style.overflow;
-    const prevBodyOverflow = body.style.overflow;
-    const prevHtmlOverscroll = html.style.overscrollBehavior;
-    const prevBodyOverscroll = body.style.overscrollBehavior;
-    const prevTouchAction = body.style.touchAction;
-
-    // Блокируем скролл
-    html.style.overflow = "hidden";
-    body.style.overflow = "hidden";
-    html.style.overscrollBehavior = "none";
-    body.style.overscrollBehavior = "none";
-    body.style.touchAction = "none";
-
-    return () => {
-      html.style.overflow = prevHtmlOverflow;
-      body.style.overflow = prevBodyOverflow;
-      html.style.overscrollBehavior = prevHtmlOverscroll;
-      body.style.overscrollBehavior = prevBodyOverscroll;
-      body.style.touchAction = prevTouchAction;
-    };
-  }, [isLocked]);
-
-  // Плавный выход из каталога - скролл на следующий блок
+  // Simple exit handler - just scroll to next section
   const handleExitCatalog = useCallback(() => {
     triggerHaptic();
-    setIsLocked(false);
-    isLockedRef.current = false;
-    
-    // Плавно скроллим на следующий блок после каталога
     setTimeout(() => {
       const nextSection = document.getElementById('benefits') || document.getElementById('advantages');
       if (nextSection) {
         nextSection.scrollIntoView({ behavior: 'smooth' });
       }
-    }, 100);
+    }, 50);
   }, [triggerHaptic]);
 
   return (
-      // Каталог с ручным режимом закрепления (isLocked)
-      // iOS Safari FIX: Use regular section instead of motion.section to avoid transform issues
+      // Simple full-height section with scroll-snap
+      // NO auto-lock, NO complex JS - just CSS scroll-snap for "capture" effect
       <section 
         ref={catalogRef}
         id="catalog"
-        className={`bg-charcoal text-white overflow-hidden animate-in fade-in-0 duration-500 ${
-          isLocked 
-            ? 'fixed z-[100]' 
-            : 'relative h-screen snap-start z-[60]'
-        }`}
-        style={isLocked ? { 
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100%',
-          height: '100%',
-          overscrollBehavior: 'contain',
-          touchAction: 'none',
-          // iOS Safari: force GPU compositing without breaking stacking
-          WebkitTransform: 'translateZ(0)',
-          transform: 'translateZ(0)'
-        } : { 
-          height: '100dvh',
-          overscrollBehavior: 'contain',
-          touchAction: 'pan-y'
+        className="relative bg-charcoal text-white overflow-hidden h-[100dvh] snap-start snap-always"
+        style={{ 
+          overscrollBehavior: 'contain'
         }}
       >
       {/* Model indicator dots (compact) */}
@@ -962,40 +1047,6 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
             {/* Spacer - no button here anymore */}
             {!onClose && <div className="w-10" />}
           </div>
-          
-          {/* Кнопка выхода - показывается только когда каталог закреплён */}
-          {isLocked && (
-            <div className="flex justify-end px-3 mt-2">
-              <motion.button
-                onClick={() => { 
-                  handleExitCatalog();
-                  setShowUnlockTooltip(false);
-                }}
-                onPointerEnter={() => setShowUnlockTooltip(true)}
-                onPointerLeave={() => setShowUnlockTooltip(false)}
-                className={`relative flex items-center gap-2 px-3 py-2 rounded-xl bg-primary`}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <X className="w-4 h-4 text-charcoal" />
-                <span className="text-xs font-medium text-charcoal">Выйти из каталога</span>
-                {/* Tooltip */}
-                <AnimatePresence>
-                  {showUnlockTooltip && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                      className={`absolute top-full right-0 mt-2 px-3 py-2 rounded-lg ${glassPanel} max-w-[200px] z-50`}
-                    >
-                      <p className="text-xs text-white/70">Продолжить просмотр сайта</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            </div>
-          )}
         </div>
       </header>
 
@@ -1052,7 +1103,7 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
             disabled={floorPlans.length === 0}
           />
           <ActionButton icon={Images} label="Фото" onClick={() => setShowGallery(true)} animated />
-          <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => onContactChange(true)} />
+          <ActionButton icon={FileText} label="Заявка" variant="primary" onClick={() => setShowContactForm(true)} />
           <ActionButton icon={MessageCircle} label="WA" onClick={handleWhatsApp} />
           <ActionButton icon={Send} label="TG" onClick={handleTelegram} />
           <ActionButton icon={Phone} label="Call" onClick={handleCall} />
@@ -1112,7 +1163,7 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
 
           {/* Submit application button */}
           <motion.button
-            onClick={() => { triggerHaptic(); onContactChange(true); }}
+            onClick={() => { triggerHaptic(); setShowContactForm(true); }}
             className={`flex-none rounded-2xl bg-primary active:scale-[0.98] transition-transform`}
             whileTap={{ scale: 0.95 }}
             animate={{ 
@@ -1238,7 +1289,43 @@ export default function CatalogAppView({ onClose, contactOpen, onContactChange }
             />
           )}
         </AnimatePresence>
+
+        {/* Inline Contact Form (iOS Safari fix - renders INSIDE catalog) */}
+        <AnimatePresence>
+          {showContactForm && !showSuccessScreen && (
+            <InlineMobileContactForm
+              modelName={currentModel.name}
+              modelArea={currentModel.area}
+              onClose={() => setShowContactForm(false)}
+              onSuccess={() => {
+                setShowContactForm(false);
+                setShowSuccessScreen(true);
+              }}
+            />
+          )}
+          {showSuccessScreen && (
+            <SuccessScreen 
+              onClose={() => {
+                setShowSuccessScreen(false);
+                handleExitCatalog();
+              }} 
+            />
+          )}
+        </AnimatePresence>
       </motion.main>
+
+      {/* "Continue" button to exit catalog */}
+      <motion.button
+        onClick={handleExitCatalog}
+        className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
+        style={{ bottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+      >
+        <span className="text-sm text-white/70">Далее</span>
+        <ArrowDown className="w-4 h-4 text-white/70" />
+      </motion.button>
     </section>
   );
 }
