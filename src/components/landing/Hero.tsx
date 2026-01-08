@@ -103,7 +103,7 @@ export function Hero() {
   }, [nextSlide]);
 
   return (
-    <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden">
+    <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden max-w-full">
       {/* Left Content Panel - Brown/Dark */}
       <motion.div 
         style={{ y: contentY }}
@@ -201,7 +201,7 @@ export function Hero() {
       <div className="hidden lg:block w-1/2 relative overflow-hidden">
         <motion.div
           style={{ y: imageY }}
-          className="absolute inset-0"
+          className="absolute inset-0 overflow-hidden"
         >
           <AnimatePresence mode="wait">
             <motion.div
@@ -210,16 +210,16 @@ export function Hero() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.2 }}
-              className="absolute inset-0"
+              className="absolute inset-0 overflow-hidden"
             >
               <motion.div
                 initial={slides[currentSlide].animation.initial}
                 animate={slides[currentSlide].animation.animate}
                 transition={{
                   duration: SLIDE_DURATION / 1000,
-                  ease: [0.25, 0.1, 0.25, 1], // Плавный easing для Ken Burns
+                  ease: [0.25, 0.1, 0.25, 1],
                 }}
-                className="absolute inset-[-20%]"
+                className="absolute inset-0 scale-[1.15]"
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center will-change-transform"
@@ -265,33 +265,35 @@ export function Hero() {
 
       {/* Mobile: Image Gallery below content */}
       <div className="lg:hidden absolute bottom-0 left-0 right-0 h-[280px] sm:h-[340px] overflow-hidden z-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0"
-          >
+        <div className="absolute inset-0 overflow-hidden">
+          <AnimatePresence mode="wait">
             <motion.div
-              initial={slides[currentSlide].animation.initial}
-              animate={slides[currentSlide].animation.animate}
-              transition={{
-                duration: SLIDE_DURATION / 1000,
-                ease: [0.25, 0.1, 0.25, 1], // Плавный easing для Ken Burns
-              }}
-              className="absolute inset-[-20%]"
+              key={`mobile-${currentSlide}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1 }}
+              className="absolute inset-0 overflow-hidden"
             >
-              <div
-                className="absolute inset-0 bg-cover bg-center will-change-transform"
-                style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
-              />
+              <motion.div
+                initial={slides[currentSlide].animation.initial}
+                animate={slides[currentSlide].animation.animate}
+                transition={{
+                  duration: SLIDE_DURATION / 1000,
+                  ease: [0.25, 0.1, 0.25, 1],
+                }}
+                className="absolute inset-0 scale-[1.15]"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center will-change-transform"
+                  style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
+                />
+              </motion.div>
+              {/* Gradient overlay for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent pointer-events-none" />
             </motion.div>
-            {/* Gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent pointer-events-none" />
-          </motion.div>
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
 
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-20">
