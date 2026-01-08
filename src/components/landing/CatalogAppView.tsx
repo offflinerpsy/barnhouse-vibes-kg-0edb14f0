@@ -767,7 +767,13 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-charcoal text-white overflow-hidden">
+    <motion.div 
+      data-catalog-overlay
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      className="fixed inset-0 z-50 bg-charcoal text-white overflow-hidden"
+    >
       <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
 
       {/* Model indicator dots (compact) */}
@@ -912,7 +918,15 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <motion.button
             onClick={() => {
               triggerHaptic();
-              document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+              // Скрываем fixed overlay и скроллим к hero
+              const catalogOverlay = document.querySelector('[data-catalog-overlay]') as HTMLElement;
+              if (catalogOverlay) {
+                catalogOverlay.style.position = 'absolute';
+                catalogOverlay.style.height = '100vh';
+              }
+              setTimeout(() => {
+                document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+              }, 50);
             }}
             className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
             animate={{ 
@@ -961,7 +975,15 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <motion.button
             onClick={() => {
               triggerHaptic();
-              document.getElementById("advantages")?.scrollIntoView({ behavior: "smooth" });
+              // Скрываем fixed overlay и скроллим к advantages
+              const catalogOverlay = document.querySelector('[data-catalog-overlay]') as HTMLElement;
+              if (catalogOverlay) {
+                catalogOverlay.style.position = 'absolute';
+                catalogOverlay.style.height = '100vh';
+              }
+              setTimeout(() => {
+                document.getElementById("advantages")?.scrollIntoView({ behavior: "smooth" });
+              }, 50);
             }}
             className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
             animate={{ 
