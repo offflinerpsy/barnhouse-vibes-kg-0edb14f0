@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform, MotionConfig } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
 // Фотореалистичные изображения барнхаусов в Киргизии (все сезоны)
@@ -97,23 +97,19 @@ export function Hero() {
     setCurrentSlide((prev) => (prev + 1) % slides.length);
   }, []);
 
-  const activeSlide = slides[currentSlide];
-  const activeSlideSrc = `${activeSlide.image}?v=${KENBURNS_VERSION}`;
-
   useEffect(() => {
     const interval = setInterval(nextSlide, SLIDE_DURATION);
     return () => clearInterval(interval);
   }, [nextSlide]);
 
   return (
-    <MotionConfig reducedMotion="never">
-      <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden max-w-full snap-start">
+    <section id="hero" ref={sectionRef} className="relative min-h-screen flex overflow-hidden max-w-full snap-start">
       {/* Left Content Panel - Brown/Dark */}
-              <motion.img
-                src={activeSlideSrc}
+      <motion.div 
+        style={{ y: contentY }}
         className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-6 sm:px-10 md:px-16 lg:px-16 xl:px-24 py-20 pb-[320px] sm:pb-[380px] md:py-24 md:pb-24 lg:pb-24 bg-charcoal"
-                initial={activeSlide.animation.initial}
-                animate={activeSlide.animation.animate}
+      >
+        <div className="relative z-10 max-w-lg xl:max-w-xl">
           {/* Tagline */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -218,7 +214,7 @@ export function Hero() {
             >
               <motion.div
                 initial={slides[currentSlide].animation.initial}
-                animate={activeSlide.animation.animate}
+                animate={slides[currentSlide].animation.animate}
                 transition={{
                   duration: SLIDE_DURATION / 1000,
                   ease: [0.25, 0.1, 0.25, 1],
@@ -227,7 +223,7 @@ export function Hero() {
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center will-change-transform"
-                  style={{ backgroundImage: `url('${activeSlideSrc}')` }}
+                  style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
                 />
               </motion.div>
               {/* Subtle vignette overlay */}
@@ -279,18 +275,20 @@ export function Hero() {
               transition={{ duration: 1 }}
               className="absolute inset-0 overflow-hidden"
             >
-              <motion.img
-                src={slides[currentSlide].image}
-                alt="ERA Concept Home"
-                src={activeSlideSrc}
-                initial={activeSlide.animation.initial}
-                animate={activeSlide.animation.animate}
+              <motion.div
+                initial={slides[currentSlide].animation.initial}
+                animate={slides[currentSlide].animation.animate}
                 transition={{
                   duration: SLIDE_DURATION / 1000,
                   ease: [0.25, 0.1, 0.25, 1],
                 }}
-                className="absolute inset-0 w-full h-full object-cover scale-[1.15] will-change-transform"
-              />
+                className="absolute inset-0 scale-[1.15]"
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center will-change-transform"
+                  style={{ backgroundImage: `url('${slides[currentSlide].image}')` }}
+                />
+              </motion.div>
               {/* Gradient overlay for text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-charcoal/40 to-transparent pointer-events-none" />
             </motion.div>
@@ -326,7 +324,6 @@ export function Hero() {
       </div>
 
       <ContactModal open={isModalOpen} onOpenChange={setIsModalOpen} />
-      </section>
-    </MotionConfig>
+    </section>
   );
 }
