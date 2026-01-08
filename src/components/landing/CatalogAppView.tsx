@@ -91,6 +91,7 @@ function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" |
 // Glass panel base styles
 const glassPanel = "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.06] backdrop-blur-xl border border-white/[0.1]";
+const glassPanelUltraLight = "bg-white/[0.03] backdrop-blur-xl border border-white/[0.06]";
 
 // Skeleton loading component for images (forwardRef for Framer Motion compatibility)
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
@@ -842,11 +843,11 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
               className="absolute inset-0 w-full h-full cursor-pointer"
               aria-label="Открыть галерею"
             >
-              {/* object-contain on small screens to show full photo, object-cover on larger */}
+              {/* object-cover with bottom focus to show house, less sky */}
               <ImageWithSkeleton 
                 src={mainPhoto} 
                 alt={`${currentModel.name} ${currentModel.area}м²`} 
-                className="h-full w-full object-contain sm:object-cover" 
+                className="h-full w-full object-cover object-[center_70%]" 
                 draggable={false} 
                 loading="eager" 
               />
@@ -882,24 +883,21 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           <ActionButton icon={Phone} label="Call" onClick={handleCall} />
         </aside>
 
-        {/* Bottom info panel - positioned above catalog drawer */}
-        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(120px + env(safe-area-inset-bottom))" }}>
-          <div className="px-4">
-            <div className={`inline-block rounded-2xl ${glassPanel} p-4`}>
-              {/* Model header */}
-              <div className="flex items-center gap-3 mb-3">
-                <HouseSchematic model={currentModel} size="md" />
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <h1 className="text-xl font-bold text-white">{currentModel.name}</h1>
-                    <span className="text-xl font-bold text-primary leading-snug inline-block pb-[1px]">{currentModel.area}м²</span>
-                  </div>
-                  <p className="text-sm text-white/50">{currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse</p>
+        {/* Bottom info panel - compact and ultra-transparent */}
+        <section className="absolute left-0 right-20 z-20" style={{ bottom: "calc(115px + env(safe-area-inset-bottom))" }}>
+          <div className="px-3">
+            <div className={`inline-block rounded-xl ${glassPanelUltraLight} px-3 py-2`}>
+              {/* Compact model header */}
+              <div className="flex items-center gap-2.5">
+                <HouseSchematic model={currentModel} size="sm" />
+                <div className="flex items-baseline gap-2">
+                  <h1 className="text-lg font-bold text-white">{currentModel.name}</h1>
+                  <span className="text-lg font-bold text-primary">{currentModel.area}м²</span>
                 </div>
               </div>
-
-              {/* Info chips - force nowrap to always show in one row */}
-              <div className="flex flex-nowrap gap-1.5">
+              <p className="text-xs text-white/40 mt-0.5 mb-1.5">{currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse</p>
+              {/* Info chips - compact */}
+              <div className="flex flex-nowrap gap-1">
                 <InfoChip icon={<FloorIcon floors={currentModel.floors} />} value={currentModel.floors} label="эт" />
                 <InfoChip icon={<BedroomIcon />} value={currentModel.bedrooms} label="сп" />
                 <InfoChip icon={<BathroomIcon />} value={currentModel.bathrooms} label="с/у" />
@@ -908,38 +906,79 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           </div>
         </section>
 
-        {/* Swipeable catalog handle at bottom */}
-        <motion.button
-          onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
-          className={`absolute left-4 right-4 z-30 rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
-          style={{ bottom: "calc(8px + env(safe-area-inset-bottom))" }}
-          onPanEnd={(_, info) => {
-            if (info.offset.y < -30 || info.velocity.y < -300) {
+        {/* Swipeable catalog handle at bottom + exit buttons */}
+        <div className="absolute left-3 right-3 z-30 flex items-center gap-2" style={{ bottom: "calc(8px + env(safe-area-inset-bottom))" }}>
+          {/* Exit up button - go to hero */}
+          <motion.button
+            onClick={() => {
               triggerHaptic();
-              setModelPickerOpen(true);
-            }
-          }}
-        >
-          <div className="flex flex-col items-center py-4 px-6">
-            {/* Animated handle bar */}
-            <motion.div 
-              className="w-12 h-1.5 rounded-full bg-white/40 mb-3"
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
-            />
-            
-            {/* Text hint */}
-            <div className="flex items-center gap-2">
-              <Grid3X3 className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-white/80">Развернуть каталог моделей</span>
+              document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+            animate={{ 
+              boxShadow: [
+                "0 0 0 0 rgba(var(--primary), 0)",
+                "0 0 0 6px rgba(var(--primary), 0.15)",
+                "0 0 0 0 rgba(var(--primary), 0)"
+              ]
+            }}
+            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
+            aria-label="Вверх к началу"
+          >
+            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="18 15 12 9 6 15"/>
+            </svg>
+          </motion.button>
+
+          {/* Catalog picker button */}
+          <motion.button
+            onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
+            className={`flex-1 rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
+            onPanEnd={(_, info) => {
+              if (info.offset.y < -30 || info.velocity.y < -300) {
+                triggerHaptic();
+                setModelPickerOpen(true);
+              }
+            }}
+          >
+            <div className="flex flex-col items-center py-3 px-4">
+              <motion.div 
+                className="w-10 h-1 rounded-full bg-white/40 mb-2"
+                animate={{ y: [0, -3, 0] }}
+                transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
+              />
+              <div className="flex items-center gap-2">
+                <Grid3X3 className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-white/80">Каталог моделей</span>
+              </div>
+              <span className="text-xs text-white/50 mt-0.5">
+                {safeIndex + 1} из {filteredModels.length}
+              </span>
             </div>
-            
-            {/* Counter */}
-            <span className="text-xs text-white/50 mt-1">
-              {safeIndex + 1} из {filteredModels.length} • свайп вверх ↑
-            </span>
-          </div>
-        </motion.button>
+          </motion.button>
+
+          {/* Exit down button - go to next section */}
+          <motion.button
+            onClick={() => {
+              triggerHaptic();
+              document.getElementById("advantages")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className={`flex-none w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+            animate={{ 
+              boxShadow: [
+                "0 0 0 0 rgba(var(--primary), 0)",
+                "0 0 0 6px rgba(var(--primary), 0.15)",
+                "0 0 0 0 rgba(var(--primary), 0)"
+              ]
+            }}
+            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1, delay: 0.3 }}
+            aria-label="Вниз к преимуществам"
+          >
+            <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </motion.button>
+        </div>
 
         {/* Gallery sheet */}
         <AnimatePresence>

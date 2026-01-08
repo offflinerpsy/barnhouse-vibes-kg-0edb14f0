@@ -73,15 +73,19 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
           onClick={() => onOpenChange(false)}
         />
 
-        {/* Modal content with animation */}
-        <div className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] w-full max-w-lg px-4">
-          <div
-            className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl animate-in fade-in-0 zoom-in-90 duration-500 ease-out"
-            style={{
-              boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px",
-            }}
-          >
-            <div className="relative bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl overflow-hidden">
+        {/* Modal content with animation - scrollable for mobile */}
+        <div 
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain"
+          style={{ paddingTop: "env(safe-area-inset-top, 16px)", paddingBottom: "env(safe-area-inset-bottom, 16px)" }}
+        >
+          <div className="w-full max-w-lg px-4 py-4 my-auto min-h-fit">
+            <div
+              className="relative bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold-dark))] to-[hsl(var(--gold))] p-[2px] rounded-2xl animate-in fade-in-0 zoom-in-90 duration-500 ease-out"
+              style={{
+                boxShadow: "rgba(0, 0, 0, 0.56) 0px 22px 70px 4px",
+              }}
+            >
+              <div className="relative bg-gradient-to-br from-[hsl(var(--gold))] to-[hsl(var(--gold-dark))] rounded-2xl overflow-hidden">
               {/* Decorative elements */}
               <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-radial from-white/20 to-transparent rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-radial from-white/10 to-transparent rounded-full blur-xl translate-y-1/2 -translate-x-1/2" />
@@ -94,29 +98,29 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 <X className="h-5 w-5 text-white" />
               </button>
 
-              {/* Header with company logo */}
-              <div className="relative px-6 pt-8 pb-6 text-center">
-                <div className="mx-auto mb-4 w-fit rounded-2xl bg-white/95 p-3 shadow-lg animate-in zoom-in-50 duration-700 delay-150">
+              {/* Header with company logo - compact for mobile */}
+              <div className="relative px-5 pt-6 pb-4 text-center">
+                <div className="mx-auto mb-3 w-fit rounded-xl bg-white/95 p-2 shadow-lg animate-in zoom-in-50 duration-700 delay-150">
                   <img
                     src={logoEra}
                     alt="ERA Concept Home"
-                    className="h-12 md:h-14 w-auto object-contain"
+                    className="h-10 w-auto object-contain"
                     loading="eager"
                     decoding="async"
                   />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 font-rising tracking-wide">
+                <h2 className="text-xl md:text-2xl font-bold text-white mb-1 font-rising tracking-wide">
                   Оставить заявку
                 </h2>
-                <p className="text-white/80 text-sm">
+                <p className="text-white/70 text-xs">
                   Мы свяжемся с вами в течение 15 минут
                 </p>
               </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit} className="relative px-6 pb-8">
+              {/* Form - compact for mobile */}
+              <form onSubmit={handleSubmit} className="relative px-5 pb-6">
                 {/* White form container */}
-                <div className="bg-white rounded-xl p-5 space-y-4 shadow-lg animate-in slide-in-from-bottom-4 duration-500 delay-200">
+                <div className="bg-white rounded-xl p-4 space-y-3 shadow-lg animate-in slide-in-from-bottom-4 duration-500 delay-200">
                   {/* Name input */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground/70">
@@ -210,11 +214,11 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-14 mt-5 bg-white hover:bg-white/90 text-[hsl(var(--gold-dark))] font-rising font-bold text-lg tracking-wide rounded-xl shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl disabled:opacity-70 animate-in slide-in-from-bottom-2 duration-500 delay-300"
+                  className="w-full h-12 mt-4 bg-white hover:bg-white/90 text-[hsl(var(--gold-dark))] font-rising font-bold text-base tracking-wide rounded-xl shadow-xl transition-all hover:scale-[1.02] hover:shadow-2xl disabled:opacity-70 animate-in slide-in-from-bottom-2 duration-500 delay-300"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
                       Отправляем...
                     </span>
                   ) : (
@@ -223,11 +227,12 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
                 </Button>
 
                 {/* Privacy note */}
-                <p className="text-center text-white/60 text-xs mt-4">
+                <p className="text-center text-white/60 text-[10px] mt-3">
                   Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
                 </p>
               </form>
             </div>
+          </div>
           </div>
         </div>
       </DialogPortal>
