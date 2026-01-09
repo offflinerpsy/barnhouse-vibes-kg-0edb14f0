@@ -1,6 +1,6 @@
 ---
 description: ERA Concept Home KG - инструкции для AI-агента
-applyTo: '**/barnhouse-vibes-kg/**'
+applyTo: '**'
 ---
 
 # ERA Concept Home KG — Инструкции для AI-агента
