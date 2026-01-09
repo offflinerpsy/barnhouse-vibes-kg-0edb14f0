@@ -1,10 +1,11 @@
 /**
- * ERA Mobile Catalog V2 — Simplified UX
+ * ERA Mobile Catalog V2 — iPhone-style UX
  * Changes from V1:
- * - Right rail: only Photo + Plan buttons (2 instead of 6)
- * - Bottom: 3 clear buttons - Catalog, Contact, Submit
- * - Contact button expands to show Call/WA/TG options
- * - No TG icon on submit button, cleaner design
+ * - Right rail: Animated Photo + Plan buttons with cycling text
+ * - Filter + Catalog merged at top
+ * - Bottom: 2 buttons like iPhone - Call & Message
+ * - Call expands to show Call/WA/TG options
+ * - Message opens the form modal
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, forwardRef } from "react";
@@ -22,7 +23,7 @@ import {
   Layers,
   CheckCircle,
   ChevronUp,
-  PhoneCall,
+  MessageSquare,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -121,25 +122,68 @@ const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTM
 );
 ImageWithSkeleton.displayName = "ImageWithSkeleton";
 
-// Simplified action button - clearer, more button-like
-const ActionButtonV2 = forwardRef<HTMLButtonElement, {
+// Animated action button with cycling text and pulsing icon
+const AnimatedActionButton = forwardRef<HTMLButtonElement, {
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
+  labels: string[];
   onClick: () => void;
   disabled?: boolean;
-}>(({ icon: Icon, label, onClick, disabled = false }, ref) => (
-  <motion.button 
-    ref={ref} 
-    onClick={disabled ? undefined : onClick} 
-    disabled={disabled}
-    className={`flex items-center gap-2 px-4 py-3 rounded-2xl ${glassPanel} ${disabled ? "opacity-40 cursor-not-allowed" : "active:scale-95"} transition-all`}
-    whileTap={disabled ? {} : { scale: 0.95 }}
-  >
-    <Icon className="h-5 w-5 text-primary" />
-    <span className="text-sm font-medium text-white">{label}</span>
-  </motion.button>
-));
-ActionButtonV2.displayName = "ActionButtonV2";
+  cycleInterval?: number;
+}>(({ icon: Icon, labels, onClick, disabled = false, cycleInterval = 2000 }, ref) => {
+  const [labelIndex, setLabelIndex] = useState(0);
+
+  useEffect(() => {
+    if (labels.length <= 1) return;
+    const interval = setInterval(() => {
+      setLabelIndex((prev) => (prev + 1) % labels.length);
+    }, cycleInterval);
+    return () => clearInterval(interval);
+  }, [labels.length, cycleInterval]);
+
+  return (
+    <motion.button 
+      ref={ref} 
+      onClick={disabled ? undefined : onClick} 
+      disabled={disabled}
+      className={`flex items-center gap-3 px-5 py-4 rounded-2xl ${glassPanel} ${disabled ? "opacity-40 cursor-not-allowed" : "active:scale-95"} transition-all overflow-hidden`}
+      whileTap={disabled ? {} : { scale: 0.95 }}
+      whileHover={disabled ? {} : { scale: 1.02 }}
+    >
+      {/* Animated icon with page-flip effect */}
+      <motion.div
+        className="relative"
+        animate={{ 
+          rotateY: [0, 180, 360],
+        }}
+        transition={{ 
+          duration: 2, 
+          repeat: Infinity, 
+          repeatDelay: cycleInterval / 1000 - 2,
+          ease: "easeInOut"
+        }}
+      >
+        <Icon className="h-6 w-6 text-primary" />
+      </motion.div>
+      
+      {/* Cycling text with fade animation */}
+      <div className="relative h-5 min-w-[100px]">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={labelIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
+            className="absolute left-0 text-sm font-semibold text-white whitespace-nowrap"
+          >
+            {labels[labelIndex]}
+          </motion.span>
+        </AnimatePresence>
+      </div>
+    </motion.button>
+  );
+});
+AnimatedActionButton.displayName = "AnimatedActionButton";
 
 const InfoChip = forwardRef<HTMLDivElement, {
   icon: React.ReactNode;
@@ -844,16 +888,16 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           <ChevronRight className="h-5 w-5 text-white" />
         </button>
 
-        {/* RIGHT SIDE: Only 2 buttons - Photo & Plan */}
-        <aside className="absolute right-3 z-30 flex flex-col items-end gap-3" style={{ bottom: "calc(200px + env(safe-area-inset-bottom))" }}>
-          <ActionButtonV2 
+        {/* RIGHT SIDE: Animated Photo & Plan buttons */}
+        <aside className="absolute right-3 z-30 flex flex-col items-end gap-3" style={{ bottom: "calc(160px + env(safe-area-inset-bottom))" }}>
+          <AnimatedActionButton 
             icon={Images} 
-            label="Фото" 
+            labels={["Фото", "Смотреть фото"]}
             onClick={() => { setGalleryTab("photos"); setShowGallery(true); }} 
           />
-          <ActionButtonV2 
+          <AnimatedActionButton 
             icon={Layers} 
-            label="План" 
+            labels={["План", "Смотреть план"]}
             onClick={() => { setGalleryTab("plans"); setShowGallery(true); }} 
             disabled={floorPlans.length === 0}
           />
@@ -880,7 +924,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           </div>
         </section>
 
-        {/* BOTTOM: 3 clear buttons - Catalog, Contact, Submit */}
+        {/* BOTTOM: 2 buttons iPhone-style - Call & Message */}
         <div className="absolute left-3 right-3 z-30 flex flex-col gap-2" style={{ bottom: "calc(8px + env(safe-area-inset-bottom))" }}>
           {/* Contact options - expandable */}
           <AnimatePresence>
@@ -919,43 +963,47 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             )}
           </AnimatePresence>
 
-          {/* Main 3 buttons row */}
-          <div className="flex items-stretch gap-2">
-            {/* Catalog picker */}
+          {/* Model picker integrated button - shows current model */}
+          <motion.button
+            onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
+            className={`w-full rounded-2xl ${glassPanel} active:scale-[0.99] transition-transform`}
+            whileTap={{ scale: 0.99 }}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <Grid3X3 className="h-5 w-5 text-primary" />
+                <div className="text-left">
+                  <span className="text-sm font-semibold text-white">{currentModel.name}</span>
+                  <span className="text-primary font-bold ml-2">{currentModel.area}м²</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-white/50">
+                <span className="text-xs">{safeIndex + 1}/{filteredModels.length}</span>
+                <ChevronUp className="h-4 w-4" />
+              </div>
+            </div>
+          </motion.button>
+
+          {/* Main 2 buttons row - iPhone style */}
+          <div className="flex items-stretch gap-3">
+            {/* CALL button - expands to show options */}
             <motion.button
-              onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
-              className={`flex-1 rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
+              onClick={() => { triggerHaptic(); setContactExpanded(!contactExpanded); }}
+              className={`flex-1 h-16 rounded-2xl ${contactExpanded ? "bg-green-500/30 border-green-500/50" : glassPanel} active:scale-[0.98] transition-all border`}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="flex flex-col items-center py-3 px-3">
-                <ChevronUp className="h-4 w-4 text-white/50 mb-1" />
-                <div className="flex items-center gap-2">
-                  <Grid3X3 className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-white">Каталог</span>
-                </div>
-                <span className="text-xs text-white/40 mt-0.5">
-                  {safeIndex + 1} из {filteredModels.length}
+              <div className="flex flex-col items-center justify-center h-full gap-1">
+                <Phone className={`h-6 w-6 ${contactExpanded ? "text-green-400" : "text-green-400"}`} />
+                <span className={`text-sm font-semibold ${contactExpanded ? "text-green-400" : "text-white"}`}>
+                  Позвонить
                 </span>
               </div>
             </motion.button>
 
-            {/* Contact button - expands options */}
-            <motion.button
-              onClick={() => { triggerHaptic(); setContactExpanded(!contactExpanded); }}
-              className={`flex-1 rounded-2xl ${contactExpanded ? "bg-white/20" : glassPanel} active:scale-[0.98] transition-all`}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="flex flex-col items-center py-3 px-3">
-                <PhoneCall className={`h-5 w-5 mb-1 ${contactExpanded ? "text-primary" : "text-white/70"}`} />
-                <span className={`text-sm font-medium ${contactExpanded ? "text-white" : "text-white/80"}`}>Связаться</span>
-                <span className="text-xs text-white/40 mt-0.5">WA • TG • ☎</span>
-              </div>
-            </motion.button>
-
-            {/* Submit application - primary action, NO icon */}
+            {/* MESSAGE button - opens form modal */}
             <motion.button
               onClick={() => { triggerHaptic(); setShowContactForm(true); }}
-              className="flex-1 rounded-2xl bg-primary active:scale-[0.98] transition-transform"
+              className="flex-1 h-16 rounded-2xl bg-primary active:scale-[0.98] transition-transform"
               whileTap={{ scale: 0.95 }}
               animate={{ 
                 boxShadow: [
@@ -966,9 +1014,9 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
               }}
               transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
             >
-              <div className="flex flex-col items-center justify-center py-3 px-3 h-full">
-                <span className="text-base font-bold text-charcoal">Заявка</span>
-                <span className="text-xs text-charcoal/70 mt-0.5">консультация</span>
+              <div className="flex flex-col items-center justify-center h-full gap-1">
+                <MessageSquare className="h-6 w-6 text-charcoal" />
+                <span className="text-sm font-bold text-charcoal">Сообщение</span>
               </div>
             </motion.button>
           </div>

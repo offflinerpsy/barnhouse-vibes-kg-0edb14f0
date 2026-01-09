@@ -35,10 +35,10 @@ export default function TestModals() {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-warm-white mb-3 font-rising">
-            Каталог V2 — Упрощённый UX
+            Каталог V2 — iPhone-стиль UX
           </h1>
           <p className="text-warm-white/60 max-w-2xl mx-auto">
-            Тестовая версия с улучшенной навигацией. Изменения:
+            Тестовая версия с интуитивным интерфейсом в стиле iPhone:
           </p>
         </div>
 
@@ -53,23 +53,27 @@ export default function TestModals() {
               <ul className="space-y-3 mb-6 text-sm text-warm-white/70">
                 <li className="flex items-start gap-2">
                   <span className="text-primary">✓</span>
-                  <span>Справа только 2 кнопки: <strong className="text-white">Фото</strong> и <strong className="text-white">План</strong></span>
+                  <span><strong className="text-white">Анимированные кнопки</strong> справа — текст меняется каждые 2 сек: «Фото» → «Смотреть фото»</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">✓</span>
-                  <span>Внизу 3 чёткие кнопки: <strong className="text-white">Каталог</strong>, <strong className="text-white">Связаться</strong>, <strong className="text-white">Заявка</strong></span>
+                  <span><strong className="text-white">Иконки крутятся</strong> — привлекают внимание как страницы перелистываются</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">✓</span>
-                  <span><strong className="text-white">Связаться</strong> раскрывает выбор: Звонок, WA, TG</span>
+                  <span><strong className="text-white">Каталог + фильтр вместе</strong> — показывает текущую модель, нажми чтобы выбрать</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">✓</span>
-                  <span>Кнопка <strong className="text-white">Заявка</strong> без иконки TG, симметричная</span>
+                  <span>Внизу <strong className="text-white">2 кнопки как в iPhone</strong>: Позвонить и Сообщение</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">✓</span>
-                  <span>Кнопки выглядят как кнопки, а не как теги</span>
+                  <span><strong className="text-white">Позвонить</strong> раскрывает выбор: Звонок, WA, TG</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">✓</span>
+                  <span><strong className="text-white">Сообщение</strong> открывает модалку с формой заявки</span>
                 </li>
               </ul>
 
