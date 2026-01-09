@@ -974,30 +974,52 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
   // Ref для каталога
   const catalogRef = useRef<HTMLDivElement>(null);
 
-  // Simple exit handler - just scroll to next section
-  const handleExitCatalog = useCallback(() => {
-    triggerHaptic();
-    setTimeout(() => {
-      const nextSection = document.getElementById('benefits') || document.getElementById('advantages');
-      if (nextSection) {
-        nextSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 50);
-  }, [triggerHaptic]);
-
   return (
-      // Simple full-height section with scroll-snap
-      // sticky top-0 helps with iOS Safari momentum scrolling
-      <section 
+      // Fullscreen fixed overlay - always on top
+      <motion.section 
         ref={catalogRef}
-        id="catalog"
-        className="sticky top-0 bg-charcoal text-white overflow-hidden h-[100dvh] snap-start snap-always z-10"
+        id="catalog-fullscreen"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 bg-charcoal text-white overflow-hidden z-50"
         style={{ 
+          height: '100dvh',
           overscrollBehavior: 'contain'
         }}
       >
+      {/* Animated close button - top right corner */}
+      {onClose && (
+        <motion.button
+          aria-label="Закрыть каталог"
+          onClick={() => { triggerHaptic(); onClose(); }}
+          className="absolute top-0 right-0 z-50 w-14 h-14 flex items-center justify-center"
+          style={{ marginTop: "calc(env(safe-area-inset-top) + 8px)", marginRight: "8px" }}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          exit={{ scale: 0, rotate: 180 }}
+          transition={{ type: "spring", damping: 15, stiffness: 200, delay: 0.2 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <motion.div 
+            className={`w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+            animate={{ 
+              boxShadow: [
+                "0 0 0 0 rgba(255,255,255,0)",
+                "0 0 0 4px rgba(255,255,255,0.1)",
+                "0 0 0 0 rgba(255,255,255,0)"
+              ]
+            }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+          >
+            <X className="h-6 w-6 text-white" />
+          </motion.div>
+        </motion.button>
+      )}
+
       {/* Model indicator dots (compact) */}
-      <div className="absolute top-0 left-0 right-0 z-40 px-4 flex justify-center gap-1.5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
+      <div className="absolute top-0 left-0 right-14 z-40 px-4 flex justify-center gap-1.5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
         {filteredModels.map((model, idx) => (
           <button
             key={model.id}
@@ -1008,15 +1030,9 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
       </div>
 
       {/* Top controls */}
-      <header className="absolute top-0 left-0 right-0 z-30" style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}>
+      <header className="absolute top-0 left-0 right-14 z-30" style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}>
         <div className="px-3 pt-2">
           <div className="flex items-center gap-2">
-            {onClose && (
-              <button aria-label="Закрыть" onClick={onClose} className={`flex-none w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
-                <X className="h-5 w-5 text-white/80" />
-              </button>
-            )}
-
             {/* Filter pills with label */}
             <nav className="flex-1 flex justify-center">
               <div className={`inline-flex items-center gap-2 rounded-full ${glassPanel} py-1 pl-3 pr-1`}>
@@ -1043,9 +1059,6 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
                 </div>
               </div>
             </nav>
-
-            {/* Spacer - no button here anymore */}
-            {!onClose && <div className="w-10" />}
           </div>
         </div>
       </header>
@@ -1307,25 +1320,12 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
             <SuccessScreen 
               onClose={() => {
                 setShowSuccessScreen(false);
-                handleExitCatalog();
+                if (onClose) onClose();
               }} 
             />
           )}
         </AnimatePresence>
       </motion.main>
-
-      {/* "Continue" button to exit catalog */}
-      <motion.button
-        onClick={handleExitCatalog}
-        className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
-        style={{ bottom: "calc(env(safe-area-inset-bottom) + 16px)" }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1 }}
-      >
-        <span className="text-sm text-white/70">Далее</span>
-        <ArrowDown className="w-4 h-4 text-white/70" />
-      </motion.button>
-    </section>
+    </motion.section>
   );
 }

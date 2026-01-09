@@ -47,7 +47,8 @@ import {
   PenTool,
   Plus,
   Check,
-  Layers
+  Layers,
+  Grid3X3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1607,12 +1608,63 @@ export function Catalog() {
   const [selectedHouse, setSelectedHouse] = useState<HouseModel | null>(null);
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
 
-  // На мобильных устройствах показываем CatalogAppView
-  // (ContactModal is now embedded inside CatalogAppView as InlineMobileContactForm)
+  // На мобильных устройствах показываем кнопку открытия каталога
   if (isMobile) {
-    return <CatalogAppView />;
-  }  // Фильтрация по проекту
+    return (
+      <>
+        <section id="catalog" className="py-16 bg-charcoal">
+          <div className="container mx-auto px-4 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="text-primary font-medium text-sm uppercase tracking-wider">
+                Наши проекты
+              </span>
+              <h2 className="font-display text-2xl font-bold text-white mt-2 mb-4">
+                Каталог домов
+              </h2>
+              <p className="text-white/60 text-sm mb-6 max-w-xs mx-auto">
+                12 проектов от 18 до 204 м² — одноэтажные, двухэтажные и бизнес-решения
+              </p>
+              <motion.button
+                onClick={() => setCatalogOpen(true)}
+                className="inline-flex items-center gap-3 bg-primary text-charcoal font-semibold px-8 py-4 rounded-2xl shadow-lg"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                animate={{
+                  boxShadow: [
+                    "0 0 0 0 rgba(var(--primary-rgb), 0)",
+                    "0 0 0 12px rgba(var(--primary-rgb), 0.15)",
+                    "0 0 0 0 rgba(var(--primary-rgb), 0)"
+                  ]
+                }}
+                transition={{ 
+                  boxShadow: { duration: 2, repeat: Infinity, repeatDelay: 1 }
+                }}
+              >
+                <Grid3X3 className="h-5 w-5" />
+                <span>Открыть каталог</span>
+              </motion.button>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Fullscreen catalog overlay */}
+        <AnimatePresence>
+          {catalogOpen && (
+            <CatalogAppView onClose={() => setCatalogOpen(false)} />
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  // Фильтрация по проекту
   const projectFilteredHouses = activeProject === "all" 
     ? houses 
     : houses.filter(house => house.projectType === activeProject);
