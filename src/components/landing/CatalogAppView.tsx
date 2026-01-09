@@ -769,55 +769,14 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </defs>
       </svg>
 
-      {/* ========== TOP GLASS ZONE: Dark glass header (mirrors footer) ========== */}
-      <header className="absolute top-0 left-0 right-0 z-40 overflow-hidden">
-        {/* Layer 1: Blurred image underlay */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `url(${mainPhoto})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center top",
-            transform: "translate3d(0, 0, 0) scale(1.5)",
-            filter: "blur(30px) brightness(0.6)",
-            opacity: 0.5,
-          }}
-        />
-        
-        {/* Layer 2: Dark glass tint */}
-        <div 
-          className="absolute inset-0"
-          style={{
-            background: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(60px) saturate(1.8)",
-            WebkitBackdropFilter: "blur(60px) saturate(1.8)",
-            transform: "translate3d(0, 0, 0)",
-          }}
-        />
-        
-        {/* Layer 3: Bottom highlight - soft glow */}
-        <div 
-          className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
-          style={{
-            background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 50%, transparent 95%)",
-          }}
-        />
-        
-        {/* Layer 4: Noise texture */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay"
-          style={{
-            filter: "url(#noise-filter)",
-            transform: "translate3d(0, 0, 0) scale(1.5)",
-          }}
-        />
-        
-        {/* Content: Filter bar CENTERED vertically in glass zone */}
+      {/* ========== HEADER: Filter bar on gradient over full-bleed photo ========== */}
+      <header className="absolute top-0 left-0 right-0 z-40">
+        {/* Content: Filter bar with safe area padding */}
         <motion.div 
           className="relative z-10 flex items-center justify-center"
           style={{ 
-            paddingTop: "calc(env(safe-area-inset-top) + 16px)",
-            paddingBottom: "16px",
+            paddingTop: "calc(env(safe-area-inset-top) + 12px)",
+            paddingBottom: "12px",
           }}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -883,33 +842,9 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </motion.div>
       </header>
 
-      {/* TOP TRANSITION VEIL: Smooth fade from header glass to photo */}
-      <div 
-        className="absolute left-0 right-0 z-[35] pointer-events-none"
-        style={{ 
-          height: "120px",
-          top: "calc(env(safe-area-inset-top) + 85px)",
-          WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 15%, transparent 100%)",
-          maskImage: "linear-gradient(to bottom, black 0%, black 15%, transparent 100%)",
-        }}
-      >
-        <div 
-          className="absolute inset-0"
-          style={{
-            backdropFilter: "blur(30px) saturate(1.5)",
-            WebkitBackdropFilter: "blur(30px) saturate(1.5)",
-            transform: "translate3d(0, 0, 0)",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent" />
-      </div>
-
-      {/* MAIN PHOTO AREA - extends to bottom, footer overlays it */}
+      {/* MAIN PHOTO AREA - full bleed to top edge */}
       <motion.div 
-        className="absolute left-0 right-0 bottom-0" 
-        style={{ 
-          top: "calc(env(safe-area-inset-top) + 72px)"
-        }}
+        className="absolute inset-0" 
         onPanEnd={handlePanEnd}
       >
         <AnimatePresence mode="wait" custom={direction}>
