@@ -755,21 +755,21 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         overscrollBehavior: 'contain'
       }}
     >
-      {/* Close button - EXACTLY aligned with filter bar content (safe-area + 20px padding + 2px pt + ~12px to center = 34px) */}
+      {/* Close button - aligned with filter bar (same padding + height matching filter panel) */}
       {onClose && (
         <motion.button
           aria-label="Закрыть каталог"
           onClick={() => { triggerHaptic(); onClose(); }}
           className="absolute right-3 z-50"
-          style={{ top: "calc(env(safe-area-inset-top) + 28px)" }}
+          style={{ top: "calc(env(safe-area-inset-top) + 22px)" }}
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           exit={{ scale: 0, rotate: 180 }}
           transition={{ type: "spring", damping: 15, stiffness: 200, delay: 0.2 }}
           whileTap={{ scale: 0.9 }}
         >
-          <div className={`w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
-            <X className="h-6 w-6 text-white" />
+          <div className={`h-[46px] w-[46px] rounded-2xl ${glassPanel} flex items-center justify-center`}>
+            <X className="h-5 w-5 text-white" />
           </div>
         </motion.button>
       )}
@@ -793,14 +793,14 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             className={`w-full rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center justify-between px-4 py-3">
-              {/* Left: Filter tabs */}
-              <div className="flex items-center gap-1">
+            <div className="flex items-center justify-between px-3 py-2.5">
+              {/* Left: Filter tabs - compact on small screens */}
+              <div className="flex items-center gap-0.5 flex-shrink-0">
                 {([
                   { id: "all" as const, label: "Все" },
-                  { id: "1-floor" as const, label: "1эт" },
-                  { id: "2-floor" as const, label: "2эт" },
-                  { id: "business" as const, label: "Биз." },
+                  { id: "1-floor" as const, label: "1" },
+                  { id: "2-floor" as const, label: "2" },
+                  { id: "business" as const, label: "Биз" },
                 ] as const).map((f) => (
                   <button
                     key={f.id}
@@ -809,7 +809,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                       setFilter(f.id); 
                       setCurrentModelIndex(0); 
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-2 py-1 rounded-lg text-xs font-medium transition-all ${
                       filter === f.id
                         ? "bg-primary text-charcoal"
                         : "text-white/60"
@@ -820,10 +820,10 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 ))}
               </div>
               
-              {/* Right: Current model + arrow - whitespace-nowrap prevents wrapping */}
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <span className="text-sm font-semibold text-white whitespace-nowrap">{currentModel.name}</span>
-                <span className="text-sm font-bold text-primary whitespace-nowrap">{currentModel.area}м²</span>
+              {/* Right: Current model + arrow - truncate on small screens */}
+              <div className="flex items-center gap-1.5 min-w-0 ml-2">
+                <span className="text-sm font-semibold text-white truncate max-w-[80px]">{currentModel.name}</span>
+                <span className="text-sm font-bold text-primary flex-shrink-0">{currentModel.area}м²</span>
                 <ChevronDown className="h-4 w-4 text-white/50 flex-shrink-0" />
               </div>
             </div>
@@ -868,11 +868,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows - elegant chevrons, positioned via TOP to be stable regardless of browser UI */}
+        {/* Nav arrows - elegant chevrons, positioned higher to avoid overlap with Photo/Plan buttons */}
         <motion.button 
           aria-label="Предыдущая" 
           onClick={() => goToModel(-1)} 
-          className="absolute left-2 z-20 top-1/2 -translate-y-1/2"
+          className="absolute left-2 z-20 top-[35%] -translate-y-1/2"
           whileTap={{ scale: 0.9, x: -3 }}
         >
           <motion.div
@@ -885,7 +885,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         <motion.button 
           aria-label="Следующая" 
           onClick={() => goToModel(1)} 
-          className="absolute right-2 z-20 top-1/2 -translate-y-1/2"
+          className="absolute right-2 z-20 top-[35%] -translate-y-1/2"
           whileTap={{ scale: 0.9, x: 3 }}
         >
           <motion.div
@@ -937,12 +937,15 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </motion.div>
 
-      {/* Dark gradient for smooth transition to glass footer */}
+      {/* Dark gradient for smooth transition - ends at top of model name text */}
       <div 
-        className="absolute left-0 right-0 bottom-0 z-35 pointer-events-none"
-        style={{ height: "180px" }}
+        className="absolute left-0 right-0 z-15 pointer-events-none"
+        style={{ 
+          bottom: 0,
+          height: `${FOOTER_HEIGHT + 100}px` 
+        }}
       >
-        <div className="w-full h-full bg-gradient-to-t from-charcoal/80 via-charcoal/40 to-transparent" />
+        <div className="w-full h-full bg-gradient-to-t from-charcoal via-charcoal/70 to-transparent" />
       </div>
 
       {/* iOS-STYLE FOOTER with true glass effect */}
@@ -950,48 +953,61 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         className={`absolute left-0 right-0 bottom-0 z-40 ${iosFooterGlass}`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {/* Call options - appears above when expanded */}
+        {/* Call options - appears above when expanded with gradient overlay */}
         <AnimatePresence>
           {callExpanded && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="px-4 pb-3 pt-4 flex justify-center gap-4"
-            >
-              <motion.button
-                onClick={handleCall}
-                className="flex flex-col items-center gap-1.5"
-                whileTap={{ scale: 0.9 }}
+            <>
+              {/* Semi-transparent gradient overlay behind buttons */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute bottom-full left-0 right-0 pointer-events-none"
+                style={{ height: "120px" }}
               >
-                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <Phone className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xs text-white/70 font-medium">Звонок</span>
-              </motion.button>
+                <div className="w-full h-full bg-gradient-to-t from-charcoal/90 via-charcoal/50 to-transparent" />
+              </motion.div>
               
-              <motion.button
-                onClick={handleWhatsApp}
-                className="flex flex-col items-center gap-1.5"
-                whileTap={{ scale: 0.9 }}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="px-4 pb-3 pt-4 flex justify-center gap-4 relative z-10"
               >
-                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <MessageCircle className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xs text-white/70 font-medium">WhatsApp</span>
-              </motion.button>
-              
-              <motion.button
-                onClick={handleTelegram}
-                className="flex flex-col items-center gap-1.5"
-                whileTap={{ scale: 0.9 }}
-              >
-                <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                  <Send className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xs text-white/70 font-medium">Telegram</span>
-              </motion.button>
-            </motion.div>
+                <motion.button
+                  onClick={handleCall}
+                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+                    <Phone className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 font-medium">Звонок</span>
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleWhatsApp}
+                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+                    <MessageCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 font-medium">WhatsApp</span>
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleTelegram}
+                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <Send className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 font-medium">Telegram</span>
+                </motion.button>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
