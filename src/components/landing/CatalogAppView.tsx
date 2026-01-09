@@ -955,19 +955,25 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       >
         {/* Gradient tint INSIDE the footer to remove any visible edge between footer and photo */}
         <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-charcoal/95 via-charcoal/85 to-transparent" />
-        {/* Call options - appears above when expanded with gradient overlay */}
+        {/* Call options - appears above when expanded with full-screen gradient veil */}
         <AnimatePresence>
           {callExpanded && (
             <>
-              {/* Semi-transparent gradient overlay behind buttons */}
+              {/* Full-screen gradient veil - fades out at model name level */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="absolute bottom-full left-0 right-0 pointer-events-none"
-                style={{ height: "120px" }}
+                transition={{ duration: 0.3 }}
+                className="fixed inset-0 pointer-events-none z-30"
               >
-                <div className="w-full h-full bg-gradient-to-t from-charcoal/90 via-charcoal/50 to-transparent" />
+                {/* Gradient from bottom (solid) to top of model name text (transparent) */}
+                <div 
+                  className="absolute bottom-0 left-0 right-0"
+                  style={{ height: `${FOOTER_HEIGHT + 180}px` }}
+                >
+                  <div className="w-full h-full bg-gradient-to-t from-charcoal/95 via-charcoal/70 via-50% to-transparent" />
+                </div>
               </motion.div>
               
               <motion.div
