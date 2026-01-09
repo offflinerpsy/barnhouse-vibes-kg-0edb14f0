@@ -1271,7 +1271,7 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
             </div>
 
             {/* Right: Content Panel — 40% with morphing form */}
-            <div className="w-full lg:w-[40%] flex flex-col h-[40vh] lg:h-[85vh] overflow-hidden">
+            <div className="w-full lg:w-[40%] flex flex-col h-[40vh] lg:h-[85vh]">
               <AnimatePresence mode="wait">
                 {showThankYou ? (
                   /* Thank You state */
@@ -1338,10 +1338,10 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 30 }}
-                    className="flex-1 flex flex-col overflow-hidden"
+                    className="flex-1 flex flex-col min-h-0"
                   >
                     {/* Scrollable content */}
-                    <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-5 lg:p-6 pb-2">
                       {/* Header */}
                       <div className="mb-5">
                         <span className="inline-block mb-2 px-3 py-1 rounded-full text-xs font-semibold bg-primary/20 text-primary border border-primary/30">
@@ -1429,12 +1429,12 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
 
                       {/* Floor Plans Thumbnails Section */}
                       {floorPlanItems.length > 0 && (
-                        <div className="mb-5">
+                        <div className="mb-4">
                           <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide mb-3 flex items-center gap-2">
                             <Layers className="h-4 w-4" />
                             Планировки
                           </h3>
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-2.5">
                             {floorPlanItems.map((item, idx) => (
                               <button
                                 key={idx}
@@ -1442,7 +1442,7 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                                   setViewMode("floorplan");
                                   setCurrentImageIndex(idx);
                                 }}
-                                className={`relative aspect-[4/3] rounded-xl overflow-hidden border-2 transition-all ${
+                                className={`relative aspect-[3/2] rounded-lg overflow-hidden border-2 transition-all ${
                                   viewMode === "floorplan" && currentImageIndex === idx
                                     ? "border-primary ring-2 ring-primary/30"
                                     : "border-white/10 hover:border-white/30"
@@ -1475,7 +1475,7 @@ const HouseModal = forwardRef<HTMLDivElement, HouseModalProps>(function HouseMod
                     </div>
 
                     {/* Sticky bottom CTA */}
-                    <div className="p-5 lg:p-6 pt-4 bg-black/20 backdrop-blur-sm border-t border-white/10">
+                    <div className="flex-shrink-0 p-5 lg:p-6 pt-4 bg-black/20 backdrop-blur-sm border-t border-white/10">
                       {/* Quick contact */}
                       <div className="flex gap-2 mb-3">
                         <a
