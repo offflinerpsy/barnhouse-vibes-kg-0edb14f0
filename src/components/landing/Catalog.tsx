@@ -18,7 +18,7 @@
 
 import React, { useState, useEffect, useRef, forwardRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import CatalogAppView from "@/components/landing/CatalogAppView";
+import CatalogAppViewV2 from "@/components/landing/CatalogAppViewV2";
 import { ContactModal } from "@/components/landing/ContactModal";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -1657,7 +1657,7 @@ export function Catalog() {
         {/* Fullscreen catalog overlay */}
         <AnimatePresence>
           {catalogOpen && (
-            <CatalogAppView onClose={() => setCatalogOpen(false)} />
+            <CatalogAppViewV2 onClose={() => setCatalogOpen(false)} />
           )}
         </AnimatePresence>
       </>
