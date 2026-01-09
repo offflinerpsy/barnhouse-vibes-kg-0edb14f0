@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted footer - DARK variant
-const iosFooterGlass = "bg-charcoal/[0.85] backdrop-blur-3xl border-t border-white/[0.1]";
+// iOS-style frosted footer - LIGHT variant (like iOS)
+const iosFooterGlass = "bg-white/[0.85] backdrop-blur-3xl border-t border-black/[0.05]";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -131,6 +131,88 @@ function BathroomIcon() {
       <path d="M3 13 L3 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
       <path d="M13 13 L13 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
+  );
+}
+
+// Animated Photo Button with cycling text
+function AnimatedPhotoButton({ onClick }: { onClick: () => void }) {
+  const [textIndex, setTextIndex] = useState(0);
+  const texts = ["Фото", "Смотреть"];
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTextIndex((prev) => (prev + 1) % texts.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <motion.button
+      onClick={onClick}
+      className="w-16 h-16 rounded-full bg-white/25 backdrop-blur-xl border border-white/40 flex flex-col items-center justify-center gap-0.5 shadow-lg"
+      whileTap={{ scale: 0.9 }}
+    >
+      <motion.div
+        animate={{ rotateY: [0, 180, 360] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <Images className="h-6 w-6 text-white drop-shadow-md" />
+      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={texts[textIndex]}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.3 }}
+          className="text-[10px] text-white font-semibold drop-shadow-md"
+        >
+          {texts[textIndex]}
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
+  );
+}
+
+// Animated Plan Button with cycling text
+function AnimatedPlanButton({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
+  const [textIndex, setTextIndex] = useState(0);
+  const texts = ["План", "Смотреть"];
+  
+  useEffect(() => {
+    if (disabled) return;
+    const interval = setInterval(() => {
+      setTextIndex((prev) => (prev + 1) % texts.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [disabled]);
+
+  return (
+    <motion.button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-16 h-16 rounded-full bg-white/25 backdrop-blur-xl border border-white/40 flex flex-col items-center justify-center gap-0.5 shadow-lg ${disabled ? "opacity-40" : ""}`}
+      whileTap={!disabled ? { scale: 0.9 } : {}}
+    >
+      <motion.div
+        animate={!disabled ? { rotateY: [0, 180, 360] } : {}}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+      >
+        <Layers className="h-6 w-6 text-white drop-shadow-md" />
+      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={disabled ? "План" : texts[textIndex]}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -5 }}
+          transition={{ duration: 0.3 }}
+          className="text-[10px] text-white font-semibold drop-shadow-md"
+        >
+          {disabled ? "План" : texts[textIndex]}
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
   );
 }
 
@@ -684,11 +766,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 ))}
               </div>
               
-              {/* Right: Current model + arrow */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-white">{currentModel.name}</span>
-                <span className="text-sm font-bold text-primary">{currentModel.area}м²</span>
-                <ChevronDown className="h-4 w-4 text-white/50" />
+              {/* Right: Current model + arrow - whitespace-nowrap prevents wrapping */}
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <span className="text-sm font-semibold text-white whitespace-nowrap">{currentModel.name}</span>
+                <span className="text-sm font-bold text-primary whitespace-nowrap">{currentModel.area}м²</span>
+                <ChevronDown className="h-4 w-4 text-white/50 flex-shrink-0" />
               </div>
             </div>
           </motion.button>
@@ -749,48 +831,33 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           <ChevronRight className="h-5 w-5 text-white" />
         </button>
 
-        {/* RIGHT SIDE: Photo & Plan buttons - iOS style circles */}
+        {/* RIGHT SIDE: Photo & Plan buttons - iOS style with ANIMATION */}
         <aside className="absolute right-3 bottom-6 z-30 flex flex-col items-center gap-3">
-          <motion.button
-            onClick={() => { setGalleryTab("photos"); setShowGallery(true); }}
-            className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex flex-col items-center justify-center gap-0.5"
-            whileTap={{ scale: 0.9 }}
-          >
-            <Images className="h-5 w-5 text-white" />
-            <span className="text-[10px] text-white/80 font-medium">Фото</span>
-          </motion.button>
-          
-          <motion.button
-            onClick={() => { setGalleryTab("plans"); setShowGallery(true); }}
+          <AnimatedPhotoButton onClick={() => { setGalleryTab("photos"); setShowGallery(true); }} />
+          <AnimatedPlanButton 
+            onClick={() => { setGalleryTab("plans"); setShowGallery(true); }} 
             disabled={floorPlans.length === 0}
-            className={`w-14 h-14 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex flex-col items-center justify-center gap-0.5 ${floorPlans.length === 0 ? "opacity-40" : ""}`}
-            whileTap={floorPlans.length > 0 ? { scale: 0.9 } : {}}
-          >
-            <Layers className="h-5 w-5 text-white" />
-            <span className="text-[10px] text-white/80 font-medium">План</span>
-          </motion.button>
+          />
         </aside>
 
-        {/* Model info chip - bottom left of image */}
+        {/* Model info - NO PANEL, just text with shadow for readability */}
         <div className="absolute left-3 bottom-6 z-20">
-          <div className={`rounded-2xl ${glassPanel} px-4 py-3`}>
-            <div className="flex items-baseline gap-2 mb-1">
-              <h1 className="text-lg font-bold text-white">{currentModel.name}</h1>
-              <span className="text-lg font-bold text-primary">{currentModel.area}м²</span>
+          <div className="flex items-baseline gap-2 mb-1">
+            <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{currentModel.name}</h1>
+            <span className="text-lg font-bold text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{currentModel.area}м²</span>
+          </div>
+          <div className="flex items-center gap-3 text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <FloorIcon floors={currentModel.floors} />
+              <span className="text-sm">{currentModel.floors}эт</span>
             </div>
-            <div className="flex items-center gap-3 text-white/60">
-              <div className="flex items-center gap-1">
-                <FloorIcon floors={currentModel.floors} />
-                <span className="text-sm">{currentModel.floors}эт</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <BedroomIcon />
-                <span className="text-sm">{currentModel.bedrooms}сп</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <BathroomIcon />
-                <span className="text-sm">{currentModel.bathrooms}с/у</span>
-              </div>
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <BedroomIcon />
+              <span className="text-sm">{currentModel.bedrooms === "студия" ? "студия" : `${currentModel.bedrooms}сп`}</span>
+            </div>
+            <div className="flex items-center gap-1 whitespace-nowrap">
+              <BathroomIcon />
+              <span className="text-sm">{currentModel.bathrooms}с/у</span>
             </div>
           </div>
         </div>
@@ -818,7 +885,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
                   <Phone className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-white/70 font-medium">Звонок</span>
+                <span className="text-xs text-charcoal/70 font-medium">Звонок</span>
               </motion.button>
               
               <motion.button
@@ -829,7 +896,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
                   <MessageCircle className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-white/70 font-medium">WhatsApp</span>
+                <span className="text-xs text-charcoal/70 font-medium">WhatsApp</span>
               </motion.button>
               
               <motion.button
@@ -840,7 +907,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <Send className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-white/70 font-medium">Telegram</span>
+                <span className="text-xs text-charcoal/70 font-medium">Telegram</span>
               </motion.button>
             </motion.div>
           )}
@@ -858,15 +925,15 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             }`}
             whileTap={{ scale: 0.97 }}
           >
-            <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-600"}`} />
-            <span className={`font-semibold ${callExpanded ? "text-white" : "text-green-600"}`}>
+            <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-700"}`} />
+            <span className={`font-semibold ${callExpanded ? "text-white" : "text-green-700"}`}>
               Позвонить
             </span>
             <motion.div
               animate={{ rotate: callExpanded ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-600"}`} />
+              <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-700"}`} />
             </motion.div>
           </motion.button>
 
