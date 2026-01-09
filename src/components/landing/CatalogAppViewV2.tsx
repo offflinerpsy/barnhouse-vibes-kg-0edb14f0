@@ -809,8 +809,8 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 draggable={false} 
                 loading="eager" 
               />
-              {/* Gradient overlay - heavier at bottom for blur transition */}
-              <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/30" />
+              {/* Light gradient overlay for iOS-style blur transition at bottom */}
+              <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-transparent to-charcoal/20" />
             </button>
           </motion.div>
         </AnimatePresence>
