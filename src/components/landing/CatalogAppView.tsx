@@ -67,8 +67,7 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style dark frosted glass footer - matches Photo/Plan buttons aesthetic
-const iosFooterGlass = "bg-charcoal/70 backdrop-blur-[40px] backdrop-saturate-150 border-t border-white/10";
+// Footer is now multi-layered glass — no single class needed, structure in JSX
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -937,108 +936,141 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </motion.div>
 
-      {/* Smooth gradient fade from image to dark glass footer - NO hard lines */}
+      {/* ========== TRANSITION VEIL: Multi-layer fade from image to footer ========== */}
+      {/* This creates a smooth "glass morphism" transition without hard edges */}
       <div 
-        className="absolute left-0 right-0 bottom-0 z-35 pointer-events-none"
-        style={{ height: "200px" }}
+        className="absolute left-0 right-0 bottom-0 z-[35] pointer-events-none"
+        style={{ 
+          height: callExpanded ? "340px" : "260px",
+          transition: "height 0.3s ease-out",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)",
+          maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)",
+        }}
       >
-        <div className="w-full h-full bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent" />
+        {/* Blur layer - creates glass effect over photo */}
+        <div className="absolute inset-0 backdrop-blur-[28px] backdrop-saturate-150" />
+        {/* Gradient tint - dark at bottom, transparent at top */}
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/60 to-transparent" />
       </div>
 
-      {/* iOS-STYLE FOOTER with true glass effect */}
+      {/* ========== iOS-STYLE MULTI-LAYER GLASS FOOTER ========== */}
       <footer 
-        className={`absolute left-0 right-0 bottom-0 z-40 ${iosFooterGlass}`}
+        className="absolute left-0 right-0 bottom-0 z-40 overflow-hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {/* Call options - appears above when expanded */}
-        <AnimatePresence>
-          {callExpanded && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="px-4 pb-3 pt-4 flex justify-center gap-4"
-            >
-              <motion.button
-                onClick={handleCall}
-                className="flex flex-col items-center gap-1.5"
-                whileTap={{ scale: 0.9 }}
-              >
-                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <Phone className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xs text-white/70 font-medium">Звонок</span>
-              </motion.button>
-              
-              <motion.button
-                onClick={handleWhatsApp}
-                className="flex flex-col items-center gap-1.5"
-                whileTap={{ scale: 0.9 }}
-              >
-                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <MessageCircle className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xs text-white/70 font-medium">WhatsApp</span>
-              </motion.button>
-              
-              <motion.button
-                onClick={handleTelegram}
-                className="flex flex-col items-center gap-1.5"
-                whileTap={{ scale: 0.9 }}
-              >
-                <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                  <Send className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xs text-white/70 font-medium">Telegram</span>
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main 2 buttons - iOS Contact style */}
-        <div className="px-4 py-4 flex gap-3">
-          {/* CALL button - becomes SOLID green when expanded, with subtle pulse animation */}
-          <motion.button
-            onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
-            className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
-              callExpanded 
-                ? "bg-green-500 shadow-lg shadow-green-500/40" 
-                : "bg-green-500/20 border-2 border-green-500/50"
-            }`}
-            whileTap={{ scale: 0.97 }}
-          >
-            {/* Pulse ring animation when not expanded */}
-            {!callExpanded && (
+        {/* Layer 1: Blurred image underlay - continuation of photo "under glass" */}
+        <div 
+          className="absolute inset-0 scale-125 blur-[24px] opacity-30 brightness-75"
+          style={{
+            backgroundImage: `url(${mainPhoto})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center bottom",
+          }}
+        />
+        
+        {/* Layer 2: Glass tint with gradient - dark at bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/50 to-charcoal/30 backdrop-blur-xl" />
+        
+        {/* Layer 3: Top highlight - soft glow instead of hard border */}
+        <div 
+          className="absolute top-0 left-0 right-0 h-8 pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.08) 0%, transparent 100%)",
+          }}
+        />
+        
+        {/* Content sits on top of all layers */}
+        <div className="relative z-10">
+          {/* Call options - appears above when expanded */}
+          <AnimatePresence>
+            {callExpanded && (
               <motion.div
-                className="absolute inset-0 rounded-2xl border-2 border-green-500"
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  opacity: [0.5, 0, 0.5]
-                }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              />
+                initial={{ opacity: 0, y: 20, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: 20, height: 0 }}
+                className="px-4 pb-3 pt-4 flex justify-center gap-4"
+              >
+                <motion.button
+                  onClick={handleCall}
+                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+                    <Phone className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 font-medium">Звонок</span>
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleWhatsApp}
+                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+                    <MessageCircle className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 font-medium">WhatsApp</span>
+                </motion.button>
+                
+                <motion.button
+                  onClick={handleTelegram}
+                  className="flex flex-col items-center gap-1.5"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <Send className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-xs text-white/70 font-medium">Telegram</span>
+                </motion.button>
+              </motion.div>
             )}
-            <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-600"}`} />
-            <span className={`font-bold ${callExpanded ? "text-white" : "text-green-600"}`}>
-              Позвонить
-            </span>
-            <motion.div
-              animate={{ rotate: callExpanded ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-600"}`} />
-            </motion.div>
-          </motion.button>
+          </AnimatePresence>
 
-          {/* MESSAGE button - primary gold */}
-          <motion.button
-            onClick={() => { triggerHaptic(); setShowContactForm(true); }}
-            className="flex-1 h-14 rounded-2xl bg-primary flex items-center justify-center gap-2 shadow-lg shadow-primary/30"
-            whileTap={{ scale: 0.97 }}
-          >
-            <MessageSquare className="h-5 w-5 text-charcoal" />
-            <span className="font-semibold text-charcoal">Сообщение</span>
-          </motion.button>
+          {/* Main 2 buttons - iOS Contact style */}
+          <div className="px-4 py-4 flex gap-3">
+            {/* CALL button - becomes SOLID green when expanded, with subtle pulse animation */}
+            <motion.button
+              onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
+              className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
+                callExpanded 
+                  ? "bg-green-500 shadow-lg shadow-green-500/40" 
+                  : "bg-green-500/20 border-2 border-green-500/50"
+              }`}
+              whileTap={{ scale: 0.97 }}
+            >
+              {/* Pulse ring animation when not expanded */}
+              {!callExpanded && (
+                <motion.div
+                  className="absolute inset-0 rounded-2xl border-2 border-green-500"
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    opacity: [0.5, 0, 0.5]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
+              )}
+              <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-400"}`} />
+              <span className={`font-bold ${callExpanded ? "text-white" : "text-green-400"}`}>
+                Позвонить
+              </span>
+              <motion.div
+                animate={{ rotate: callExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-400"}`} />
+              </motion.div>
+            </motion.button>
+
+            {/* MESSAGE button - primary gold */}
+            <motion.button
+              onClick={() => { triggerHaptic(); setShowContactForm(true); }}
+              className="flex-1 h-14 rounded-2xl bg-primary flex items-center justify-center gap-2 shadow-lg shadow-primary/30"
+              whileTap={{ scale: 0.97 }}
+            >
+              <MessageSquare className="h-5 w-5 text-charcoal" />
+              <span className="font-semibold text-charcoal">Сообщение</span>
+            </motion.button>
+          </div>
         </div>
       </footer>
 
