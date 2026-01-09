@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted glass footer - warm sand tint, not white
-const iosFooterGlass = "bg-[hsl(38_25%_92%/0.7)] backdrop-blur-[50px] backdrop-saturate-150 border-t border-[hsl(38_25%_80%/0.5)]";
+// iOS-style frosted glass footer - warm sand tint with subtle shadow for depth
+const iosFooterGlass = "bg-[hsl(38_25%_92%/0.7)] backdrop-blur-[50px] backdrop-saturate-150 border-t border-[hsl(38_25%_80%/0.5)] shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.15)]";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
