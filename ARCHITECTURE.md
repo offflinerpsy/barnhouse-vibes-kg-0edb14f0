@@ -9,17 +9,15 @@
 
 | Статус | Репозиторий | URL |
 |--------|-------------|-----|
-| ✅ **ОСНОВНОЙ** | barnhouse-vibes-kg-01b96b92 | `https://github.com/offflinerpsy/barnhouse-vibes-kg-01b96b92` |
+| ✅ **ОСНОВНОЙ** | barnhouse-vibes-kg-0edb14f0 | `https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0` |
 | ❌ **НЕ ИСПОЛЬЗОВАТЬ** | barnhouse-vibes-kg | `https://github.com/offflinerpsy/barnhouse-vibes-kg` |
-
-**Причина:** Проект синхронизируется с [Lovable.dev](https://lovable.dev) через репозиторий `barnhouse-vibes-kg-01b96b92`.
 
 ```bash
 # Проверить текущий remote:
 git remote -v
 
 # Должно показывать:
-# origin  https://github.com/offflinerpsy/barnhouse-vibes-kg-01b96b92.git (fetch/push)
+# origin  https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0.git (fetch/push)
 
 # ВСЕГДА пушить только так:
 git push origin main
@@ -125,6 +123,9 @@ barnhouse-vibes-kg/
     ├── index.css                 # 🎨 ГЛОБАЛЬНЫЕ СТИЛИ + CSS ПЕРЕМЕННЫЕ
     ├── vite-env.d.ts             # Vite типы
     │
+    ├── 📂 data/                  # 📊 ДАННЫЕ
+    │   └── catalog-models.ts     # ⭐ CATALOG_MODELS[] — все модели домов
+    │
     ├── 📂 assets/                # Импортируемые ресурсы
     │   ├── logo-era.png          # Основной логотип
     │   ├── logo-gold.svg         # Золотой логотип
@@ -190,7 +191,8 @@ barnhouse-vibes-kg/
 | [src/index.css](src/index.css) | Вся цветовая схема, шрифт Rising Sun |
 | [tailwind.config.ts](tailwind.config.ts) | Кастомные цвета, брейкпоинты, типографика |
 | [vite.config.ts](vite.config.ts) | Чанкинг (vendor-pdf, vendor-react), сборка |
-| [src/components/landing/Catalog.tsx](src/components/landing/Catalog.tsx) | Данные всех моделей, логика галереи/PDF |
+| [src/data/catalog-models.ts](src/data/catalog-models.ts) | ⭐ **Единый источник данных** — все модели домов |
+| [src/components/landing/Catalog.tsx](src/components/landing/Catalog.tsx) | UI каталога, логика галереи/PDF |
 | [public/fonts/*](public/fonts/) | Шрифт Rising Sun — основа типографики |
 
 ### 🟡 ВАЖНЫЕ (требуют внимания)

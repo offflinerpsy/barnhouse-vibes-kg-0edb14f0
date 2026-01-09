@@ -28,7 +28,7 @@
 | **Model 2X** | 36 м² | 0-1 | 1 |
 | **Model 4X** | 72 м² | 2-3 | 2 |
 | **Model 7X** | 120 м² | 3-4 | 2 |
-| **Model 12X** | 204 м² | 4-5 | 2 |
+| **Model 12X** | 204 м² | 5-6 | 3 |
 
 ---
 
@@ -52,23 +52,25 @@
 ## Структура данных в коде
 
 ### Файлы
-- `src/components/landing/Catalog.tsx` — основной компонент каталога
+- `src/data/catalog-models.ts` — **единый источник данных** (`CATALOG_MODELS[]`)
+- `src/components/landing/Catalog.tsx` — UI компонент каталога
 
 ### Папка с изображениями
 ```
-src/assets/projects/
-├── model-1/
-│   ├── main.jpg
-│   └── ...
-├── model-2/
-├── model-3/
-├── model-4/
-├── model-6/
-├── model-8/
-├── model-2x/
-├── model-4x/
-├── model-7x/
-└── model-12x/
+public/catalog/
+├── model-1-18/           # Model 1 (18м²)
+│   ├── gallery/          # 1.webp, 2.webp...
+│   ├── gallery-extra/    # extra-1.webp...
+│   └── floor-plan/       # plan-1.webp, plan-1.pdf...
+├── model-1-36/           # Model 2 (36м²)
+├── model-1-54/           # Model 3 (54м²)
+├── model-1-81/           # Model 4 (81м²)
+├── model-1-108/          # Model 6 (108м²)
+├── model-1-135/          # Model 8 (135м²)
+├── model-2-36/           # Model 2X (36м² duplex)
+├── model-2-72/           # Model 4X (72м² duplex)
+├── model-2-120/          # Model 7X (120м² duplex)
+└── model-2-204/          # Model 12X (204м² duplex)
 ```
 
 ---
@@ -77,8 +79,9 @@ src/assets/projects/
 
 | projectType | Название | Описание |
 |-------------|----------|----------|
-| `single` | 1-этажные | Model 1, 2, 3, 4, 6, 8 |
+| `single-floor` | 1-этажные | Model 1, 2, 3, 4, 6, 8 |
 | `duplex` | 2-этажные | Model 2X, 4X, 7X, 12X |
+| `commercial` | Коммерческие | Model Resto |
 
 ---
 
@@ -93,54 +96,64 @@ src/assets/projects/
 
 ---
 
-## Формат объекта дома
+## Формат объекта дома (CatalogModel)
 
 ```typescript
 {
   id: "model-3",                   // Уникальный ID
   name: "Model 3",                 // Название модели
-  projectType: "single",           // single | duplex
-  projectLabel: "1-этажный",       // Метка для бейджа
+  projectType: "single-floor",     // single-floor | duplex | commercial
+  projectLabel: "Одноэтажный",     // Метка для бейджа
   area: 54,                        // Общая площадь
-  heatedArea: 48,                  // Площадь тёплого контура
+  heatedArea: 54,                  // Площадь тёплого контура
   rooms: 3,                        // Общее количество комнат
-  bedrooms: "1-2",                 // Количество спален (строка для диапазона)
+  bedrooms: "1-2",                 // Количество спален (строка)
   bathrooms: 1,                    // Количество санузлов
   hasVeranda: true,                // Есть ли терраса
   verandaArea: 6,                  // Площадь террасы
   floors: 1,                       // Этажность
-  price: "от $XX XXX",             // Цена
-  images: [...],                   // Массив изображений
+  catalogPath: "model-1-54",       // Путь в public/catalog/
+  coverImage: "/catalog/covers/model-3.webp",  // Обложка
+  galleryCount: 4,                 // Кол-во рендеров в gallery/
+  galleryExtraCount: 10,           // Кол-во реальных фото в gallery-extra/
+  floorPlanFiles: [                // Планировки
+    { name: "plan-1", ext: "webp" },
+  ],
 }
 ```
 
 ---
 
-## Обязательные поля
+## Обязательные поля (CatalogModel)
 
 | Поле | Тип | Описание |
 |------|-----|----------|
-| id | string | Уникальный ID (model-1, model-2x) |
-| name | string | Название (Model 1, Model 2X) |
-| projectType | string | single \| duplex |
-| projectLabel | string | 1-этажный \| 2-этажный |
+| id | string | Уникальный ID (model-1, model-4x) |
+| name | string | Название (Model 1, Model 4X) |
+| projectType | string | `single-floor` \| `duplex` \| `commercial` |
+| projectLabel | string | Одноэтажный \| Двухэтажный \| HoReCa |
 | area | number | Общая площадь в м² |
 | heatedArea | number | Площадь тёплого контура |
-| bedrooms | string | Количество спален ("1-2") |
+| rooms | number | Общее кол-во комнат |
+| bedrooms | string | Количество спален ("1-2" или "—") |
 | bathrooms | number | Количество санузлов |
 | hasVeranda | boolean | Наличие террасы |
-| verandaArea | number | Площадь террасы (0 если нет) |
+| verandaArea | number | Площадь террасы (опц.) |
 | floors | number | Этажность (1 или 2) |
-| price | string | Цена |
-| images | array | Минимум 1 изображение |
+| catalogPath | string | Папка в public/catalog/ |
+| coverImage | string | Путь к обложке |
+| galleryCount | number | Кол-во рендеров |
+| galleryExtraCount | number | Кол-во реальных фото |
+| floorPlanFiles | array | Массив планировок `{name, ext}` |
 
 ---
 
 ## Инструкция для ИИ
 
-При работе с каталогом:
-1. Используй систему названий Model + цифра (Model 1, Model 2X)
-2. X в конце = двухэтажный
+При**Данные:** `src/data/catalog-models.ts` → `CATALOG_MODELS[]`
+2. Model + цифра: Model 1, Model 2X (X = двухэтажный)
 3. Цифра ≈ количество модулей (1 модуль = 18 м²)
-4. projectType: "single" для 1-этажных, "duplex" для 2-этажных
+4. **Model 5 и Model 7 НЕ СУЩЕСТВУЮТ** — это задокументировано
+5. `projectType`: `single-floor` | `duplex` | `commercial`
+6. Изображения в `public/catalog/model-[этажи]-[площадь]/gallery-этажных
 5. Изображения в `src/assets/projects/model-[название]/`
