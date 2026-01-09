@@ -1,11 +1,12 @@
 /**
- * ERA Mobile Catalog V2 — iPhone-style UX
- * Changes from V1:
- * - Right rail: Animated Photo + Plan buttons with cycling text
- * - Filter + Catalog merged at top
- * - Bottom: 2 buttons like iPhone - Call & Message
- * - Call expands to show Call/WA/TG options
- * - Message opens the form modal
+ * ERA Mobile Catalog V2 — iOS-style UX (Full Refactor)
+ * 
+ * Key changes:
+ * - Image doesn't go to bottom — blur footer area below
+ * - iOS-style blur footer with 2 buttons: Call & Message
+ * - Call button becomes SOLID when expanded (not semi-transparent)
+ * - Filter + Catalog merged into one beautiful top bar
+ * - Photo/Plan buttons on right side, elegant design
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, forwardRef } from "react";
@@ -24,6 +25,7 @@ import {
   CheckCircle,
   ChevronUp,
   MessageSquare,
+  ChevronDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -61,40 +63,12 @@ function getFloorPlans(model: EraModel): string[] {
     .map(f => `/catalog/${model.catalogPath}/floor-plan/${f.name}.${f.ext}`);
 }
 
-function HouseSchematic({ model, size = "md" }: { model: EraModel; size?: "sm" | "md" }) {
-  const isSmall = size === "sm";
-  const w = isSmall ? 24 : 32;
-  const h = isSmall ? 20 : 26;
-  
-  return (
-    <svg viewBox="0 0 32 26" width={w} height={h} fill="none" className="shrink-0">
-      {model.floors === 1 ? (
-        <>
-          <path d="M16 2 L4 11 L4 24 L28 24 L28 11 Z" fill="hsl(var(--primary) / 0.15)" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M16 2 L4 11" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
-          <path d="M16 2 L28 11" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
-          <rect x="13" y="16" width="6" height="8" rx="1" fill="hsl(var(--primary) / 0.4)"/>
-          {parseInt(model.bedrooms) >= 2 && <rect x="6" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
-          {parseInt(model.bedrooms) >= 3 && <rect x="22" y="14" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>}
-        </>
-      ) : (
-        <>
-          <path d="M16 2 L4 9 L4 24 L28 24 L28 9 Z" fill="hsl(var(--primary) / 0.1)" stroke="hsl(var(--primary))" strokeWidth="1.5" strokeLinejoin="round"/>
-          <path d="M16 2 L4 9" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
-          <path d="M16 2 L28 9" stroke="hsl(var(--primary))" strokeWidth="2" strokeLinecap="round"/>
-          <line x1="4" y1="16" x2="28" y2="16" stroke="hsl(var(--primary) / 0.4)" strokeWidth="1"/>
-          <rect x="13" y="18" width="6" height="6" rx="1" fill="hsl(var(--primary) / 0.4)"/>
-          <rect x="7" y="10" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>
-          <rect x="21" y="10" width="4" height="4" rx="0.5" fill="hsl(var(--primary) / 0.25)"/>
-        </>
-      )}
-    </svg>
-  );
-}
+// Glass styles
+const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
+const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-const glassPanel = "bg-white/[0.08] backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
-const glassPanelLight = "bg-white/[0.06] backdrop-blur-xl border border-white/[0.1]";
-const glassPanelUltraLight = "bg-white/[0.03] backdrop-blur-xl border border-white/[0.06]";
+// iOS-style frosted footer
+const iosFooterGlass = "bg-white/[0.85] backdrop-blur-3xl border-t border-white/[0.3]";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -122,82 +96,7 @@ const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTM
 );
 ImageWithSkeleton.displayName = "ImageWithSkeleton";
 
-// Animated action button with cycling text and pulsing icon
-const AnimatedActionButton = forwardRef<HTMLButtonElement, {
-  icon: React.ComponentType<{ className?: string }>;
-  labels: string[];
-  onClick: () => void;
-  disabled?: boolean;
-  cycleInterval?: number;
-}>(({ icon: Icon, labels, onClick, disabled = false, cycleInterval = 2000 }, ref) => {
-  const [labelIndex, setLabelIndex] = useState(0);
-
-  useEffect(() => {
-    if (labels.length <= 1) return;
-    const interval = setInterval(() => {
-      setLabelIndex((prev) => (prev + 1) % labels.length);
-    }, cycleInterval);
-    return () => clearInterval(interval);
-  }, [labels.length, cycleInterval]);
-
-  return (
-    <motion.button 
-      ref={ref} 
-      onClick={disabled ? undefined : onClick} 
-      disabled={disabled}
-      className={`flex items-center gap-3 px-5 py-4 rounded-2xl ${glassPanel} ${disabled ? "opacity-40 cursor-not-allowed" : "active:scale-95"} transition-all overflow-hidden`}
-      whileTap={disabled ? {} : { scale: 0.95 }}
-      whileHover={disabled ? {} : { scale: 1.02 }}
-    >
-      {/* Animated icon with page-flip effect */}
-      <motion.div
-        className="relative"
-        animate={{ 
-          rotateY: [0, 180, 360],
-        }}
-        transition={{ 
-          duration: 2, 
-          repeat: Infinity, 
-          repeatDelay: cycleInterval / 1000 - 2,
-          ease: "easeInOut"
-        }}
-      >
-        <Icon className="h-6 w-6 text-primary" />
-      </motion.div>
-      
-      {/* Cycling text with fade animation */}
-      <div className="relative h-5 min-w-[100px]">
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={labelIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="absolute left-0 text-sm font-semibold text-white whitespace-nowrap"
-          >
-            {labels[labelIndex]}
-          </motion.span>
-        </AnimatePresence>
-      </div>
-    </motion.button>
-  );
-});
-AnimatedActionButton.displayName = "AnimatedActionButton";
-
-const InfoChip = forwardRef<HTMLDivElement, {
-  icon: React.ReactNode;
-  value: string | number;
-  label: string;
-}>(({ icon, value, label }, ref) => (
-  <div ref={ref} className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full whitespace-nowrap ${glassPanelLight}`}>
-    <span className="text-primary shrink-0">{icon}</span>
-    <span className="text-sm font-semibold text-white">{value}</span>
-    <span className="text-xs text-white/50">{label}</span>
-  </div>
-));
-InfoChip.displayName = "InfoChip";
-
+// Floor/Bedroom/Bathroom icons
 function FloorIcon({ floors }: { floors: number }) {
   return (
     <svg viewBox="0 0 16 16" className="w-4 h-4" fill="none">
@@ -235,6 +134,7 @@ function BathroomIcon() {
   );
 }
 
+// Model Picker Sheet
 const ModelPickerSheet = forwardRef<HTMLDivElement, {
   open: boolean;
   onClose: () => void;
@@ -436,6 +336,7 @@ const slideVariants = {
   exit: (dir: 1 | -1) => ({ x: dir > 0 ? -60 : 60, opacity: 0, scale: 0.98 }),
 };
 
+// Zoomable Lightbox
 function ZoomableLightbox({
   photos,
   currentIndex,
@@ -477,54 +378,52 @@ function ZoomableLightbox({
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex items-center justify-between p-4">
-        <button onClick={onClose} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+        <button 
+          onClick={onClose}
+          className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+        >
           <X className="h-5 w-5 text-white/80" />
         </button>
-        <div className="text-center text-white/70 text-sm">
-          {currentIndex + 1} / {photos.length}
+        <div className="text-center">
+          <span className="text-sm text-white/60">{currentIndex + 1} / {photos.length}</span>
         </div>
         <div className="w-10" />
       </div>
 
-      <div className="flex-1 relative overflow-hidden">
-        <motion.div
-          className="absolute inset-0 flex items-center justify-center"
-          onPanEnd={handlePanEnd}
-          style={{ touchAction: scale > 1 ? "none" : "pan-y" }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={photos[currentIndex]}
-              src={photos[currentIndex]}
-              alt={`${model.name} ${currentIndex + 1}`}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.2 }}
-              className="max-h-full max-w-full object-contain"
-              style={{ transform: `scale(${scale})` }}
-              draggable={false}
-            />
-          </AnimatePresence>
-        </motion.div>
+      <motion.div 
+        className="flex-1 flex items-center justify-center px-4"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handlePanEnd}
+      >
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={photos[currentIndex]}
+            src={photos[currentIndex]}
+            alt={`${model.name} — ${currentIndex + 1}`}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="max-h-full max-w-full object-contain rounded-xl"
+            style={{ touchAction: "pan-y pinch-zoom" }}
+          />
+        </AnimatePresence>
+      </motion.div>
 
-        <button onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-black/50 flex items-center justify-center">
+      <div className="flex justify-center gap-4 p-4 pb-8">
+        <button onClick={goPrev} className={`w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
           <ChevronLeft className="h-6 w-6 text-white" />
         </button>
-        <button onClick={goNext} className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl bg-black/50 flex items-center justify-center">
+        <button onClick={goNext} className={`w-12 h-12 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
           <ChevronRight className="h-6 w-6 text-white" />
         </button>
-      </div>
-
-      <div className="p-4 flex justify-center gap-3">
-        <button onClick={() => setScale(s => Math.max(1, s - 0.5))} className={`px-4 py-2 rounded-xl ${glassPanelLight} text-white/70 text-sm`}>−</button>
-        <span className="px-4 py-2 text-white/50 text-sm">{Math.round(scale * 100)}%</span>
-        <button onClick={() => setScale(s => Math.min(3, s + 0.5))} className={`px-4 py-2 rounded-xl ${glassPanelLight} text-white/70 text-sm`}>+</button>
       </div>
     </motion.div>
   );
 }
 
+// Inline Mobile Contact Form
 function InlineMobileContactForm({
   modelName,
   modelArea,
@@ -538,188 +437,138 @@ function InlineMobileContactForm({
 }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [contactMethods, setContactMethods] = useState<string[]>(["whatsapp"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const toggleMethod = (m: string) => {
-    setContactMethods((prev) =>
-      prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
-    );
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim()) {
-      setError("Заполните все поля");
-      return;
-    }
-    if (contactMethods.length === 0) {
-      setError("Выберите способ связи");
-      return;
-    }
+    if (!name.trim() || !phone.trim()) return;
+    
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     onSuccess();
   };
 
   return (
     <motion.div
-      className="absolute inset-0 z-[60] bg-charcoal/98 backdrop-blur-2xl flex flex-col"
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 z-50 flex flex-col bg-charcoal/98 backdrop-blur-2xl"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex items-center justify-between p-4 border-b border-white/10">
-        <button onClick={onClose} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+        <button
+          onClick={onClose}
+          className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}
+        >
           <X className="h-5 w-5 text-white/80" />
         </button>
         <h2 className="text-lg font-semibold text-white">Оставить заявку</h2>
         <div className="w-10" />
       </div>
 
-      <form onSubmit={handleSubmit} className="flex-1 flex flex-col p-5 overflow-y-auto">
-        <div className={`${glassPanel} rounded-2xl p-4 mb-6`}>
-          <p className="text-white/50 text-sm">Интересующая модель:</p>
-          <p className="text-lg font-bold text-white mt-1">{modelName} <span className="text-primary">{modelArea}м²</span></p>
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className={`rounded-2xl ${glassPanel} p-4 mb-6`}>
+          <div className="text-sm text-white/60 mb-1">Выбранная модель</div>
+          <div className="text-lg font-bold text-white">
+            {modelName} <span className="text-primary">{modelArea}м²</span>
+          </div>
         </div>
 
-        <div className="space-y-5 flex-1">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm text-white/60 mb-2">Ваше имя</label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Введите имя"
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+              placeholder="Как к вам обращаться?"
+              className="h-14 rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/40"
             />
           </div>
-
           <div>
             <label className="block text-sm text-white/60 mb-2">Телефон</label>
             <Input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+996 XXX XXX XXX"
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl"
+              placeholder="+996 ___-___-___"
+              className="h-14 rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/40"
             />
           </div>
-
-          <div>
-            <label className="block text-sm text-white/60 mb-3">Как с вами связаться?</label>
-            <div className="flex gap-2 flex-wrap">
-              {[
-                { id: "phone", label: "Звонок", icon: Phone },
-                { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
-                { id: "telegram", label: "Telegram", icon: Send },
-              ].map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => toggleMethod(id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full transition-all ${
-                    contactMethods.includes(id)
-                      ? "bg-primary text-charcoal"
-                      : "bg-white/5 text-white/60 border border-white/10"
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {error && (
-            <motion.p 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-red-400 text-sm"
-            >
-              {error}
-            </motion.p>
-          )}
-        </div>
-
-        <div className="pt-4 pb-4">
           <Button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full h-14 rounded-2xl bg-primary text-charcoal font-semibold text-lg hover:bg-primary/90 disabled:opacity-50"
+            disabled={isSubmitting || !name.trim() || !phone.trim()}
+            className="w-full h-14 rounded-xl bg-primary text-charcoal font-bold text-base mt-6"
           >
-            {isSubmitting ? (
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="w-6 h-6 border-2 border-charcoal/30 border-t-charcoal rounded-full"
-              />
-            ) : (
-              "Отправить заявку"
-            )}
+            {isSubmitting ? "Отправка..." : "Отправить заявку"}
           </Button>
-        </div>
-      </form>
+        </form>
+      </div>
     </motion.div>
   );
 }
 
+// Success Screen
 function SuccessScreen({ onClose }: { onClose: () => void }) {
   return (
-    <motion.div 
-      className="absolute inset-0 z-[100] bg-charcoal flex flex-col items-center justify-center px-4"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-charcoal/98 backdrop-blur-2xl p-8"
     >
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: "spring" }}
-        className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
+        transition={{ type: "spring", damping: 15, stiffness: 200 }}
+        className="w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6"
       >
-        <CheckCircle className="w-10 h-10 text-green-500" />
+        <CheckCircle className="h-12 w-12 text-green-400" />
       </motion.div>
       <h2 className="text-2xl font-bold text-white mb-2">Заявка отправлена!</h2>
       <p className="text-white/60 text-center mb-8">Мы свяжемся с вами в ближайшее время</p>
-      <Button
-        onClick={onClose}
-        className="px-8 py-3 rounded-full bg-primary text-charcoal font-semibold"
-      >
-        Закрыть
+      <Button onClick={onClose} className="h-14 px-8 rounded-xl bg-primary text-charcoal font-bold">
+        Вернуться в каталог
       </Button>
     </motion.div>
   );
 }
 
+// ====== MAIN COMPONENT ======
 export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
+  const [filter, setFilter] = useState<FilterType>("all");
   const [currentModelIndex, setCurrentModelIndex] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [galleryTab, setGalleryTab] = useState<"photos" | "plans">("photos");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [modelPickerOpen, setModelPickerOpen] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
-  // NEW: Contact options expanded
-  const [contactExpanded, setContactExpanded] = useState(false);
+  const [callExpanded, setCallExpanded] = useState(false);
 
   const filteredModels = useMemo(() => applyCatalogFilter(ERA_MODELS, filter), [filter]);
-
-  const safeIndex = Math.min(currentModelIndex, Math.max(0, filteredModels.length - 1));
-  const currentModel = filteredModels[safeIndex] ?? filteredModels[0];
+  const safeIndex = Math.min(currentModelIndex, filteredModels.length - 1);
+  const currentModel = filteredModels[safeIndex] || ERA_MODELS[0];
+  
   const allPhotos = useMemo(() => getAllPhotos(currentModel), [currentModel]);
   const floorPlans = useMemo(() => getFloorPlans(currentModel), [currentModel]);
-  const mainPhoto = allPhotos[0] ?? `/catalog/${currentModel.catalogPath}/gallery/1.webp`;
+  const mainPhoto = currentModel.coverImage;
 
   const triggerHaptic = useCallback(() => {
-    if ('vibrate' in navigator) navigator.vibrate(8);
+    if (navigator.vibrate) navigator.vibrate(10);
   }, []);
+
+  // Preload
+  useEffect(() => {
+    allPhotos.slice(0, 3).forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [allPhotos]);
 
   const goToModel = useCallback((dir: 1 | -1) => {
     triggerHaptic();
@@ -730,26 +579,19 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       if (next >= filteredModels.length) return 0;
       return next;
     });
-    setShowGallery(false);
-    setContactExpanded(false);
   }, [filteredModels.length, triggerHaptic]);
 
   const handlePanEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (lightboxImage || modelPickerOpen || showGallery) return;
     const absX = Math.abs(info.offset.x);
     const absY = Math.abs(info.offset.y);
-    if (absX > absY && absX > SWIPE_X) {
-      goToModel(info.offset.x > 0 ? -1 : 1);
-      return;
+    if (absY > SWIPE_Y && absY > absX) return;
+    if (absX > SWIPE_X) {
+      if (info.offset.x > 0) goToModel(-1);
+      else goToModel(1);
     }
-    if (absY > absX && info.offset.y < -SWIPE_Y) setShowGallery(true);
-  }, [goToModel, lightboxImage, modelPickerOpen, showGallery]);
+  }, [goToModel]);
 
   const lightboxPhotos = galleryTab === "photos" ? allPhotos : floorPlans;
-
-  const handleMainPhotoTap = useCallback(() => {
-    setShowGallery(true);
-  }, []);
 
   const handleCall = () => { window.location.href = "tel:+996555123456"; };
   const handleWhatsApp = () => {
@@ -761,11 +603,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
     window.open(`https://t.me/erahomes?text=${text}`, "_blank");
   };
 
-  const catalogRef = useRef<HTMLDivElement>(null);
+  // Footer height for image positioning
+  const FOOTER_HEIGHT = 180; // px, includes safe area
 
   return (
     <motion.section 
-      ref={catalogRef}
       id="catalog-fullscreen"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -790,19 +632,9 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           transition={{ type: "spring", damping: 15, stiffness: 200, delay: 0.2 }}
           whileTap={{ scale: 0.9 }}
         >
-          <motion.div 
-            className={`w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}
-            animate={{ 
-              boxShadow: [
-                "0 0 0 0 rgba(255,255,255,0)",
-                "0 0 0 4px rgba(255,255,255,0.1)",
-                "0 0 0 0 rgba(255,255,255,0)"
-              ]
-            }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-          >
+          <div className={`w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
             <X className="h-6 w-6 text-white" />
-          </motion.div>
+          </div>
         </motion.button>
       )}
 
@@ -812,46 +644,66 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           <button
             key={model.id}
             onClick={() => { triggerHaptic(); setDirection(idx > safeIndex ? 1 : -1); setCurrentModelIndex(idx); }}
-            className={`w-2 h-2 rounded-full transition-all ${idx === safeIndex ? "bg-primary w-6" : "bg-white/30"}`}
+            className={`h-1.5 rounded-full transition-all ${idx === safeIndex ? "bg-primary w-6" : "bg-white/30 w-1.5"}`}
           />
         ))}
       </div>
 
-      {/* Top filter */}
+      {/* TOP: Filter + Catalog selector merged */}
       <header className="absolute top-0 left-0 right-14 z-30" style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}>
         <div className="px-3 pt-2">
-          <div className="flex items-center gap-2">
-            <nav className="flex-1 flex justify-center">
-              <div className={`inline-flex items-center gap-2 rounded-full ${glassPanel} py-1 pl-3 pr-1`}>
-                <span className="text-xs font-medium text-white/50 whitespace-nowrap">Фильтр:</span>
-                <div className="flex gap-0.5">
-                  {([
-                    { id: "all" as const, label: "Все" },
-                    { id: "1-floor" as const, label: "1эт" },
-                    { id: "2-floor" as const, label: "2эт" },
-                    { id: "business" as const, label: "Биз." },
-                  ] as const).map((f) => (
-                    <button
-                      key={f.id}
-                      onClick={() => { setFilter(f.id); setCurrentModelIndex(0); }}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        filter === f.id
-                          ? "bg-primary text-charcoal shadow-sm"
-                          : "text-white/70 hover:text-white"
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
+          <motion.button
+            onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
+            className={`w-full rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-between px-4 py-3">
+              {/* Left: Filter tabs */}
+              <div className="flex items-center gap-1">
+                {([
+                  { id: "all" as const, label: "Все" },
+                  { id: "1-floor" as const, label: "1эт" },
+                  { id: "2-floor" as const, label: "2эт" },
+                  { id: "business" as const, label: "Биз." },
+                ] as const).map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      setFilter(f.id); 
+                      setCurrentModelIndex(0); 
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      filter === f.id
+                        ? "bg-primary text-charcoal"
+                        : "text-white/60"
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
-            </nav>
-          </div>
+              
+              {/* Right: Current model + arrow */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-white">{currentModel.name}</span>
+                <span className="text-sm font-bold text-primary">{currentModel.area}м²</span>
+                <ChevronDown className="h-4 w-4 text-white/50" />
+              </div>
+            </div>
+          </motion.button>
         </div>
       </header>
 
-      {/* Main photo */}
-      <motion.main className="absolute inset-0" onPanEnd={handlePanEnd} style={{ touchAction: "none" }}>
+      {/* MAIN PHOTO AREA - doesn't go to bottom */}
+      <motion.div 
+        className="absolute left-0 right-0" 
+        style={{ 
+          top: "calc(env(safe-area-inset-top) + 80px)",
+          bottom: `${FOOTER_HEIGHT}px`
+        }}
+        onPanEnd={handlePanEnd}
+      >
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={`${currentModel.id}-${currentModel.area}`}
@@ -864,295 +716,301 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             className="absolute inset-0"
           >
             <button 
-              onClick={handleMainPhotoTap} 
+              onClick={() => { setGalleryTab("photos"); setShowGallery(true); }}
               className="absolute inset-0 w-full h-full cursor-pointer"
               aria-label="Открыть галерею"
             >
               <ImageWithSkeleton 
                 src={mainPhoto} 
                 alt={`${currentModel.name} ${currentModel.area}м²`} 
-                className="h-full w-full object-cover object-[center_70%]" 
+                className="h-full w-full object-cover object-[center_60%]" 
                 draggable={false} 
                 loading="eager" 
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/40" />
+              {/* Gradient overlay - heavier at bottom for blur transition */}
+              <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-charcoal/30" />
             </button>
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows */}
-        <button aria-label="Предыдущая" onClick={() => goToModel(-1)} className={`absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+        {/* Nav arrows - centered in image area */}
+        <button 
+          aria-label="Предыдущая" 
+          onClick={() => goToModel(-1)} 
+          className={`absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full ${glassPanelLight} flex items-center justify-center`}
+        >
           <ChevronLeft className="h-5 w-5 text-white" />
         </button>
-        <button aria-label="Следующая" onClick={() => goToModel(1)} className={`absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+        <button 
+          aria-label="Следующая" 
+          onClick={() => goToModel(1)} 
+          className={`absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full ${glassPanelLight} flex items-center justify-center`}
+        >
           <ChevronRight className="h-5 w-5 text-white" />
         </button>
 
-        {/* RIGHT SIDE: Animated Photo & Plan buttons */}
-        <aside className="absolute right-3 z-30 flex flex-col items-end gap-3" style={{ bottom: "calc(160px + env(safe-area-inset-bottom))" }}>
-          <AnimatedActionButton 
-            icon={Images} 
-            labels={["Фото", "Смотреть фото"]}
-            onClick={() => { setGalleryTab("photos"); setShowGallery(true); }} 
-          />
-          <AnimatedActionButton 
-            icon={Layers} 
-            labels={["План", "Смотреть план"]}
-            onClick={() => { setGalleryTab("plans"); setShowGallery(true); }} 
+        {/* RIGHT SIDE: Photo & Plan buttons - iOS style circles */}
+        <aside className="absolute right-3 bottom-6 z-30 flex flex-col items-center gap-3">
+          <motion.button
+            onClick={() => { setGalleryTab("photos"); setShowGallery(true); }}
+            className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex flex-col items-center justify-center gap-0.5"
+            whileTap={{ scale: 0.9 }}
+          >
+            <Images className="h-5 w-5 text-white" />
+            <span className="text-[10px] text-white/80 font-medium">Фото</span>
+          </motion.button>
+          
+          <motion.button
+            onClick={() => { setGalleryTab("plans"); setShowGallery(true); }}
             disabled={floorPlans.length === 0}
-          />
+            className={`w-14 h-14 rounded-full bg-white/20 backdrop-blur-xl border border-white/30 flex flex-col items-center justify-center gap-0.5 ${floorPlans.length === 0 ? "opacity-40" : ""}`}
+            whileTap={floorPlans.length > 0 ? { scale: 0.9 } : {}}
+          >
+            <Layers className="h-5 w-5 text-white" />
+            <span className="text-[10px] text-white/80 font-medium">План</span>
+          </motion.button>
         </aside>
 
-        {/* Bottom info panel */}
-        <section className="absolute left-0 right-0 z-20" style={{ bottom: "calc(130px + env(safe-area-inset-bottom))" }}>
-          <div className="px-3">
-            <div className={`inline-block rounded-xl ${glassPanelUltraLight} px-3 py-2`}>
-              <div className="flex items-center gap-2.5">
-                <HouseSchematic model={currentModel} size="sm" />
-                <div className="flex items-baseline gap-2">
-                  <h1 className="text-lg font-bold text-white">{currentModel.name}</h1>
-                  <span className="text-lg font-bold text-primary">{currentModel.area}м²</span>
-                </div>
+        {/* Model info chip - bottom left of image */}
+        <div className="absolute left-3 bottom-6 z-20">
+          <div className={`rounded-2xl ${glassPanel} px-4 py-3`}>
+            <div className="flex items-baseline gap-2 mb-1">
+              <h1 className="text-lg font-bold text-white">{currentModel.name}</h1>
+              <span className="text-lg font-bold text-primary">{currentModel.area}м²</span>
+            </div>
+            <div className="flex items-center gap-3 text-white/60">
+              <div className="flex items-center gap-1">
+                <FloorIcon floors={currentModel.floors} />
+                <span className="text-sm">{currentModel.floors}эт</span>
               </div>
-              <p className="text-xs text-white/40 mt-0.5 mb-1.5">{currentModel.floors === 1 ? "Одноэтажный" : "Двухэтажный"} barnhouse</p>
-              <div className="flex flex-nowrap gap-1">
-                <InfoChip icon={<FloorIcon floors={currentModel.floors} />} value={currentModel.floors} label="эт" />
-                <InfoChip icon={<BedroomIcon />} value={currentModel.bedrooms} label="сп" />
-                <InfoChip icon={<BathroomIcon />} value={currentModel.bathrooms} label="с/у" />
+              <div className="flex items-center gap-1">
+                <BedroomIcon />
+                <span className="text-sm">{currentModel.bedrooms}сп</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <BathroomIcon />
+                <span className="text-sm">{currentModel.bathrooms}с/у</span>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* BOTTOM: 2 buttons iPhone-style - Call & Message */}
-        <div className="absolute left-3 right-3 z-30 flex flex-col gap-2" style={{ bottom: "calc(8px + env(safe-area-inset-bottom))" }}>
-          {/* Contact options - expandable */}
-          <AnimatePresence>
-            {contactExpanded && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                className="flex justify-center gap-3"
-              >
-                <motion.button
-                  onClick={handleCall}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-2xl ${glassPanel}`}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Phone className="h-5 w-5 text-green-400" />
-                  <span className="text-sm font-medium text-white">Позвонить</span>
-                </motion.button>
-                <motion.button
-                  onClick={handleWhatsApp}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-2xl ${glassPanel}`}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <MessageCircle className="h-5 w-5 text-green-400" />
-                  <span className="text-sm font-medium text-white">WhatsApp</span>
-                </motion.button>
-                <motion.button
-                  onClick={handleTelegram}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-2xl ${glassPanel}`}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Send className="h-5 w-5 text-blue-400" />
-                  <span className="text-sm font-medium text-white">Telegram</span>
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Model picker integrated button - shows current model */}
-          <motion.button
-            onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
-            className={`w-full rounded-2xl ${glassPanel} active:scale-[0.99] transition-transform`}
-            whileTap={{ scale: 0.99 }}
-          >
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Grid3X3 className="h-5 w-5 text-primary" />
-                <div className="text-left">
-                  <span className="text-sm font-semibold text-white">{currentModel.name}</span>
-                  <span className="text-primary font-bold ml-2">{currentModel.area}м²</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-white/50">
-                <span className="text-xs">{safeIndex + 1}/{filteredModels.length}</span>
-                <ChevronUp className="h-4 w-4" />
-              </div>
-            </div>
-          </motion.button>
-
-          {/* Main 2 buttons row - iPhone style */}
-          <div className="flex items-stretch gap-3">
-            {/* CALL button - expands to show options */}
-            <motion.button
-              onClick={() => { triggerHaptic(); setContactExpanded(!contactExpanded); }}
-              className={`flex-1 h-16 rounded-2xl ${contactExpanded ? "bg-green-500/30 border-green-500/50" : glassPanel} active:scale-[0.98] transition-all border`}
-              whileTap={{ scale: 0.98 }}
-            >
-              <div className="flex flex-col items-center justify-center h-full gap-1">
-                <Phone className={`h-6 w-6 ${contactExpanded ? "text-green-400" : "text-green-400"}`} />
-                <span className={`text-sm font-semibold ${contactExpanded ? "text-green-400" : "text-white"}`}>
-                  Позвонить
-                </span>
-              </div>
-            </motion.button>
-
-            {/* MESSAGE button - opens form modal */}
-            <motion.button
-              onClick={() => { triggerHaptic(); setShowContactForm(true); }}
-              className="flex-1 h-16 rounded-2xl bg-primary active:scale-[0.98] transition-transform"
-              whileTap={{ scale: 0.95 }}
-              animate={{ 
-                boxShadow: [
-                  "0 0 0 0 rgba(212,175,55,0)",
-                  "0 0 0 6px rgba(212,175,55,0.3)",
-                  "0 0 0 0 rgba(212,175,55,0)"
-                ]
-              }}
-              transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1 }}
-            >
-              <div className="flex flex-col items-center justify-center h-full gap-1">
-                <MessageSquare className="h-6 w-6 text-charcoal" />
-                <span className="text-sm font-bold text-charcoal">Сообщение</span>
-              </div>
-            </motion.button>
           </div>
         </div>
+      </motion.div>
 
-        {/* Gallery sheet */}
+      {/* iOS-STYLE FOOTER with blur */}
+      <footer 
+        className={`absolute left-0 right-0 bottom-0 z-40 ${iosFooterGlass}`}
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        {/* Call options - appears above when expanded */}
         <AnimatePresence>
-          {showGallery && (
+          {callExpanded && (
             <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="absolute inset-0 z-40 bg-charcoal/98 backdrop-blur-2xl flex flex-col"
-              style={{ paddingTop: "env(safe-area-inset-top)" }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="px-4 pb-3 pt-4 flex justify-center gap-4"
             >
-              <div className="flex items-center justify-between p-4 border-b border-white/10">
-                <button aria-label="Закрыть" onClick={() => setShowGallery(false)} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
-                  <X className="h-5 w-5 text-white/80" />
-                </button>
-                <div className="text-center">
-                  <div className="text-base font-semibold text-white">{currentModel.name} <span className="text-primary leading-snug inline-block pb-[1px]">{currentModel.area}м²</span></div>
-                  <div className="text-xs text-white/40">Реальные фото первыми</div>
+              <motion.button
+                onClick={handleCall}
+                className="flex flex-col items-center gap-1.5"
+                whileTap={{ scale: 0.9 }}
+              >
+                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+                  <Phone className="h-6 w-6 text-white" />
                 </div>
-                <div className="w-10" />
-              </div>
-
-              <div className="p-4">
-                <div className={`flex gap-1 rounded-xl ${glassPanel} p-1`}>
-                  <button
-                    onClick={() => setGalleryTab("photos")}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
-                      galleryTab === "photos" ? "bg-primary text-charcoal shadow-sm" : "text-white/60"
-                    }`}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                    Фото ({allPhotos.length})
-                  </button>
-                  <button
-                    onClick={() => setGalleryTab("plans")}
-                    disabled={floorPlans.length === 0}
-                    className={`flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
-                      floorPlans.length === 0 ? "text-white/20 cursor-not-allowed" :
-                      galleryTab === "plans" ? "bg-primary text-charcoal shadow-sm" : "text-white/60"
-                    }`}
-                  >
-                    <Layers className="h-4 w-4" />
-                    Планы ({floorPlans.length})
-                  </button>
+                <span className="text-xs text-charcoal/70 font-medium">Звонок</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={handleWhatsApp}
+                className="flex flex-col items-center gap-1.5"
+                whileTap={{ scale: 0.9 }}
+              >
+                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+                  <MessageCircle className="h-6 w-6 text-white" />
                 </div>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 pt-0 pb-8">
-                <div className="grid grid-cols-2 gap-2">
-                  {(galleryTab === "photos" ? allPhotos : floorPlans).map((photo, idx) => (
-                    <motion.button
-                      key={photo}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: idx * 0.02 }}
-                      onClick={() => { setLightboxImage(photo); setLightboxIndex(idx); }}
-                      className="aspect-[4/3] rounded-xl overflow-hidden relative group"
-                    >
-                      <ImageWithSkeleton src={photo} alt={`${currentModel.name} — ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                      <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-lg ${glassPanelLight} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity`}>
-                        <Maximize2 className="h-4 w-4 text-white" />
-                      </div>
-                    </motion.button>
-                  ))}
+                <span className="text-xs text-charcoal/70 font-medium">WhatsApp</span>
+              </motion.button>
+              
+              <motion.button
+                onClick={handleTelegram}
+                className="flex flex-col items-center gap-1.5"
+                whileTap={{ scale: 0.9 }}
+              >
+                <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                  <Send className="h-6 w-6 text-white" />
                 </div>
-              </div>
+                <span className="text-xs text-charcoal/70 font-medium">Telegram</span>
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Lightbox */}
-        <AnimatePresence>
-          {lightboxImage && (
-            <ZoomableLightbox
-              photos={lightboxPhotos}
-              currentIndex={lightboxIndex}
-              onClose={() => setLightboxImage(null)}
-              onIndexChange={setLightboxIndex}
-              model={currentModel}
-            />
-          )}
-        </AnimatePresence>
+        {/* Main 2 buttons - iOS Contact style */}
+        <div className="px-4 py-4 flex gap-3">
+          {/* CALL button - becomes SOLID green when expanded */}
+          <motion.button
+            onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
+            className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all ${
+              callExpanded 
+                ? "bg-green-500 shadow-lg shadow-green-500/30" 
+                : "bg-green-500/15 border border-green-500/30"
+            }`}
+            whileTap={{ scale: 0.97 }}
+          >
+            <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-600"}`} />
+            <span className={`font-semibold ${callExpanded ? "text-white" : "text-green-600"}`}>
+              Позвонить
+            </span>
+            <motion.div
+              animate={{ rotate: callExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-600"}`} />
+            </motion.div>
+          </motion.button>
 
-        {/* Model picker */}
-        <AnimatePresence>
-          {modelPickerOpen && (
-            <ModelPickerSheet
-              open={modelPickerOpen}
-              onClose={() => setModelPickerOpen(false)}
-              models={ERA_MODELS}
-              currentModelId={currentModel.id}
-              activeFilter={filter}
-              onFilterChange={(next) => {
-                setFilter(next);
-                setCurrentModelIndex(0);
-              }}
-              onSelect={(id, appliedFilter) => {
-                setFilter(appliedFilter);
-                const nextModels = applyCatalogFilter(ERA_MODELS, appliedFilter);
-                const idx = nextModels.findIndex((m) => m.id === id);
-                if (idx >= 0) setCurrentModelIndex(idx);
-                setModelPickerOpen(false);
-              }}
-            />
-          )}
-        </AnimatePresence>
+          {/* MESSAGE button - primary gold */}
+          <motion.button
+            onClick={() => { triggerHaptic(); setShowContactForm(true); }}
+            className="flex-1 h-14 rounded-2xl bg-primary flex items-center justify-center gap-2 shadow-lg shadow-primary/30"
+            whileTap={{ scale: 0.97 }}
+          >
+            <MessageSquare className="h-5 w-5 text-charcoal" />
+            <span className="font-semibold text-charcoal">Сообщение</span>
+          </motion.button>
+        </div>
+      </footer>
 
-        {/* Contact Form */}
-        <AnimatePresence>
-          {showContactForm && !showSuccessScreen && (
-            <InlineMobileContactForm
-              modelName={currentModel.name}
-              modelArea={String(currentModel.area)}
-              onClose={() => setShowContactForm(false)}
-              onSuccess={() => {
-                setShowContactForm(false);
-                setShowSuccessScreen(true);
-              }}
-            />
-          )}
-          {showSuccessScreen && (
-            <SuccessScreen 
-              onClose={() => {
-                setShowSuccessScreen(false);
-                if (onClose) onClose();
-              }} 
-            />
-          )}
-        </AnimatePresence>
-      </motion.main>
+      {/* Gallery sheet */}
+      <AnimatePresence>
+        {showGallery && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            className="absolute inset-0 z-40 bg-charcoal/98 backdrop-blur-2xl flex flex-col"
+            style={{ paddingTop: "env(safe-area-inset-top)" }}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <button aria-label="Закрыть" onClick={() => setShowGallery(false)} className={`w-10 h-10 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
+                <X className="h-5 w-5 text-white/80" />
+              </button>
+              <div className="text-center">
+                <div className="text-base font-semibold text-white">{currentModel.name} <span className="text-primary">{currentModel.area}м²</span></div>
+              </div>
+              <div className="w-10" />
+            </div>
+
+            <div className="p-4">
+              <div className={`flex gap-1 rounded-xl ${glassPanel} p-1`}>
+                <button
+                  onClick={() => setGalleryTab("photos")}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                    galleryTab === "photos" ? "bg-primary text-charcoal shadow-sm" : "text-white/60"
+                  }`}
+                >
+                  <Images className="h-4 w-4" />
+                  Фото ({allPhotos.length})
+                </button>
+                <button
+                  onClick={() => setGalleryTab("plans")}
+                  disabled={floorPlans.length === 0}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-all ${
+                    floorPlans.length === 0 ? "text-white/20 cursor-not-allowed" :
+                    galleryTab === "plans" ? "bg-primary text-charcoal shadow-sm" : "text-white/60"
+                  }`}
+                >
+                  <Layers className="h-4 w-4" />
+                  Планы ({floorPlans.length})
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 pt-0 pb-8">
+              <div className="grid grid-cols-2 gap-2">
+                {(galleryTab === "photos" ? allPhotos : floorPlans).map((photo, idx) => (
+                  <motion.button
+                    key={photo}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: idx * 0.02 }}
+                    onClick={() => { setLightboxImage(photo); setLightboxIndex(idx); }}
+                    className="aspect-[4/3] rounded-xl overflow-hidden relative group"
+                  >
+                    <ImageWithSkeleton src={photo} alt={`${currentModel.name} — ${idx + 1}`} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                    <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-lg ${glassPanelLight} flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity`}>
+                      <Maximize2 className="h-4 w-4 text-white" />
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <ZoomableLightbox
+            photos={lightboxPhotos}
+            currentIndex={lightboxIndex}
+            onClose={() => setLightboxImage(null)}
+            onIndexChange={setLightboxIndex}
+            model={currentModel}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Model picker */}
+      <AnimatePresence>
+        {modelPickerOpen && (
+          <ModelPickerSheet
+            open={modelPickerOpen}
+            onClose={() => setModelPickerOpen(false)}
+            models={ERA_MODELS}
+            currentModelId={currentModel.id}
+            activeFilter={filter}
+            onFilterChange={(next) => {
+              setFilter(next);
+              setCurrentModelIndex(0);
+            }}
+            onSelect={(id, appliedFilter) => {
+              setFilter(appliedFilter);
+              const nextModels = applyCatalogFilter(ERA_MODELS, appliedFilter);
+              const idx = nextModels.findIndex((m) => m.id === id);
+              if (idx >= 0) setCurrentModelIndex(idx);
+              setModelPickerOpen(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Contact Form */}
+      <AnimatePresence>
+        {showContactForm && !showSuccessScreen && (
+          <InlineMobileContactForm
+            modelName={currentModel.name}
+            modelArea={String(currentModel.area)}
+            onClose={() => setShowContactForm(false)}
+            onSuccess={() => {
+              setShowContactForm(false);
+              setShowSuccessScreen(true);
+            }}
+          />
+        )}
+        {showSuccessScreen && (
+          <SuccessScreen 
+            onClose={() => {
+              setShowSuccessScreen(false);
+              if (onClose) onClose();
+            }} 
+          />
+        )}
+      </AnimatePresence>
     </motion.section>
   );
 }
