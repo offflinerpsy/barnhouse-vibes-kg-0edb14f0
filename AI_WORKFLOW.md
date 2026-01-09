@@ -203,7 +203,7 @@ barnhouse-vibes-kg/
 │   ├── components/
 │   │   ├── landing/       # ← Основные компоненты
 │   │   │   ├── Catalog.tsx
-│   │   │   ├── CatalogAppView.tsx
+│   │   │   ├── CatalogAppViewV2.tsx
 │   │   │   ├── Hero.tsx
 │   │   │   └── ...
 │   │   └── ui/            # shadcn компоненты (не трогать!)
