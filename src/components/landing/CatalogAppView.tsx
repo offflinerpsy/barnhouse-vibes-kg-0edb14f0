@@ -771,6 +771,14 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
 
       {/* ========== HEADER: Filter bar on gradient over full-bleed photo ========== */}
       <header className="absolute top-0 left-0 right-0 z-40">
+        {/* Gradient overlay for text readability */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 85%, transparent 100%)",
+            height: "140px",
+          }}
+        />
         {/* Content: Filter bar with safe area padding */}
         <motion.div 
           className="relative z-10 flex items-center justify-center"
