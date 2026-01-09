@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted glass footer - true glassmorphism
-const iosFooterGlass = "bg-white/50 backdrop-blur-[40px] border-t border-white/40";
+// iOS-style frosted glass footer - TRUE glassmorphism with depth
+const iosFooterGlass = "bg-white/30 backdrop-blur-[60px] backdrop-saturate-150 border-t border-white/20";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -213,6 +213,60 @@ function AnimatedPlanButton({ onClick, disabled }: { onClick: () => void; disabl
         </motion.span>
       </AnimatePresence>
     </motion.button>
+  );
+}
+
+// Swipe Hint Animation - shows hand gesture hint
+function SwipeHintAnimation() {
+  const [show, setShow] = useState(true);
+  
+  useEffect(() => {
+    // Hide after 3 seconds
+    const timer = setTimeout(() => setShow(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!show) return null;
+
+  return (
+    <motion.div
+      className="absolute left-1/2 -translate-x-1/2 z-30 pointer-events-none"
+      style={{ bottom: "50%" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="flex items-center gap-2 text-white/60"
+        animate={{ 
+          x: [0, -30, 0, 30, 0],
+        }}
+        transition={{ 
+          duration: 2,
+          repeat: 2,
+          ease: "easeInOut"
+        }}
+        onAnimationComplete={() => setShow(false)}
+      >
+        {/* Hand icon */}
+        <motion.svg 
+          width="32" 
+          height="32" 
+          viewBox="0 0 24 24" 
+          fill="none"
+          className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
+        >
+          <path 
+            d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v6M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L2.3 15a2 2 0 0 1 .3-2.8 2 2 0 0 1 2.8.3L6 13V6" 
+            stroke="currentColor" 
+            strokeWidth="1.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+            fill="rgba(255,255,255,0.1)"
+          />
+        </motion.svg>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -701,13 +755,13 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         overscrollBehavior: 'contain'
       }}
     >
-      {/* Close button */}
+      {/* Close button - aligned with filter bar */}
       {onClose && (
         <motion.button
           aria-label="Закрыть каталог"
           onClick={() => { triggerHaptic(); onClose(); }}
-          className="absolute top-0 right-0 z-50 w-14 h-14 flex items-center justify-center"
-          style={{ marginTop: "calc(env(safe-area-inset-top) + 8px)", marginRight: "8px" }}
+          className="absolute top-0 right-3 z-50"
+          style={{ top: "calc(env(safe-area-inset-top) + 22px)" }}
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           exit={{ scale: 0, rotate: 180 }}
@@ -814,21 +868,38 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows - centered in image area */}
-        <button 
+        {/* Nav arrows - elegant chevrons, positioned higher to avoid browser UI overlap */}
+        <motion.button 
           aria-label="Предыдущая" 
           onClick={() => goToModel(-1)} 
-          className={`absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full ${glassPanelLight} flex items-center justify-center`}
+          className="absolute left-2 z-20"
+          style={{ bottom: `${FOOTER_HEIGHT + 180}px` }}
+          whileTap={{ scale: 0.9, x: -3 }}
         >
-          <ChevronLeft className="h-5 w-5 text-white" />
-        </button>
-        <button 
+          <motion.div
+            animate={{ x: [0, -4, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronLeft className="h-8 w-8 text-white/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" strokeWidth={2.5} />
+          </motion.div>
+        </motion.button>
+        <motion.button 
           aria-label="Следующая" 
           onClick={() => goToModel(1)} 
-          className={`absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full ${glassPanelLight} flex items-center justify-center`}
+          className="absolute right-2 z-20"
+          style={{ bottom: `${FOOTER_HEIGHT + 180}px` }}
+          whileTap={{ scale: 0.9, x: 3 }}
         >
-          <ChevronRight className="h-5 w-5 text-white" />
-        </button>
+          <motion.div
+            animate={{ x: [0, 4, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ChevronRight className="h-8 w-8 text-white/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" strokeWidth={2.5} />
+          </motion.div>
+        </motion.button>
+
+        {/* Swipe hint animation - shows on first view */}
+        <SwipeHintAnimation />
 
         {/* RIGHT SIDE: Photo & Plan buttons - iOS style with ANIMATION - positioned above footer */}
         <aside 
@@ -868,15 +939,21 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </motion.div>
 
-      {/* Gradient overlay for smooth transition from image to glass footer */}
+      {/* Blurred image continuation under glass footer for depth effect */}
       <div 
-        className="absolute left-0 right-0 z-35 pointer-events-none"
-        style={{ bottom: 0, height: "200px" }}
+        className="absolute left-0 right-0 bottom-0 z-35 pointer-events-none overflow-hidden"
+        style={{ height: "280px" }}
       >
-        <div className="w-full h-full bg-gradient-to-t from-white/70 via-white/30 to-transparent" />
+        <img 
+          src={mainPhoto} 
+          alt="" 
+          className="absolute bottom-0 left-0 right-0 w-full h-[400px] object-cover object-[center_80%] blur-[2px] opacity-60"
+        />
+        {/* Gradient overlay on blurred image */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-white/40 to-transparent" />
       </div>
 
-      {/* iOS-STYLE FOOTER with blur */}
+      {/* iOS-STYLE FOOTER with true glass effect */}
       <footer 
         className={`absolute left-0 right-0 bottom-0 z-40 ${iosFooterGlass}`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
@@ -928,25 +1005,36 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
 
         {/* Main 2 buttons - iOS Contact style */}
         <div className="px-4 py-4 flex gap-3">
-          {/* CALL button - becomes SOLID green when expanded */}
+          {/* CALL button - becomes SOLID green when expanded, with subtle pulse animation */}
           <motion.button
             onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
-            className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
               callExpanded 
-                ? "bg-green-500 shadow-lg shadow-green-500/30" 
-                : "bg-green-500/15 border border-green-500/30"
+                ? "bg-green-500 shadow-lg shadow-green-500/40" 
+                : "bg-green-500/20 border-2 border-green-500/50"
             }`}
             whileTap={{ scale: 0.97 }}
           >
-            <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-700"}`} />
-            <span className={`font-semibold ${callExpanded ? "text-white" : "text-green-700"}`}>
+            {/* Pulse ring animation when not expanded */}
+            {!callExpanded && (
+              <motion.div
+                className="absolute inset-0 rounded-2xl border-2 border-green-500"
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  opacity: [0.5, 0, 0.5]
+                }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            )}
+            <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-600"}`} />
+            <span className={`font-bold ${callExpanded ? "text-white" : "text-green-600"}`}>
               Позвонить
             </span>
             <motion.div
               animate={{ rotate: callExpanded ? 180 : 0 }}
               transition={{ duration: 0.2 }}
             >
-              <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-700"}`} />
+              <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-600"}`} />
             </motion.div>
           </motion.button>
 
