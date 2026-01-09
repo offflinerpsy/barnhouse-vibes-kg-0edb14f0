@@ -685,8 +685,8 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
     window.open(`https://t.me/erahomes?text=${text}`, "_blank");
   };
 
-  // Footer height for image positioning
-  const FOOTER_HEIGHT = 180; // px, includes safe area
+  // Footer height for positioning elements above it
+  const FOOTER_HEIGHT = 140; // approximate footer height for element positioning
 
   return (
     <motion.section 
@@ -777,12 +777,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </header>
 
-      {/* MAIN PHOTO AREA - doesn't go to bottom */}
+      {/* MAIN PHOTO AREA - extends to bottom, footer overlays it */}
       <motion.div 
-        className="absolute left-0 right-0" 
+        className="absolute left-0 right-0 bottom-0" 
         style={{ 
-          top: "calc(env(safe-area-inset-top) + 80px)",
-          bottom: `${FOOTER_HEIGHT}px`
+          top: "calc(env(safe-area-inset-top) + 80px)"
         }}
         onPanEnd={handlePanEnd}
       >
@@ -809,8 +808,8 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 draggable={false} 
                 loading="eager" 
               />
-              {/* Light gradient overlay for iOS-style blur transition at bottom */}
-              <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-transparent to-charcoal/20" />
+              {/* Subtle gradient for text readability - no harsh colors */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
             </button>
           </motion.div>
         </AnimatePresence>
@@ -831,8 +830,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           <ChevronRight className="h-5 w-5 text-white" />
         </button>
 
-        {/* RIGHT SIDE: Photo & Plan buttons - iOS style with ANIMATION */}
-        <aside className="absolute right-3 bottom-6 z-30 flex flex-col items-center gap-3">
+        {/* RIGHT SIDE: Photo & Plan buttons - iOS style with ANIMATION - positioned above footer */}
+        <aside 
+          className="absolute right-3 z-30 flex flex-col items-center gap-3"
+          style={{ bottom: `${FOOTER_HEIGHT + 16}px` }}
+        >
           <AnimatedPhotoButton onClick={() => { setGalleryTab("photos"); setShowGallery(true); }} />
           <AnimatedPlanButton 
             onClick={() => { setGalleryTab("plans"); setShowGallery(true); }} 
@@ -840,8 +842,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           />
         </aside>
 
-        {/* Model info - NO PANEL, just text with shadow for readability */}
-        <div className="absolute left-3 bottom-6 z-20">
+        {/* Model info - NO PANEL, just text with shadow - positioned above footer */}
+        <div 
+          className="absolute left-3 z-20"
+          style={{ bottom: `${FOOTER_HEIGHT + 16}px` }}
+        >
           <div className="flex items-baseline gap-2 mb-1">
             <h1 className="text-lg font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{currentModel.name}</h1>
             <span className="text-lg font-bold text-primary drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">{currentModel.area}м²</span>
