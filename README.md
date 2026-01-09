@@ -122,12 +122,13 @@ barnhouse-vibes-kg/
 
 ---
 
-## 🤝 Contributing
+## � Для AI-агентов
 
-Хочешь помочь? Отлично!
+Этот проект работает с AI-агентами (Claude, GPT, Cursor и др.)
 
-1. Прочитай [CONTRIBUTING.md](./CONTRIBUTING.md)
-2. Посмотри [Issues](https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0/issues) с меткой `help wanted`
+1. Прочитай [AI_AGENT_SETUP.md](./AI_AGENT_SETUP.md) — как настроить
+2. Прочитай [AI_WORKFLOW.md](./AI_WORKFLOW.md) — как работать с Issues
+3. Смотри [Issues](https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0/issues) — текущие баги
 3. Форкни → Сделай изменения → Создай PR
 
 ---
