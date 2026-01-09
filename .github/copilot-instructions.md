@@ -23,7 +23,7 @@ applyTo: '**'
 ## 🔄 WORKFLOW
 
 ```
-БАГ/ЗАДАЧА → ISSUE → FIX → BUILD → COMMIT → DEPLOY → CLOSE ISSUE
+БАГ/ЗАДАЧА → ISSUE → FIX → COMMIT → PUSH → АВТОДЕПЛОЙ ✨ → CLOSE ISSUE
 ```
 
 ### 1. Получил задачу или нашёл баг
@@ -41,8 +41,6 @@ git checkout main && git pull origin main
 git checkout -b fix/issue-N-описание
 
 # ... код ...
-
-npm run build  # ОБЯЗАТЕЛЬНО перед коммитом!
 ```
 
 ### 3. Коммит и пуш
@@ -52,21 +50,26 @@ git commit -m "fix(scope): описание. Closes #N"
 git push origin fix/issue-N-описание
 ```
 
-### 4. Merge и деплой
+### 4. Merge → автодеплой
 ```bash
 git checkout main
 git merge fix/issue-N-описание
 git push origin main
 
-# Деплой
-scp dist/index.html root@185.196.117.49:/var/www/era-concept/
-scp dist/assets/index-*.js dist/assets/index-*.css root@185.196.117.49:/var/www/era-concept/assets/
+# 🎉 GitHub Actions автоматически:
+# - npm ci
+# - npm run build
+# - rsync на сервер
+# - chmod/chown
+# Отследить: GitHub → Actions
 ```
 
 ### 5. Закрыть issue
 ```bash
 gh issue close N --comment "Решено в коммите XYZ"
 ```
+
+> ⚠️ **Ручной деплой больше НЕ НУЖЕН!** Actions делает всё сам.
 
 ---
 
@@ -170,8 +173,9 @@ sm:  640px   md:  768px   lg:  1024px   xl:  1280px   2xl: 1400px
 1. **НЕ** хардкодить цвета — только CSS переменные
 2. **НЕ** менять `src/components/ui/` без причины (shadcn)
 3. **НЕ** менять `catalogPath` без переименования папок
-4. **НЕ** коммитить без `npm run build`
-5. **НЕ** деплоить в `/var/www/era-home.kg/` — только `/var/www/era-concept/`
+4. **НЕ** коммитить без проверки (Actions соберёт автоматически)
+5. **НЕ** деплоить вручную — GitHub Actions делает это сам
+6. **НЕ** деплоить в `/var/www/era-home.kg/` — только `/var/www/era-concept/`
 
 ---
 
@@ -202,6 +206,8 @@ git commit -m "docs: обновлена документация после из
 - `ARCHITECTURE.md` — Архитектура проекта
 - `DESIGN_SYSTEM.md` — Цвета, типографика
 - `CATALOG_GUIDE.md` — Гайд по моделям
+- `GITHUB_ACTIONS_SETUP.md` — Настройка автодеплоя
+- `COPILOT_SETUP_MAC.md` — Настройка Copilot на macOS
 
 ---
 
