@@ -769,17 +769,62 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </defs>
       </svg>
 
-      {/* ========== UNIFIED HEADER: Filters + Model + Close in ONE bar ========== */}
-      <header 
-        className="absolute top-0 left-0 right-0 z-40" 
-        style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
-      >
-        <div className="px-3">
-          <motion.div 
-            className={`w-full rounded-2xl ${glassPanel}`}
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 200, delay: 0.1 }}
+      {/* ========== TOP GLASS ZONE: Dark glass header (mirrors footer) ========== */}
+      <header className="absolute top-0 left-0 right-0 z-40 overflow-hidden">
+        {/* Layer 1: Blurred image underlay */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `url(${mainPhoto})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
+            transform: "translate3d(0, 0, 0) scale(1.5)",
+            filter: "blur(30px) brightness(0.6)",
+            opacity: 0.5,
+          }}
+        />
+        
+        {/* Layer 2: Dark glass tint */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: "rgba(0, 0, 0, 0.45)",
+            backdropFilter: "blur(60px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(60px) saturate(1.8)",
+            transform: "translate3d(0, 0, 0)",
+          }}
+        />
+        
+        {/* Layer 3: Bottom highlight - soft glow */}
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
+          style={{
+            background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 50%, transparent 95%)",
+          }}
+        />
+        
+        {/* Layer 4: Noise texture */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay"
+          style={{
+            filter: "url(#noise-filter)",
+            transform: "translate3d(0, 0, 0) scale(1.5)",
+          }}
+        />
+        
+        {/* Content: Filter bar CENTERED vertically in glass zone */}
+        <motion.div 
+          className="relative z-10 flex items-center justify-center"
+          style={{ 
+            paddingTop: "calc(env(safe-area-inset-top) + 16px)",
+            paddingBottom: "16px",
+          }}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", damping: 20, stiffness: 200, delay: 0.1 }}
+        >
+          <div className="mx-3 w-full rounded-2xl bg-white/10 backdrop-blur-xl border border-white/15"
+            style={{ transform: "translate3d(0, 0, 0)" }}
           >
             <div className="flex items-center justify-between px-3 py-3">
               {/* Left: Filter tabs */}
@@ -822,7 +867,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <ChevronDown className="h-3.5 w-3.5 text-white/50 flex-shrink-0" />
               </button>
               
-              {/* Right: Close button - INSIDE the header bar */}
+              {/* Right: Close button */}
               {onClose && (
                 <motion.button
                   aria-label="Закрыть каталог"
@@ -834,9 +879,30 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 </motion.button>
               )}
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </header>
+
+      {/* TOP TRANSITION VEIL: Smooth fade from header glass to photo */}
+      <div 
+        className="absolute left-0 right-0 z-[35] pointer-events-none"
+        style={{ 
+          height: "120px",
+          top: "calc(env(safe-area-inset-top) + 85px)",
+          WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 15%, transparent 100%)",
+          maskImage: "linear-gradient(to bottom, black 0%, black 15%, transparent 100%)",
+        }}
+      >
+        <div 
+          className="absolute inset-0"
+          style={{
+            backdropFilter: "blur(30px) saturate(1.5)",
+            WebkitBackdropFilter: "blur(30px) saturate(1.5)",
+            transform: "translate3d(0, 0, 0)",
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-transparent" />
+      </div>
 
       {/* MAIN PHOTO AREA - extends to bottom, footer overlays it */}
       <motion.div 
@@ -875,10 +941,10 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows - elegant chevrons, positioned via TOP to be stable regardless of browser UI */}
+        {/* Nav arrows - elegant chevrons with haptic feedback */}
         <motion.button 
           aria-label="Предыдущая" 
-          onClick={() => goToModel(-1)} 
+          onClick={() => { triggerHaptic(); goToModel(-1); }} 
           className="absolute left-2 z-20 top-1/2 -translate-y-1/2"
           whileTap={{ scale: 0.9, x: -3 }}
         >
@@ -891,7 +957,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </motion.button>
         <motion.button 
           aria-label="Следующая" 
-          onClick={() => goToModel(1)} 
+          onClick={() => { triggerHaptic(); goToModel(1); }} 
           className="absolute right-2 z-20 top-1/2 -translate-y-1/2"
           whileTap={{ scale: 0.9, x: 3 }}
         >
@@ -945,7 +1011,6 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       </motion.div>
 
       {/* ========== TRANSITION VEIL: Multi-layer fade from image to footer ========== */}
-      {/* This creates a smooth "glass morphism" transition without hard edges */}
       <div 
         className="absolute left-0 right-0 bottom-0 z-[35] pointer-events-none"
         style={{ 
@@ -955,15 +1020,16 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           maskImage: "linear-gradient(to top, black 0%, black 25%, transparent 100%)",
         }}
       >
-        {/* Layer 1: Blur effect over photo */}
+        {/* Layer 1: Blur effect over photo - iOS Safari fix with translate3d */}
         <div 
           className="absolute inset-0"
           style={{
             backdropFilter: "blur(40px) saturate(1.5)",
             WebkitBackdropFilter: "blur(40px) saturate(1.5)",
+            transform: "translate3d(0, 0, 0)",
           }}
         />
-        {/* Layer 2: Dark tint gradient - NOT charcoal, transparent black */}
+        {/* Layer 2: Dark tint gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent" />
       </div>
 
@@ -985,13 +1051,14 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           }}
         />
         
-        {/* Layer 2: Glass tint - transparent, NOT charcoal */}
+        {/* Layer 2: Glass tint - MORE transparent when expanded, iOS Safari fix */}
         <div 
-          className="absolute inset-0"
+          className="absolute inset-0 transition-all duration-300"
           style={{
-            background: "rgba(0, 0, 0, 0.45)",
-            backdropFilter: "blur(60px) saturate(1.8)",
-            WebkitBackdropFilter: "blur(60px) saturate(1.8)",
+            background: callExpanded ? "rgba(0, 0, 0, 0.25)" : "rgba(0, 0, 0, 0.45)",
+            backdropFilter: callExpanded ? "blur(80px) saturate(2)" : "blur(60px) saturate(1.8)",
+            WebkitBackdropFilter: callExpanded ? "blur(80px) saturate(2)" : "blur(60px) saturate(1.8)",
+            transform: "translate3d(0, 0, 0)",
           }}
         />
         
