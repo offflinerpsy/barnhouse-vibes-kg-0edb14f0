@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted glass footer - warm sand tint, not white
-const iosFooterGlass = "bg-[hsl(38_25%_92%/0.7)] backdrop-blur-[50px] backdrop-saturate-150 border-t border-[hsl(38_25%_80%/0.5)]";
+// iOS-style dark frosted glass footer - matches Photo/Plan buttons aesthetic
+const iosFooterGlass = "bg-charcoal/70 backdrop-blur-[40px] backdrop-saturate-150 border-t border-white/10";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -937,12 +937,12 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </motion.div>
 
-      {/* Soft gradient for smooth transition to glass footer - NO white, warm tones */}
+      {/* Smooth gradient fade from image to dark glass footer - NO hard lines */}
       <div 
         className="absolute left-0 right-0 bottom-0 z-35 pointer-events-none"
-        style={{ height: "160px" }}
+        style={{ height: "200px" }}
       >
-        <div className="w-full h-full bg-gradient-to-t from-[hsl(38_25%_85%/0.6)] via-[hsl(38_25%_90%/0.3)] to-transparent" />
+        <div className="w-full h-full bg-gradient-to-t from-charcoal/90 via-charcoal/40 to-transparent" />
       </div>
 
       {/* iOS-STYLE FOOTER with true glass effect */}
@@ -967,7 +967,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
                   <Phone className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-charcoal/70 font-medium">Звонок</span>
+                <span className="text-xs text-white/70 font-medium">Звонок</span>
               </motion.button>
               
               <motion.button
@@ -978,7 +978,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
                   <MessageCircle className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-charcoal/70 font-medium">WhatsApp</span>
+                <span className="text-xs text-white/70 font-medium">WhatsApp</span>
               </motion.button>
               
               <motion.button
@@ -989,7 +989,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <Send className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-charcoal/70 font-medium">Telegram</span>
+                <span className="text-xs text-white/70 font-medium">Telegram</span>
               </motion.button>
             </motion.div>
           )}
