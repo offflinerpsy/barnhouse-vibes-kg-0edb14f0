@@ -987,11 +987,11 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
 
   return (
       // Simple full-height section with scroll-snap
-      // NO auto-lock, NO complex JS - just CSS scroll-snap for "capture" effect
+      // sticky top-0 helps with iOS Safari momentum scrolling
       <section 
         ref={catalogRef}
         id="catalog"
-        className="relative bg-charcoal text-white overflow-hidden h-[100dvh] snap-start snap-always"
+        className="sticky top-0 bg-charcoal text-white overflow-hidden h-[100dvh] snap-start snap-always z-10"
         style={{ 
           overscrollBehavior: 'contain'
         }}
@@ -1295,7 +1295,7 @@ export default function CatalogAppView({ onClose }: CatalogAppViewProps) {
           {showContactForm && !showSuccessScreen && (
             <InlineMobileContactForm
               modelName={currentModel.name}
-              modelArea={currentModel.area}
+              modelArea={String(currentModel.area)}
               onClose={() => setShowContactForm(false)}
               onSuccess={() => {
                 setShowContactForm(false);

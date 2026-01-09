@@ -1611,14 +1611,8 @@ export function Catalog() {
   // На мобильных устройствах показываем CatalogAppView
   // (ContactModal is now embedded inside CatalogAppView as InlineMobileContactForm)
   if (isMobile) {
-    return (
-      <section id="catalog" className="relative">
-        <CatalogAppView />
-      </section>
-    );
-  }
-
-  // Фильтрация по проекту
+    return <CatalogAppView />;
+  }  // Фильтрация по проекту
   const projectFilteredHouses = activeProject === "all" 
     ? houses 
     : houses.filter(house => house.projectType === activeProject);
