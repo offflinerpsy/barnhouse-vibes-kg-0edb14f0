@@ -210,9 +210,11 @@ $env:GH_TOKEN = Get-Content $env:USERPROFILE\.github_token
 ```
 Server IP:  185.196.117.49
 Domain:     era-home.kg
-Web Root:   /var/www/era-home.kg/
+Web Root:   /var/www/era-concept/    ← ПРАВИЛЬНЫЙ ПУТЬ!
 SSH:        ssh root@185.196.117.49
 ```
+
+> ⚠️ **ВАЖНО:** Nginx настроен на `/var/www/era-concept/`, НЕ на `/var/www/era-home.kg/`!
 
 ---
 
@@ -254,17 +256,17 @@ SSH:        ssh root@185.196.117.49
 
 1. **Залить файлы на сервер:**
    ```powershell
-   scp dist/index.html root@185.196.117.49:/var/www/era-home.kg/
-   scp dist/assets/index-*.js dist/assets/index-*.css root@185.196.117.49:/var/www/era-home.kg/assets/
+   scp dist/index.html root@185.196.117.49:/var/www/era-concept/
+   scp dist/assets/index-*.js dist/assets/index-*.css root@185.196.117.49:/var/www/era-concept/assets/
    ```
 
 2. **ОБЯЗАТЕЛЬНО ПРОВЕРИТЬ что залилось:**
    ```powershell
    # Проверить что на сервере НОВЫЙ хеш
-   ssh root@185.196.117.49 "ls -la /var/www/era-home.kg/assets/index-*.js"
+   ssh root@185.196.117.49 "ls -la /var/www/era-concept/assets/index-*.js"
    
    # Проверить что index.html ссылается на НОВЫЙ хеш
-   ssh root@185.196.117.49 "grep index- /var/www/era-home.kg/index.html"
+   ssh root@185.196.117.49 "grep index- /var/www/era-concept/index.html"
    ```
 
 3. **Проверить в браузере (с очисткой кеша):**

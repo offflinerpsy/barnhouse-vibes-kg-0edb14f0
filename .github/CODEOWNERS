@@ -1,0 +1,12 @@
+# CODEOWNERS - кто ревьюит какой код
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# По умолчанию - владелец репозитория
+* @offflinerpsy
+
+# Критичные файлы - требуют обязательного ревью
+/.github/ @offflinerpsy
+/src/components/landing/Catalog.tsx @offflinerpsy
+/src/components/landing/CatalogAppView.tsx @offflinerpsy
+/vite.config.ts @offflinerpsy
+/tailwind.config.ts @offflinerpsy

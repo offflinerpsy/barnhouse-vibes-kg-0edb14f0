@@ -1,73 +1,183 @@
-# Welcome to your Lovable project
+# 🏠 ERA Concept Home KG
 
-## Project info
+> Landing page для продажи модульных домов в Кыргызстане
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+[![Deploy](https://img.shields.io/badge/deploy-era--home.kg-green)](https://era-home.kg)
+[![React](https://img.shields.io/badge/React-18-blue)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org)
+[![Vite](https://img.shields.io/badge/Vite-5.4-purple)](https://vitejs.dev)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚀 Quick Start
 
-**Use Lovable**
+### Требования
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **Node.js** 18+ ([скачать](https://nodejs.org/) или через [nvm](https://github.com/nvm-sh/nvm))
+- **npm** 9+ (идёт с Node.js)
+- **Git** ([скачать](https://git-scm.com/))
 
-Changes made via Lovable will be committed automatically to this repo.
+### Установка
 
-**Use your preferred IDE**
+```bash
+# 1. Клонируй репозиторий
+git clone https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0.git
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+# 2. Перейди в папку
+cd barnhouse-vibes-kg-0edb14f0
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# 3. Установи зависимости
+npm install
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Запусти dev сервер
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Открой **http://localhost:8080** в браузере.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Доступные команды
 
-**Use GitHub Codespaces**
+| Команда | Описание |
+|---------|----------|
+| `npm run dev` | Запустить dev сервер (порт 8080) |
+| `npm run build` | Собрать production билд в `dist/` |
+| `npm run preview` | Превью production билда локально |
+| `npm run lint` | Проверить код линтером |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 📁 Структура проекта
 
-This project is built with:
+```
+barnhouse-vibes-kg/
+├── public/
+│   ├── catalog/               # Изображения домов
+│   │   └── model-X-XX/
+│   │       ├── gallery/       # Основные фото
+│   │       ├── gallery-extra/ # Дополнительные фото
+│   │       └── floor-plan/    # Планировки
+│   └── fonts/                 # Шрифт Rising Sun
+├── src/
+│   ├── components/
+│   │   ├── landing/           # Секции лендинга
+│   │   │   ├── Hero.tsx
+│   │   │   ├── Catalog.tsx
+│   │   │   ├── CatalogAppView.tsx  # Мобильный каталог
+│   │   │   ├── Advantages.tsx
+│   │   │   ├── Stages.tsx
+│   │   │   ├── FAQ.tsx
+│   │   │   ├── Contact.tsx
+│   │   │   └── Footer.tsx
+│   │   └── ui/                # shadcn компоненты
+│   ├── pages/
+│   │   └── Index.tsx          # Главная страница
+│   ├── hooks/
+│   ├── lib/
+│   └── assets/
+├── .github/
+│   ├── ISSUE_TEMPLATE/        # Шаблоны Issue
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── CODEOWNERS
+│   └── copilot-instructions.md  # Инструкции для AI
+└── docs/
+    ├── ARCHITECTURE.md        # Архитектура
+    ├── DESIGN_SYSTEM.md       # Дизайн-система
+    └── CATALOG_GUIDE.md       # Гайд по каталогу
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🎨 Технологии
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+| Технология | Версия | Назначение |
+|------------|--------|------------|
+| React | 18.3 | UI библиотека |
+| TypeScript | 5.8 | Типизация |
+| Vite | 5.4 | Сборщик |
+| Tailwind CSS | 3.4 | Стилизация |
+| shadcn/ui | - | UI компоненты |
+| Framer Motion | 11 | Анимации |
+| react-pdf | 9 | PDF планировки |
+| Embla Carousel | 8 | Карусели |
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 🏠 Система моделей домов
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Именование
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **Model N** — одноэтажный (N модулей × 18м²)
+- **Model NX** — двухэтажный/дуплекс
+
+### Примеры
+
+| Модель | Площадь | Этажей | Папка |
+|--------|---------|--------|-------|
+| Model 1 | 18м² | 1 | `model-1-18` |
+| Model 2 | 36м² | 1 | `model-1-36` |
+| Model 4X | 72м² | 2 | `model-2-72` |
+| Model 12X | 204м² | 2 | `model-2-204` |
+
+Подробнее: [CATALOG_GUIDE.md](./CATALOG_GUIDE.md)
+
+---
+
+## 🤝 Contributing
+
+Хочешь помочь? Отлично!
+
+1. Прочитай [CONTRIBUTING.md](./CONTRIBUTING.md)
+2. Посмотри [Issues](https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0/issues) с меткой `help wanted`
+3. Форкни → Сделай изменения → Создай PR
+
+---
+
+## 🚀 Деплой
+
+### Production
+
+- **URL:** https://era-home.kg
+- **Сервер:** Timeweb Cloud VPS
+- **IP:** 185.196.117.49
+
+### Для maintainers
+
+```bash
+# 1. Собери билд
+npm run build
+
+# 2. Залей на сервер (только изменённые файлы!)
+scp dist/index.html root@185.196.117.49:/var/www/era-concept/
+scp dist/assets/index-*.js dist/assets/index-*.css root@185.196.117.49:/var/www/era-concept/assets/
+
+# 3. Проверь
+curl -s https://era-home.kg/ | grep "index-"
+```
+
+> ⚠️ **Важно:** Nginx root = `/var/www/era-concept/`
+
+Полная документация: [.github/copilot-instructions.md](.github/copilot-instructions.md)
+
+---
+
+## 📞 Контакты проекта
+
+- **Телефон:** +996 222 001 112
+- **WhatsApp:** [wa.me/996222001112](https://wa.me/996222001112)
+- **Telegram:** [@eraconcepthome](https://t.me/eraconcepthome)
+- **Instagram:** [@eraconcepthome](https://instagram.com/eraconcepthome)
+- **Адрес:** г. Бишкек, Ул. Байтик Баатыра 61
+
+---
+
+## 📄 Лицензия
+
+Проприетарный код. Все права защищены.
+
+---
+
+## 🔗 Ссылки
+
+- [Production сайт](https://era-home.kg)
+- [GitHub Issues](https://github.com/offflinerpsy/barnhouse-vibes-kg-0edb14f0/issues)
+- [Lovable.dev](https://lovable.dev) — Low-code платформа (синхронизация)
