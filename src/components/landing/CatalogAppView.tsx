@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// Dark glassmorphism footer - matches charcoal theme with elegant glass effect
-const iosFooterGlass = "bg-charcoal/90 backdrop-blur-[40px] backdrop-saturate-150 border-t border-white/10 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.08)]";
+// Dark iOS glassmorphism footer — keep premium blur/shadow, but NO solid bg to avoid a hard seam with the image
+const iosFooterGlass = "relative overflow-hidden bg-transparent backdrop-blur-[40px] backdrop-saturate-150 border-t border-white/10 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.08)]";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -937,15 +937,15 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </motion.div>
 
-      {/* Dark gradient for smooth transition - ends at top of model name text */}
+      {/* Dark gradient for smooth transition (starts from the very bottom, continues under the footer) */}
       <div 
-        className="absolute left-0 right-0 z-15 pointer-events-none"
+        className="absolute left-0 right-0 z-10 pointer-events-none"
         style={{ 
           bottom: 0,
-          height: `${FOOTER_HEIGHT + 100}px` 
+          height: `${FOOTER_HEIGHT + 220}px`,
         }}
       >
-        <div className="w-full h-full bg-gradient-to-t from-charcoal via-charcoal/70 to-transparent" />
+        <div className="w-full h-full bg-gradient-to-t from-charcoal/95 via-charcoal/60 to-transparent" />
       </div>
 
       {/* iOS-STYLE FOOTER with true glass effect */}
@@ -953,6 +953,8 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         className={`absolute left-0 right-0 bottom-0 z-40 ${iosFooterGlass}`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
+        {/* Gradient tint INSIDE the footer to remove any visible edge between footer and photo */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-charcoal/95 via-charcoal/85 to-transparent" />
         {/* Call options - appears above when expanded with gradient overlay */}
         <AnimatePresence>
           {callExpanded && (
