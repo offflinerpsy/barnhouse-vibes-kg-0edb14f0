@@ -62,7 +62,7 @@ barnhouse-vibes-kg/
 │   │   ├── landing/           # Секции лендинга
 │   │   │   ├── Hero.tsx
 │   │   │   ├── Catalog.tsx
-│   │   │   ├── CatalogAppView.tsx  # Мобильный каталог
+│   │   │   ├── CatalogAppViewV2.tsx  # Мобильный каталог (iOS-style)
 │   │   │   ├── Advantages.tsx
 │   │   │   ├── Stages.tsx
 │   │   │   ├── FAQ.tsx
