@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted glass footer - TRUE glassmorphism with depth
-const iosFooterGlass = "bg-white/30 backdrop-blur-[60px] backdrop-saturate-150 border-t border-white/20";
+// iOS-style frosted glass footer - warm sand tint, not white
+const iosFooterGlass = "bg-[hsl(38_25%_92%/0.7)] backdrop-blur-[50px] backdrop-saturate-150 border-t border-[hsl(38_25%_80%/0.5)]";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -755,13 +755,13 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         overscrollBehavior: 'contain'
       }}
     >
-      {/* Close button - aligned with filter bar */}
+      {/* Close button - EXACTLY aligned with filter bar content (safe-area + 20px padding + 2px pt + ~12px to center = 34px) */}
       {onClose && (
         <motion.button
           aria-label="Закрыть каталог"
           onClick={() => { triggerHaptic(); onClose(); }}
-          className="absolute top-0 right-3 z-50"
-          style={{ top: "calc(env(safe-area-inset-top) + 22px)" }}
+          className="absolute right-3 z-50"
+          style={{ top: "calc(env(safe-area-inset-top) + 28px)" }}
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           exit={{ scale: 0, rotate: 180 }}
@@ -868,33 +868,31 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           </motion.div>
         </AnimatePresence>
 
-        {/* Nav arrows - elegant chevrons, positioned higher to avoid browser UI overlap */}
+        {/* Nav arrows - elegant chevrons, positioned via TOP to be stable regardless of browser UI */}
         <motion.button 
           aria-label="Предыдущая" 
           onClick={() => goToModel(-1)} 
-          className="absolute left-2 z-20"
-          style={{ bottom: `${FOOTER_HEIGHT + 180}px` }}
+          className="absolute left-2 z-20 top-1/2 -translate-y-1/2"
           whileTap={{ scale: 0.9, x: -3 }}
         >
           <motion.div
             animate={{ x: [0, -4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ChevronLeft className="h-8 w-8 text-white/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" strokeWidth={2.5} />
+            <ChevronLeft className="h-9 w-9 text-white/80 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" strokeWidth={2} />
           </motion.div>
         </motion.button>
         <motion.button 
           aria-label="Следующая" 
           onClick={() => goToModel(1)} 
-          className="absolute right-2 z-20"
-          style={{ bottom: `${FOOTER_HEIGHT + 180}px` }}
+          className="absolute right-2 z-20 top-1/2 -translate-y-1/2"
           whileTap={{ scale: 0.9, x: 3 }}
         >
           <motion.div
             animate={{ x: [0, 4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ChevronRight className="h-8 w-8 text-white/70 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" strokeWidth={2.5} />
+            <ChevronRight className="h-9 w-9 text-white/80 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" strokeWidth={2} />
           </motion.div>
         </motion.button>
 
@@ -939,18 +937,12 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         </div>
       </motion.div>
 
-      {/* Blurred image continuation under glass footer for depth effect */}
+      {/* Soft gradient for smooth transition to glass footer - NO white, warm tones */}
       <div 
-        className="absolute left-0 right-0 bottom-0 z-35 pointer-events-none overflow-hidden"
-        style={{ height: "280px" }}
+        className="absolute left-0 right-0 bottom-0 z-35 pointer-events-none"
+        style={{ height: "160px" }}
       >
-        <img 
-          src={mainPhoto} 
-          alt="" 
-          className="absolute bottom-0 left-0 right-0 w-full h-[400px] object-cover object-[center_80%] blur-[2px] opacity-60"
-        />
-        {/* Gradient overlay on blurred image */}
-        <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-white/40 to-transparent" />
+        <div className="w-full h-full bg-gradient-to-t from-[hsl(38_25%_85%/0.6)] via-[hsl(38_25%_90%/0.3)] to-transparent" />
       </div>
 
       {/* iOS-STYLE FOOTER with true glass effect */}
