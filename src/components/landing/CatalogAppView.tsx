@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted footer - LIGHT variant (like iOS)
-const iosFooterGlass = "bg-white/[0.85] backdrop-blur-3xl border-t border-black/[0.05]";
+// iOS-style frosted glass footer - true glassmorphism
+const iosFooterGlass = "bg-white/50 backdrop-blur-[40px] border-t border-white/40";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -867,6 +867,14 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           </div>
         </div>
       </motion.div>
+
+      {/* Gradient overlay for smooth transition from image to glass footer */}
+      <div 
+        className="absolute left-0 right-0 z-35 pointer-events-none"
+        style={{ bottom: 0, height: "200px" }}
+      >
+        <div className="w-full h-full bg-gradient-to-t from-white/70 via-white/30 to-transparent" />
+      </div>
 
       {/* iOS-STYLE FOOTER with blur */}
       <footer 

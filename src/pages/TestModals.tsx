@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Smartphone, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
-import CatalogAppViewV2 from "@/components/landing/CatalogAppViewV2";
+import CatalogAppView from "@/components/landing/CatalogAppView";
 
 export default function TestModals() {
   const [open, setOpen] = useState(false);
@@ -97,7 +97,7 @@ export default function TestModals() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50"
           >
-            <CatalogAppViewV2
+            <CatalogAppView
               onClose={() => setOpen(false)}
             />
           </motion.div>
