@@ -43,7 +43,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
       document.body.style.right = '0';
       document.body.style.overflow = 'hidden';
       // iOS Safari needs this
-      document.body.style.webkitOverflowScrolling = 'touch';
+      (document.body.style as any).webkitOverflowScrolling = 'touch';
     } else {
       // Restore scroll position
       const scrollY = document.body.style.top;
@@ -52,7 +52,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
       document.body.style.left = '';
       document.body.style.right = '';
       document.body.style.overflow = '';
-      document.body.style.webkitOverflowScrolling = '';
+      (document.body.style as any).webkitOverflowScrolling = '';
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       }
