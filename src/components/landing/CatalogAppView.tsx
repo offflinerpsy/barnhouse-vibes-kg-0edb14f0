@@ -754,47 +754,36 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         overscrollBehavior: 'contain'
       }}
     >
-      {/* Close button - EXACTLY aligned with filter bar content (safe-area + 20px padding + 2px pt + ~12px to center = 34px) */}
-      {onClose && (
-        <motion.button
-          aria-label="Закрыть каталог"
-          onClick={() => { triggerHaptic(); onClose(); }}
-          className="absolute right-3 z-50"
-          style={{ top: "calc(env(safe-area-inset-top) + 28px)" }}
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          exit={{ scale: 0, rotate: 180 }}
-          transition={{ type: "spring", damping: 15, stiffness: 200, delay: 0.2 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <div className={`w-11 h-11 rounded-xl ${glassPanelLight} flex items-center justify-center`}>
-            <X className="h-6 w-6 text-white" />
-          </div>
-        </motion.button>
-      )}
+      {/* SVG Noise Filter - hidden, used by footer glass effect */}
+      <svg className="hidden" aria-hidden="true">
+        <defs>
+          <filter id="noise-filter">
+            <feTurbulence 
+              type="fractalNoise" 
+              baseFrequency="0.75" 
+              numOctaves="4" 
+              stitchTiles="stitch"
+            />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+        </defs>
+      </svg>
 
-      {/* Model indicator dots */}
-      <div className="absolute top-0 left-0 right-14 z-40 px-4 flex justify-center gap-1.5" style={{ paddingTop: "calc(env(safe-area-inset-top) + 8px)" }}>
-        {filteredModels.map((model, idx) => (
-          <button
-            key={model.id}
-            onClick={() => { triggerHaptic(); setDirection(idx > safeIndex ? 1 : -1); setCurrentModelIndex(idx); }}
-            className={`h-1.5 rounded-full transition-all ${idx === safeIndex ? "bg-primary w-6" : "bg-white/30 w-1.5"}`}
-          />
-        ))}
-      </div>
-
-      {/* TOP: Filter + Catalog selector merged */}
-      <header className="absolute top-0 left-0 right-14 z-30" style={{ paddingTop: "calc(env(safe-area-inset-top) + 20px)" }}>
-        <div className="px-3 pt-2">
-          <motion.button
-            onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
-            className={`w-full rounded-2xl ${glassPanel} active:scale-[0.98] transition-transform`}
-            whileTap={{ scale: 0.98 }}
+      {/* ========== UNIFIED HEADER: Filters + Model + Close in ONE bar ========== */}
+      <header 
+        className="absolute top-0 left-0 right-0 z-40" 
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}
+      >
+        <div className="px-3">
+          <motion.div 
+            className={`w-full rounded-2xl ${glassPanel}`}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 200, delay: 0.1 }}
           >
-            <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center justify-between px-3 py-3">
               {/* Left: Filter tabs */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 flex-shrink-0">
                 {([
                   { id: "all" as const, label: "Все" },
                   { id: "1-floor" as const, label: "1эт" },
@@ -803,15 +792,15 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 ] as const).map((f) => (
                   <button
                     key={f.id}
-                    onClick={(e) => { 
-                      e.stopPropagation(); 
+                    onClick={() => { 
+                      triggerHaptic();
                       setFilter(f.id); 
                       setCurrentModelIndex(0); 
                     }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                    className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       filter === f.id
                         ? "bg-primary text-charcoal"
-                        : "text-white/60"
+                        : "text-white/60 active:bg-white/10"
                     }`}
                   >
                     {f.label}
@@ -819,14 +808,33 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 ))}
               </div>
               
-              {/* Right: Current model + arrow - whitespace-nowrap prevents wrapping */}
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <span className="text-sm font-semibold text-white whitespace-nowrap">{currentModel.name}</span>
-                <span className="text-sm font-bold text-primary whitespace-nowrap">{currentModel.area}м²</span>
-                <ChevronDown className="h-4 w-4 text-white/50 flex-shrink-0" />
-              </div>
+              {/* Center: Current model - clickable, opens picker */}
+              <button 
+                onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
+                className="flex items-center gap-1.5 min-w-0 px-2 py-1 rounded-lg active:bg-white/10 transition-colors"
+              >
+                <span className="text-xs sm:text-sm font-semibold text-white truncate max-w-[80px] sm:max-w-[120px]">
+                  {currentModel.name}
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-primary flex-shrink-0">
+                  {currentModel.area}м²
+                </span>
+                <ChevronDown className="h-3.5 w-3.5 text-white/50 flex-shrink-0" />
+              </button>
+              
+              {/* Right: Close button - INSIDE the header bar */}
+              {onClose && (
+                <motion.button
+                  aria-label="Закрыть каталог"
+                  onClick={() => { triggerHaptic(); onClose(); }}
+                  className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors"
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <X className="h-5 w-5 text-white" />
+                </motion.button>
+              )}
             </div>
-          </motion.button>
+          </motion.div>
         </div>
       </header>
 
@@ -834,7 +842,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       <motion.div 
         className="absolute left-0 right-0 bottom-0" 
         style={{ 
-          top: "calc(env(safe-area-inset-top) + 80px)"
+          top: "calc(env(safe-area-inset-top) + 72px)"
         }}
         onPanEnd={handlePanEnd}
       >
@@ -941,41 +949,66 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       <div 
         className="absolute left-0 right-0 bottom-0 z-[35] pointer-events-none"
         style={{ 
-          height: callExpanded ? "340px" : "260px",
+          height: callExpanded ? "380px" : "300px",
           transition: "height 0.3s ease-out",
-          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)",
-          maskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)",
+          WebkitMaskImage: "linear-gradient(to top, black 0%, black 25%, transparent 100%)",
+          maskImage: "linear-gradient(to top, black 0%, black 25%, transparent 100%)",
         }}
       >
-        {/* Blur layer - creates glass effect over photo */}
-        <div className="absolute inset-0 backdrop-blur-[28px] backdrop-saturate-150" />
-        {/* Gradient tint - dark at bottom, transparent at top */}
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/95 via-charcoal/60 to-transparent" />
+        {/* Layer 1: Blur effect over photo */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            backdropFilter: "blur(40px) saturate(1.5)",
+            WebkitBackdropFilter: "blur(40px) saturate(1.5)",
+          }}
+        />
+        {/* Layer 2: Dark tint gradient - NOT charcoal, transparent black */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent" />
       </div>
 
-      {/* ========== iOS-STYLE MULTI-LAYER GLASS FOOTER ========== */}
+      {/* ========== iOS-STYLE MULTI-LAYER GLASS FOOTER (5 layers) ========== */}
       <footer 
         className="absolute left-0 right-0 bottom-0 z-40 overflow-hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {/* Layer 1: Blurred image underlay - continuation of photo "under glass" */}
         <div 
-          className="absolute inset-0 scale-125 blur-[24px] opacity-30 brightness-75"
+          className="absolute inset-0 pointer-events-none"
           style={{
             backgroundImage: `url(${mainPhoto})`,
             backgroundSize: "cover",
             backgroundPosition: "center bottom",
+            transform: "scale(1.5)",
+            filter: "blur(30px) brightness(0.6)",
+            opacity: 0.5,
           }}
         />
         
-        {/* Layer 2: Glass tint with gradient - dark at bottom */}
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/50 to-charcoal/30 backdrop-blur-xl" />
+        {/* Layer 2: Glass tint - transparent, NOT charcoal */}
+        <div 
+          className="absolute inset-0"
+          style={{
+            background: "rgba(0, 0, 0, 0.45)",
+            backdropFilter: "blur(60px) saturate(1.8)",
+            WebkitBackdropFilter: "blur(60px) saturate(1.8)",
+          }}
+        />
         
         {/* Layer 3: Top highlight - soft glow instead of hard border */}
         <div 
-          className="absolute top-0 left-0 right-0 h-8 pointer-events-none"
+          className="absolute top-0 left-0 right-0 h-px pointer-events-none"
           style={{
-            background: "linear-gradient(to bottom, rgba(255,255,255,0.08) 0%, transparent 100%)",
+            background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 50%, transparent 95%)",
+          }}
+        />
+        
+        {/* Layer 4: Noise texture - realistic matte glass grain */}
+        <div 
+          className="absolute inset-0 pointer-events-none opacity-[0.035] mix-blend-overlay"
+          style={{
+            filter: "url(#noise-filter)",
+            transform: "scale(1.5)",
           }}
         />
         
@@ -1031,12 +1064,13 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             {/* CALL button - becomes SOLID green when expanded, with subtle pulse animation */}
             <motion.button
               onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
-              className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
+              className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden active:shadow-inner ${
                 callExpanded 
                   ? "bg-green-500 shadow-lg shadow-green-500/40" 
                   : "bg-green-500/20 border-2 border-green-500/50"
               }`}
-              whileTap={{ scale: 0.97 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
               {/* Pulse ring animation when not expanded */}
               {!callExpanded && (
