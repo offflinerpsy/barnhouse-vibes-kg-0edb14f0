@@ -66,13 +66,17 @@ barnhouse-vibes-kg/
 │   ├── DESIGN_SYSTEM.md          # Дизайн-система (цвета, типографика)
 │   ├── CATALOG_GUIDE.md          # Гайд по моделям домов
 │   ├── FOOTER_STYLE_GUIDE.md     # Стили футера
+│   ├── GITHUB_ACTIONS_SETUP.md   # 🚀 Настройка автодеплоя
+│   ├── COPILOT_SETUP_MAC.md      # 🍎 Настройка Copilot на macOS
 │   └── README.md                 # Базовый README (от Lovable)
 │
 ├── 📂 .vscode/
 │   └── mcp.json                  # 🤖 MCP серверы для AI
 │
 ├── 📂 .github/
-│   └── copilot-instructions.md   # 📋 Инструкции для Copilot
+│   ├── copilot-instructions.md   # 📋 Инструкции для Copilot
+│   └── workflows/
+│       └── deploy.yml            # 🚀 Автодеплой на production (GitHub Actions)
 │
 ├── 📂 .memory/
 │   ├── memory.jsonl              # 🧠 База знаний (MCP Memory)
