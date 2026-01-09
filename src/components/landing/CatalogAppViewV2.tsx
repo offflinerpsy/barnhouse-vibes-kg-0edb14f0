@@ -67,8 +67,8 @@ function getFloorPlans(model: EraModel): string[] {
 const glassPanel = "bg-white/[0.12] backdrop-blur-2xl border border-white/[0.15] shadow-[0_8px_32px_rgba(0,0,0,0.3)]";
 const glassPanelLight = "bg-white/[0.08] backdrop-blur-xl border border-white/[0.12]";
 
-// iOS-style frosted footer
-const iosFooterGlass = "bg-white/[0.85] backdrop-blur-3xl border-t border-white/[0.3]";
+// iOS-style frosted footer - DARK variant
+const iosFooterGlass = "bg-charcoal/[0.85] backdrop-blur-3xl border-t border-white/[0.1]";
 
 const ImageWithSkeleton = forwardRef<HTMLDivElement, React.ImgHTMLAttributes<HTMLImageElement>>(
   function ImageWithSkeleton({ src, alt, className = "", ...props }, ref) {
@@ -818,7 +818,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
                   <Phone className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-charcoal/70 font-medium">Звонок</span>
+                <span className="text-xs text-white/70 font-medium">Звонок</span>
               </motion.button>
               
               <motion.button
@@ -829,7 +829,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg shadow-green-500/30">
                   <MessageCircle className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-charcoal/70 font-medium">WhatsApp</span>
+                <span className="text-xs text-white/70 font-medium">WhatsApp</span>
               </motion.button>
               
               <motion.button
@@ -840,7 +840,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
                 <div className="w-14 h-14 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
                   <Send className="h-6 w-6 text-white" />
                 </div>
-                <span className="text-xs text-charcoal/70 font-medium">Telegram</span>
+                <span className="text-xs text-white/70 font-medium">Telegram</span>
               </motion.button>
             </motion.div>
           )}
