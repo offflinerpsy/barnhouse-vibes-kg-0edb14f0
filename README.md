@@ -62,7 +62,7 @@ barnhouse-vibes-kg/
 │   │   ├── landing/           # Секции лендинга
 │   │   │   ├── Hero.tsx
 │   │   │   ├── Catalog.tsx
-│   │   │   ├── CatalogAppViewV2.tsx  # Мобильный каталог (iOS-style)
+│   │   │   ├── CatalogAppView.tsx    # Мобильный каталог (iOS-style)
 │   │   │   ├── Advantages.tsx
 │   │   │   ├── Stages.tsx
 │   │   │   ├── FAQ.tsx
@@ -96,8 +96,8 @@ barnhouse-vibes-kg/
 | Vite | 5.4 | Сборщик |
 | Tailwind CSS | 3.4 | Стилизация |
 | shadcn/ui | - | UI компоненты |
-| Framer Motion | 11 | Анимации |
-| react-pdf | 9 | PDF планировки |
+| Framer Motion | 12.23 | Анимации |
+| react-pdf | 10.2 | PDF планировки |
 | Embla Carousel | 8 | Карусели |
 
 ---
