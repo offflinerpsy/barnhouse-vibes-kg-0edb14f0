@@ -1118,7 +1118,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
               }}
             >
               <MessageSquare className="h-5 w-5 text-charcoal" />
-              <span className="font-semibold text-charcoal">Сообщение</span>
+              <span className="font-semibold text-charcoal">Оставить заявку</span>
             </motion.button>
           </div>
         </div>
