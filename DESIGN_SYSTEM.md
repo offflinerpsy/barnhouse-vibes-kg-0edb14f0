@@ -182,6 +182,31 @@ font-family: 'Rising Sun', system-ui, sans-serif;
 </button>
 ```
 
+#### iOS-style Inset Shadow Effect
+
+Для кнопок в мобильном каталоге используется эффект впуклости (inset shadow), имитирующий iOS-стиль:
+
+```html
+<!-- Кнопка с iOS-эффектом впуклости -->
+<motion.button 
+  className="btn-inset-press h-14 rounded-2xl bg-primary"
+  whileTap={{ scale: 0.97, filter: "brightness(0.85)" }}
+>
+  Кнопка
+</motion.button>
+```
+
+**CSS класс `.btn-inset-press`:**
+- При нажатии (`:active`) появляется inset shadow через `::before` псевдоэлемент
+- Применяется `filter: brightness(0.85)` для затемнения
+- Transition 0.15s для плавности
+- Совместим с iOS Safari и Android Chrome
+
+**Framer Motion анимация:**
+- `whileTap={{ scale: 0.92-0.97, filter: "brightness(0.85)" }}`
+- Создаёт эффект "нажатия" с визуальной обратной связью
+- Используется для кнопок "Позвонить" и "Сообщение" в футере CatalogAppView
+
 ### Карточки
 
 ```html
