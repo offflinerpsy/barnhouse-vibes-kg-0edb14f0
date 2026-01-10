@@ -232,4 +232,29 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* iOS-style button press effect (inset shadow) */
+  .btn-inset-press {
+    position: relative;
+    transition: all 0.15s ease-out;
+  }
+
+  .btn-inset-press::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    transition: opacity 0.15s ease-out;
+    pointer-events: none;
+  }
+
+  .btn-inset-press:active::before {
+    opacity: 1;
+  }
+
+  .btn-inset-press:active {
+    filter: brightness(0.85);
+  }
 }
