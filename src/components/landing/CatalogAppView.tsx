@@ -1074,12 +1074,15 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             {/* CALL button - becomes SOLID green when expanded, with subtle pulse animation */}
             <motion.button
               onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
-              className={`flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden active:shadow-inner ${
+              className={`btn-inset-press flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
                 callExpanded 
                   ? "bg-green-500 shadow-lg shadow-green-500/40" 
                   : "bg-green-500/20 border-2 border-green-500/50"
               }`}
-              whileTap={{ scale: 0.92 }}
+              whileTap={{ 
+                scale: 0.92,
+                filter: "brightness(0.85)"
+              }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
               {/* Pulse ring animation when not expanded */}
@@ -1108,8 +1111,11 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             {/* MESSAGE button - primary gold */}
             <motion.button
               onClick={() => { triggerHaptic(); setShowContactForm(true); }}
-              className="flex-1 h-14 rounded-2xl bg-primary flex items-center justify-center gap-2 shadow-lg shadow-primary/30"
-              whileTap={{ scale: 0.97 }}
+              className="btn-inset-press flex-1 h-14 rounded-2xl bg-primary flex items-center justify-center gap-2 shadow-lg shadow-primary/30"
+              whileTap={{ 
+                scale: 0.97,
+                filter: "brightness(0.85)"
+              }}
             >
               <MessageSquare className="h-5 w-5 text-charcoal" />
               <span className="font-semibold text-charcoal">Сообщение</span>
