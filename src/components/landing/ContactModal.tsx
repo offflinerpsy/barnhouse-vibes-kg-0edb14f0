@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { useHaptic } from "@/hooks/useHaptic";
 import logoEra from "@/assets/logo-era.png";
 
 interface ContactModalProps {
@@ -25,6 +26,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const { haptic } = useHaptic();
 
   // iOS Safari fix: Get portal container after mount and lock body scroll when open
   useEffect(() => {
@@ -60,6 +62,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
   }, [open]);
 
   const toggleMethod = (methodId: string) => {
+    haptic();
     setSelectedMethods((prev) =>
       prev.includes(methodId)
         ? prev.filter((id) => id !== methodId)
@@ -69,6 +72,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    haptic('medium');
 
     if (selectedMethods.length === 0) {
       toast({

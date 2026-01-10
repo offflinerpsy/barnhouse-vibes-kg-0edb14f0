@@ -21,6 +21,7 @@ import type React from "react"
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Plus, Minus, Clock, LayoutGrid, TreePine, Truck, ShieldCheck, Landmark, Thermometer } from "lucide-react"
+import { useHaptic } from "@/hooks/useHaptic"
 
 interface FAQItem {
   question: string
@@ -177,6 +178,7 @@ function FAQAccordionItem({
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number>(0)
+  const { haptic } = useHaptic()
 
   return (
     <section id="faq" className="py-16 md:py-24 px-4 bg-[#F5F2ED]/50">
@@ -210,7 +212,7 @@ export function FAQ() {
               item={item}
               index={index}
               isOpen={openIndex === index}
-              onToggle={() => setOpenIndex(openIndex === index ? -1 : index)}
+              onToggle={() => { haptic(); setOpenIndex(openIndex === index ? -1 : index); }}
             />
           ))}
         </div>

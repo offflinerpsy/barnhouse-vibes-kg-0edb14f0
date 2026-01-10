@@ -24,6 +24,7 @@ import { Menu, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { ContactModal } from "./ContactModal";
+import { useHaptic } from "@/hooks/useHaptic";
 import logoEra from "@/assets/logo-era.png";
 
 // Пункты навигации с якорями
@@ -41,6 +42,7 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { haptic } = useHaptic();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -121,7 +123,7 @@ export function Header() {
             {navItems.map((item) => (
               <button
                 key={item.href}
-                onClick={() => handleNavClick(item)}
+                onClick={() => { haptic(); handleNavClick(item); }}
                 className={`px-4 py-2 text-sm font-medium hover:text-primary hover:bg-primary/5 rounded-lg transition-all ${
                   item.isRoute ? "text-[hsl(var(--gold))]" : "text-foreground/80"
                 }`}
@@ -143,7 +145,7 @@ export function Header() {
               <span className="text-xs text-muted-foreground">Бесплатная консультация</span>
             </a>
             <Button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => { haptic('medium'); setIsModalOpen(true); }}
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 hidden xl:flex"
             >
@@ -179,7 +181,7 @@ export function Header() {
                   {navItems.map((item) => (
                     <button
                       key={item.href}
-                      onClick={() => handleNavClick(item)}
+                      onClick={() => { haptic(); handleNavClick(item); }}
                       className={`w-full text-left px-6 py-4 text-lg font-medium hover:bg-secondary/50 hover:text-primary transition-colors border-b border-border/30 ${
                         item.isRoute ? "text-[hsl(var(--gold))]" : "text-foreground"
                       }`}
@@ -205,6 +207,7 @@ export function Header() {
                   </a>
                   <Button
                     onClick={() => {
+                      haptic('medium');
                       setIsOpen(false);
                       setIsModalOpen(true);
                     }}
