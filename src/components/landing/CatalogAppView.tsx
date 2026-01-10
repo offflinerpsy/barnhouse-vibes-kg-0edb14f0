@@ -1071,40 +1071,25 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
 
           {/* Main 2 buttons - iOS Contact style */}
           <div className="px-4 py-4 flex gap-3">
-            {/* CALL button - becomes SOLID green when expanded, with subtle pulse animation */}
+            {/* CALL button - iPhone green style with inset press effect */}
             <motion.button
               onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
-              className={`btn-inset-press flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden ${
-                callExpanded 
-                  ? "bg-green-500 shadow-lg shadow-green-500/40" 
-                  : "bg-green-500/20 border-2 border-green-500/50"
-              }`}
+              className="btn-inset-press flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden bg-[#34C759] shadow-lg shadow-[#34C759]/40"
               whileTap={{ 
-                scale: 0.92,
-                filter: "brightness(0.85)"
+                scale: 0.95,
+                filter: "brightness(0.8)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
-              {/* Pulse ring animation when not expanded */}
-              {!callExpanded && (
-                <motion.div
-                  className="absolute inset-0 rounded-2xl border-2 border-green-500"
-                  animate={{ 
-                    scale: [1, 1.05, 1],
-                    opacity: [0.5, 0, 0.5]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                />
-              )}
-              <Phone className={`h-5 w-5 ${callExpanded ? "text-white" : "text-green-400"}`} />
-              <span className={`font-bold ${callExpanded ? "text-white" : "text-green-400"}`}>
+              <Phone className="h-5 w-5 text-white" />
+              <span className="font-bold text-white">
                 Позвонить
               </span>
               <motion.div
                 animate={{ rotate: callExpanded ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
               >
-                <ChevronUp className={`h-4 w-4 ${callExpanded ? "text-white" : "text-green-400"}`} />
+                <ChevronUp className="h-4 w-4 text-white" />
               </motion.div>
             </motion.button>
 
