@@ -1,13 +1,6 @@
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 
-// Import modular house images
-import modularHouse1 from "@/assets/modular-house-1.jpg";
-import modularHouse2 from "@/assets/modular-house-2.webp";
-import modularHouse3 from "@/assets/modular-house-3.jpg";
-import modularHouse4 from "@/assets/modular-house-4.jpg";
-import modularHouse5 from "@/assets/modular-house-5.jpg";
-
 const advantages = [
   {
     number: "01",
@@ -35,12 +28,18 @@ const advantages = [
   },
 ];
 
+// Реальные проекты ERA Concept с креативными подписями
 const houseImages = [
-  { src: modularHouse1, label: "Модульный дом с террасой" },
-  { src: modularHouse2, label: "Одноэтажный модуль" },
-  { src: modularHouse3, label: "Компактный модуль" },
-  { src: modularHouse4, label: "Двухэтажный модуль" },
-  { src: modularHouse5, label: "Модуль с разрезом" },
+  { src: "/advantages/18m2.webp", label: "18 м² — студия или гостевой домик" },
+  { src: "/advantages/36m2.webp", label: "36 м² — уютный старт для пары" },
+  { src: "/advantages/54m2.webp", label: "54 м² — для семьи с ребёнком" },
+  { src: "/advantages/81m2.webp", label: "81 м² — простор для 2-3 детей" },
+  { src: "/advantages/108m2.webp", label: "108 м² — большой дом, большая семья" },
+  { src: "/advantages/135m2.webp", label: "135 м² — максимум в одном этаже" },
+  { src: "/advantages/2et-36m2.webp", label: "36 м² × 2эт — умное решение" },
+  { src: "/advantages/2et-72m2.webp", label: "72 м² × 2эт — для активной семьи" },
+  { src: "/advantages/2et-120m2.webp", label: "120 м² × 2эт — простор на двух этажах" },
+  { src: "/advantages/2et-204m2.webp", label: "204 м² × 2эт — мыслите масштабно" },
 ];
 
 const AnimatedNumber = ({ number, isInView }: { number: string; isInView: boolean }) => {
