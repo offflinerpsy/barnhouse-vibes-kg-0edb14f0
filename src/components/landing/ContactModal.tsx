@@ -13,7 +13,10 @@ interface ContactModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// Extend CSSStyleDeclaration for WebKit-specific properties
+/**
+ * Extended interface for WebKit-specific CSS properties not included in standard CSSStyleDeclaration.
+ * Used to properly type iOS Safari-specific properties like webkitOverflowScrolling.
+ */
 interface WebKitCSSStyleDeclaration extends CSSStyleDeclaration {
   webkitOverflowScrolling?: string;
 }

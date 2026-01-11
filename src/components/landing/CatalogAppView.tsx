@@ -719,8 +719,13 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
   // Keyboard navigation: Arrow keys + ESC
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't interfere if user is typing in an input/textarea
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      // Don't interfere if user is typing in an input, textarea, select, or contenteditable element
+      if (
+        e.target instanceof HTMLInputElement || 
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement ||
+        (e.target as Element).closest('[contenteditable="true"]')
+      ) {
         return;
       }
 

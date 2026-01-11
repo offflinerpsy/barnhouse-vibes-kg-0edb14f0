@@ -129,7 +129,7 @@ Improved type safety:
 ## 📄 Full Report
 
 For detailed findings, bug reports, and code examples, see:
-- **[QA_AUDIT_REPORT.md](./QA_AUDIT_REPORT.md)** - Complete 700+ line audit report
+- **[QA_AUDIT_REPORT.md](./QA_AUDIT_REPORT.md)** - Comprehensive 660+ line audit report
 
 ---
 
