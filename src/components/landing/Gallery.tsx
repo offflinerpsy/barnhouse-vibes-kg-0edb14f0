@@ -208,15 +208,39 @@ export function Gallery({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedIndex, navigateLightbox]);
 
+  // Scroll lock для лайтбокса
   useEffect(() => {
     if (selectedIndex !== null) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
+      // Сохраняем позицию скролла
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+  }, [selectedIndex]);
+
+  // Возобновляем autoplay большого видео после закрытия лайтбокса
+  useEffect(() => {
+    if (selectedIndex === null) {
+      // Перезапускаем autoplay для large видео
+      videoRefs.current.forEach((video, id) => {
+        const item = GALLERY_ITEMS.find(i => i.id === id);
+        if (item?.span === 'large' && item?.type === 'video') {
+          video.play().catch(() => {});
+        }
+      });
+    }
   }, [selectedIndex]);
 
   return (
