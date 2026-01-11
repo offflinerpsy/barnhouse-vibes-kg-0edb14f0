@@ -47,7 +47,7 @@ const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "1",
     type: "image",
-    src: "/gallery/house-exterior-1.png",
+    src: "/gallery/house-exterior-1.webp",
     title: "Барнхаус премиум-класса",
     category: "Экстерьер",
     span: "large",
@@ -56,7 +56,7 @@ const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "2",
     type: "image",
-    src: "/gallery/house-kyrgyzstan-1.png",
+    src: "/gallery/house-kyrgyzstan-1.webp",
     title: "На фоне гор Киргизии",
     category: "Экстерьер",
     span: "tall",
@@ -65,7 +65,7 @@ const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "3",
     type: "image",
-    src: "/gallery/house-exterior-2.png",
+    src: "/gallery/house-exterior-2.webp",
     title: "Современный дизайн",
     category: "Экстерьер",
     span: "normal",
@@ -74,7 +74,7 @@ const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "4",
     type: "image",
-    src: "/gallery/house-interior-1.png",
+    src: "/gallery/house-interior-1.webp",
     title: "Панорамные окна",
     category: "Интерьер",
     span: "wide",
@@ -83,7 +83,7 @@ const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "5",
     type: "image",
-    src: "/gallery/house-exterior-3.png",
+    src: "/gallery/house-exterior-3.webp",
     title: "Скандинавский стиль",
     category: "Экстерьер",
     span: "normal",
@@ -92,7 +92,7 @@ const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "6",
     type: "image",
-    src: "/gallery/house-kyrgyzstan-2.png",
+    src: "/gallery/house-kyrgyzstan-2.webp",
     title: "Гармония с природой",
     category: "Экстерьер",
     span: "normal",
