@@ -1610,6 +1610,30 @@ export function Catalog() {
   const [contactOpen, setContactOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
 
+  // Body scroll lock when catalog is open
+  useEffect(() => {
+    if (catalogOpen) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = '0';
+      document.body.style.right = '0';
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore scroll position
+      const scrollY = document.body.style.top;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.overflow = '';
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
+    }
+  }, [catalogOpen]);
+
   // На мобильных устройствах показываем кнопку открытия каталога
   if (isMobile) {
     return (

@@ -716,6 +716,30 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
     });
   }, [filteredModels.length, triggerHaptic]);
 
+  // Keyboard navigation: Arrow keys + ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere if user is typing in an input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goToModel(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goToModel(1);
+      } else if (e.key === 'Escape' && onClose) {
+        e.preventDefault();
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToModel, onClose]);
+
   const handlePanEnd = useCallback((_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const absX = Math.abs(info.offset.x);
     const absY = Math.abs(info.offset.y);

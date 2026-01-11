@@ -13,6 +13,11 @@ interface ContactModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Extend CSSStyleDeclaration for WebKit-specific properties
+interface WebKitCSSStyleDeclaration extends CSSStyleDeclaration {
+  webkitOverflowScrolling?: string;
+}
+
 const contactMethods = [
   { id: "phone", label: "Телефон", icon: Phone },
   { id: "telegram", label: "Telegram", icon: MessageCircle },
@@ -45,7 +50,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
       document.body.style.right = '0';
       document.body.style.overflow = 'hidden';
       // iOS Safari needs this
-      (document.body.style as any).webkitOverflowScrolling = 'touch';
+      (document.body.style as WebKitCSSStyleDeclaration).webkitOverflowScrolling = 'touch';
     } else {
       // Restore scroll position
       const scrollY = document.body.style.top;
@@ -54,7 +59,7 @@ export function ContactModal({ open, onOpenChange }: ContactModalProps) {
       document.body.style.left = '';
       document.body.style.right = '';
       document.body.style.overflow = '';
-      (document.body.style as any).webkitOverflowScrolling = '';
+      (document.body.style as WebKitCSSStyleDeclaration).webkitOverflowScrolling = '';
       if (scrollY) {
         window.scrollTo(0, parseInt(scrollY || '0') * -1);
       }
