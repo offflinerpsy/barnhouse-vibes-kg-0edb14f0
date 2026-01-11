@@ -448,6 +448,7 @@ const MediaCard = memo(function MediaCard({
   const keyframes = kenBurnsKeyframes[kenBurnsDirection];
 
   const shouldLoad = priority || hasBeenInView;
+  const isLargeVideo = item.type === "video" && item.span === "large";
 
   return (
     <motion.div
@@ -467,8 +468,6 @@ const MediaCard = memo(function MediaCard({
       whileTap={{ scale: 0.98 }}
     >
       {enableKenBurns && item.type === "image" && <style dangerouslySetInnerHTML={{ __html: keyframes }} />}
-
-  const isLargeVideo = item.type === "video" && item.span === "large";
 
       {item.type === "video" ? (
         <>
