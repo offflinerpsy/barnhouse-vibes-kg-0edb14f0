@@ -19,6 +19,7 @@
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Advantages } from "@/components/landing/Advantages";
+import { Gallery } from "@/components/landing/Gallery";
 import { Catalog } from "@/components/landing/Catalog";
 import { UtpBlock } from "@/components/landing/UtpBlock";
 import { Stages } from "@/components/landing/Stages";
@@ -70,6 +71,13 @@ const Index = () => {
           Содержит: 4 преимущества, карусель изображений
           ============================================ */}
       <Advantages />
+
+      {/* ============================================
+          GALLERY SECTION - Галерея работ
+          ID: #gallery
+          Содержит: bento-grid, видео, Ken Burns эффект
+          ============================================ */}
+      <Gallery />
 
       {/* ============================================
           FAQ SECTION - Частые вопросы

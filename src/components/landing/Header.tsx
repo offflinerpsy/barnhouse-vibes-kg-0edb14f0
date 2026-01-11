@@ -31,10 +31,9 @@ import logoEra from "@/assets/logo-era.png";
 const navItems = [
   { label: "Каталог", href: "#catalog" },
   { label: "Преимущества", href: "#advantages" },
-  { label: "Этапы работы", href: "#stages" },
+  { label: "Галерея", href: "#gallery" },
   { label: "FAQ", href: "#faq" },
   { label: "Контакты", href: "#contact" },
-  { label: "🧪 Тест", href: "/test-modals", isRoute: true }, // ВРЕМЕННО - удалить после выбора дизайна
 ];
 
 export function Header() {

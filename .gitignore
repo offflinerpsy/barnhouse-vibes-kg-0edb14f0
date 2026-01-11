@@ -34,3 +34,4 @@ dist-ssr
 *.sln
 *.sw?
 QA_COMPLETION_SUMMARY.txt
+public/gallery/*.mp4
