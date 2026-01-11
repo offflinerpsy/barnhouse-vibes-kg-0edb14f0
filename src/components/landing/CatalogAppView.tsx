@@ -823,15 +823,15 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
               {/* Center: Current model - clickable, opens picker */}
               <button 
                 onClick={() => { triggerHaptic(); setModelPickerOpen(true); }}
-                className="flex items-center gap-1.5 min-w-0 px-2 py-1 rounded-lg active:bg-white/10 transition-colors"
+                className="flex items-center gap-1.5 min-w-0 px-3 py-1.5 rounded-xl bg-primary/90 active:bg-primary transition-colors"
               >
-                <span className="text-xs sm:text-sm font-semibold text-white truncate max-w-[80px] sm:max-w-[120px]">
+                <span className="text-xs sm:text-sm font-semibold text-charcoal truncate max-w-[80px] sm:max-w-[120px]">
                   {currentModel.name}
                 </span>
-                <span className="text-xs sm:text-sm font-bold text-primary flex-shrink-0">
+                <span className="text-xs sm:text-sm font-bold text-charcoal/80 flex-shrink-0">
                   {currentModel.area}м²
                 </span>
-                <ChevronDown className="h-3.5 w-3.5 text-white/50 flex-shrink-0" />
+                <ChevronDown className="h-3.5 w-3.5 text-charcoal/60 flex-shrink-0" />
               </button>
               
               {/* Right: Close button */}
@@ -1074,9 +1074,13 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
             <motion.button
               onClick={() => { triggerHaptic(); setCallExpanded(!callExpanded); }}
               className="btn-inset-press flex-1 h-14 rounded-2xl flex items-center justify-center gap-2 transition-all relative overflow-hidden bg-[#34C759] shadow-lg shadow-[#34C759]/40"
+              animate={{ 
+                scale: callExpanded ? 0.95 : 1,
+                filter: callExpanded ? "brightness(0.8)" : "brightness(1)"
+              }}
               whileTap={{ 
-                scale: 0.95,
-                filter: "brightness(0.8)"
+                scale: 0.92,
+                filter: "brightness(0.7)"
               }}
               transition={{ type: "spring", stiffness: 400, damping: 15 }}
             >
