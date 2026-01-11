@@ -915,9 +915,9 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         {/* Swipe hint animation - shows on first view */}
         <SwipeHintAnimation />
 
-        {/* RIGHT SIDE: Photo & Plan buttons - positioned in bottom-right, below nav arrows */}
+        {/* RIGHT SIDE: Photo & Plan buttons - positioned in bottom-right, above model info */}
         <aside 
-          className="absolute right-3 z-30 flex flex-col items-center gap-3 bottom-[200px]"
+          className="absolute right-3 z-30 flex flex-col items-center gap-3 bottom-[170px]"
         >
           <AnimatedPhotoButton onClick={() => { setGalleryTab("photos"); setShowGallery(true); }} />
           <AnimatedPlanButton 
