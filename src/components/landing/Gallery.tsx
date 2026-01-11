@@ -64,12 +64,12 @@ const GALLERY_ITEMS: MediaItem[] = [
   },
   {
     id: "3",
-    type: "image",
-    src: "/gallery/house-exterior-2.webp",
-    title: "Всё включено по честной цене",
-    category: "Экстерьер",
+    type: "video",
+    src: "/gallery/video-realtor.mp4",
+    poster: "/gallery/house-exterior-2.webp",
+    title: "Как мы строим ваш дом",
+    category: "Видео",
     span: "normal",
-    kenBurnsDirection: "zoom-out",
   },
   {
     id: "4",
