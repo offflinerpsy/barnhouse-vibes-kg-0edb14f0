@@ -46,18 +46,18 @@ type FilterType = "all" | "image" | "video";
 const GALLERY_ITEMS: MediaItem[] = [
   {
     id: "1",
-    type: "image",
-    src: "/gallery/house-exterior-1.webp",
-    title: "Барнхаус премиум-класса",
-    category: "Экстерьер",
+    type: "video",
+    src: "/gallery/video-drone.mp4",
+    poster: "/gallery/house-exterior-1.webp",
+    title: "Полёт над нашими проектами",
+    category: "Видео",
     span: "large",
-    kenBurnsDirection: "zoom-in",
   },
   {
     id: "2",
     type: "image",
     src: "/gallery/house-kyrgyzstan-1.webp",
-    title: "На фоне гор Киргизии",
+    title: "Живи там, где горы",
     category: "Экстерьер",
     span: "tall",
     kenBurnsDirection: "pan-up",
@@ -66,7 +66,7 @@ const GALLERY_ITEMS: MediaItem[] = [
     id: "3",
     type: "image",
     src: "/gallery/house-exterior-2.webp",
-    title: "Современный дизайн",
+    title: "Всё включено по честной цене",
     category: "Экстерьер",
     span: "normal",
     kenBurnsDirection: "zoom-out",
@@ -75,7 +75,7 @@ const GALLERY_ITEMS: MediaItem[] = [
     id: "4",
     type: "image",
     src: "/gallery/house-interior-1.webp",
-    title: "Панорамные окна",
+    title: "Светло, просторно, уютно",
     category: "Интерьер",
     span: "wide",
     kenBurnsDirection: "pan-right",
@@ -84,7 +84,7 @@ const GALLERY_ITEMS: MediaItem[] = [
     id: "5",
     type: "image",
     src: "/gallery/house-exterior-3.webp",
-    title: "Скандинавский стиль",
+    title: "Качество без переплат",
     category: "Экстерьер",
     span: "normal",
     kenBurnsDirection: "pan-left",
@@ -93,7 +93,7 @@ const GALLERY_ITEMS: MediaItem[] = [
     id: "6",
     type: "image",
     src: "/gallery/house-kyrgyzstan-2.webp",
-    title: "Гармония с природой",
+    title: "Дом твоей мечты — реальность",
     category: "Экстерьер",
     span: "normal",
     kenBurnsDirection: "zoom-in",
@@ -468,10 +468,12 @@ const MediaCard = memo(function MediaCard({
     >
       {enableKenBurns && item.type === "image" && <style dangerouslySetInnerHTML={{ __html: keyframes }} />}
 
+  const isLargeVideo = item.type === "video" && item.span === "large";
+
       {item.type === "video" ? (
         <>
-          {/* Video Poster */}
-          {shouldLoad && (
+          {/* Video Poster - скрыт для большого видео */}
+          {shouldLoad && !isLargeVideo && (
             <img
               src={item.poster || "/placeholder.svg"}
               alt={item.title}
@@ -482,30 +484,33 @@ const MediaCard = memo(function MediaCard({
               )}
             />
           )}
-          {/* Video Element */}
+          {/* Video Element - autoplay для большого, hover для остальных */}
           <video
             ref={videoRef}
             src={shouldLoad ? item.src : undefined}
             muted
             loop
             playsInline
-            preload="none"
+            autoPlay={isLargeVideo}
+            preload={isLargeVideo ? "auto" : "none"}
             className={cn(
               "absolute inset-0 w-full h-full object-cover transition-opacity duration-500",
-              isVideoHovered ? "opacity-100" : "opacity-0"
+              isLargeVideo ? "opacity-100" : (isVideoHovered ? "opacity-100" : "opacity-0")
             )}
           />
-          {/* Play Icon */}
-          <div
-            className={cn(
-              "absolute inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none",
-              isVideoHovered ? "opacity-0 scale-150" : "opacity-100 scale-100"
-            )}
-          >
-            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
-              <Play className="w-5 h-5 md:w-6 md:h-6 text-charcoal fill-charcoal ml-0.5" />
+          {/* Play Icon - скрыт для большого видео */}
+          {!isLargeVideo && (
+            <div
+              className={cn(
+                "absolute inset-0 flex items-center justify-center transition-all duration-300 pointer-events-none",
+                isVideoHovered ? "opacity-0 scale-150" : "opacity-100 scale-100"
+              )}
+            >
+              <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
+                <Play className="w-5 h-5 md:w-6 md:h-6 text-charcoal fill-charcoal ml-0.5" />
+              </div>
             </div>
-          </div>
+          )}
         </>
       ) : (
         /* Image с Ken Burns */
