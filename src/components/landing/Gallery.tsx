@@ -435,6 +435,16 @@ const MediaCard = memo(function MediaCard({
     rootMargin: "100px",
     threshold: 0.1,
   });
+  
+  const localVideoRef = useRef<HTMLVideoElement | null>(null);
+  const isLargeVideo = item.type === "video" && item.span === "large";
+
+  // Автозапуск большого видео когда оно в viewport
+  useEffect(() => {
+    if (isLargeVideo && isInView && localVideoRef.current) {
+      localVideoRef.current.play().catch(() => {});
+    }
+  }, [isLargeVideo, isInView]);
 
   const spanClasses = {
     normal: "col-span-1 row-span-1",
@@ -448,7 +458,6 @@ const MediaCard = memo(function MediaCard({
   const keyframes = kenBurnsKeyframes[kenBurnsDirection];
 
   const shouldLoad = priority || hasBeenInView;
-  const isLargeVideo = item.type === "video" && item.span === "large";
 
   return (
     <motion.div
@@ -485,7 +494,10 @@ const MediaCard = memo(function MediaCard({
           )}
           {/* Video Element - autoplay для большого, hover для остальных */}
           <video
-            ref={videoRef}
+            ref={(el) => {
+              localVideoRef.current = el;
+              videoRef(el);
+            }}
             src={shouldLoad ? item.src : undefined}
             muted
             loop
