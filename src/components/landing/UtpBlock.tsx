@@ -10,7 +10,7 @@ const benefits = [
     icon: Eye,
     title: "Контроль",
     description: "Строим дом прямо на вашем участке, вы видите каждый этап и качество сборки без скрытых работ.",
-    image: "/utp/barnhouse-construction-kyrgyzstan-mountains-workers.jpg",
+    image: "/utp/barnhouse-construction-kyrgyzstan-mountains-workers.webp",
   },
   {
     id: "climate",

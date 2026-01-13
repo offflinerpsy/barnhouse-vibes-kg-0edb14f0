@@ -16,7 +16,6 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, MotionConfig } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { ContactModal } from "./ContactModal";
-import { useHaptic } from "@/hooks/useHaptic";
 // Фотореалистичные изображения барнхаусов в Киргизии (все сезоны)
 // Ken Burns v2 - минимальный зум (1.0-1.04) для максимальной чёткости
 const KENBURNS_VERSION = 2; // Cache buster
@@ -85,7 +84,6 @@ export function Hero() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRef = useRef<HTMLElement>(null);
-  const { haptic } = useHaptic();
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -162,7 +160,7 @@ export function Hero() {
             transition={{ duration: 0.8, delay: 0.8 }}
           >
             <button
-              onClick={() => { haptic('medium'); setIsModalOpen(true); }}
+              onClick={() => setIsModalOpen(true)}
               className="group inline-flex items-center gap-4 sm:gap-5 text-white hover:text-primary transition-colors duration-500"
             >
               <span className="relative">
@@ -254,7 +252,7 @@ export function Hero() {
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => { haptic(); setCurrentSlide(index); }}
+                onClick={() => setCurrentSlide(index)}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
                   index === currentSlide 
                     ? "bg-primary w-8" 
@@ -318,7 +316,7 @@ export function Hero() {
           {slides.map((_, index) => (
             <button
               key={index}
-              onClick={() => { haptic(); setCurrentSlide(index); }}
+              onClick={() => setCurrentSlide(index)}
               className={`w-1.5 h-1.5 rounded-full transition-all ${
                 index === currentSlide ? "bg-primary w-6" : "bg-white/30"
               }`}
