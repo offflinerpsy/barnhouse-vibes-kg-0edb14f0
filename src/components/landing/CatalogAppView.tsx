@@ -275,7 +275,7 @@ function SwipeHintAnimation() {
   );
 }
 
-function TopBarOnboardingHint({ onDone }: { onDone: () => void }) {
+function TopBarOnboardingHint() {
   return (
     <motion.div
       className="absolute inset-0 pointer-events-none"
@@ -289,7 +289,6 @@ function TopBarOnboardingHint({ onDone }: { onDone: () => void }) {
           x: ["6%", "26%", "46%", "66%", "82%"],
         }}
         transition={{ duration: 3.0, ease: "easeInOut" }}
-        onAnimationComplete={onDone}
       >
         <div className="relative">
           <motion.div
@@ -751,12 +750,12 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
 
   // One-time onboarding hint for top bar
   useEffect(() => {
-    const key = "era.catalog.topbar.hint.v1";
+    const key = "era.catalog.topbar.hint.v2";
     if (typeof window === "undefined") return;
     if (!localStorage.getItem(key)) {
       setShowTopBarHint(true);
       localStorage.setItem(key, "1");
-      const timer = setTimeout(() => setShowTopBarHint(false), 5200);
+      const timer = setTimeout(() => setShowTopBarHint(false), 3600);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -880,7 +879,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           >
             <AnimatePresence>
               {showTopBarHint && (
-                <TopBarOnboardingHint onDone={() => setShowTopBarHint(false)} />
+                <TopBarOnboardingHint />
               )}
             </AnimatePresence>
             <div className="flex items-center justify-between px-3 py-3">
