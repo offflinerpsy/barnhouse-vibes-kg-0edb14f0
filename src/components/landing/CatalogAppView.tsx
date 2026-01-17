@@ -779,7 +779,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       transition={{ duration: 0.3 }}
       className="fixed inset-0 bg-charcoal text-white overflow-hidden z-50"
       style={{ 
-        height: '100dvh',
+        height: '100svh',
         overscrollBehavior: 'contain'
       }}
     >
