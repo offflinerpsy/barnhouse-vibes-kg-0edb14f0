@@ -1659,37 +1659,26 @@ export function Catalog() {
               <div className="mx-auto w-full max-w-[360px] rounded-3xl overflow-hidden bg-secondary/95 shadow-[0_18px_45px_-25px_rgba(0,0,0,0.7)] text-left">
                 <div className="relative w-full aspect-[4/3] bg-secondary">
                   <img
-                    src="/catalog/covers/model-1.webp"
-                    alt="Модульный барнхаус"
+                    src="/catalog/covers/catalog-block.webp"
+                    alt="Наши проекты"
                     className="absolute inset-0 w-full h-full object-contain"
                     loading="lazy"
                   />
-                  <div className="absolute top-3 left-3 bg-charcoal text-white text-xs font-medium px-3 py-1.5 rounded-full">
-                    Модульные дома
-                  </div>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-foreground leading-tight">
-                      Готовые проекты барнхаусов
+                      Наши проекты
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Более 50 проектов модульных домов с возможностью индивидуальной планировки
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <span className="text-xs bg-card text-muted-foreground px-3 py-1.5 rounded-full">от 25 м²</span>
-                    <span className="text-xs bg-card text-muted-foreground px-3 py-1.5 rounded-full">от 30 дней</span>
-                    <span className="text-xs bg-card text-muted-foreground px-3 py-1.5 rounded-full">под ключ</span>
                   </div>
 
                   <motion.button
                     onClick={() => setCatalogOpen(true)}
-                    className="w-full group bg-charcoal text-white font-semibold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-black/20"
+                    className="w-full group bg-charcoal text-white font-semibold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-black/20 animate-floating-press"
                     whileTap={{ scale: 0.98 }}
+                    aria-label="Открыть каталог проектов"
                   >
-                    <span className="text-sm tracking-wide">Открыть каталог проектов</span>
+                    <span className="sr-only">Открыть каталог проектов</span>
                     <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </motion.button>
                 </div>
