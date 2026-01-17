@@ -1678,7 +1678,7 @@ export function Catalog() {
                     whileTap={{ scale: 0.98 }}
                     aria-label="Открыть каталог проектов"
                   >
-                    <span className="sr-only">Открыть каталог проектов</span>
+                    <span className="text-sm tracking-wide uppercase">ОТКРЫТЬ КАТАЛОГ</span>
                     <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </motion.button>
                 </div>

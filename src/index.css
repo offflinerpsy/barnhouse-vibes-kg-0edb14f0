@@ -214,17 +214,21 @@
   @keyframes floating-press {
     0%,
     100% {
-      transform: translateY(0);
-      box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.5), 0 4px 10px -6px rgba(0, 0, 0, 0.35);
+      transform: translateY(-1px) scale(1);
+      box-shadow: 0 14px 28px -16px rgba(0, 0, 0, 0.55), 0 6px 14px -8px rgba(0, 0, 0, 0.4);
     }
-    50% {
-      transform: translateY(3px) scale(0.985);
-      box-shadow: 0 6px 18px -12px rgba(0, 0, 0, 0.45), 0 3px 8px -6px rgba(0, 0, 0, 0.3);
+    45% {
+      transform: translateY(2px) scale(0.985);
+      box-shadow: 0 8px 20px -14px rgba(0, 0, 0, 0.5), 0 4px 10px -8px rgba(0, 0, 0, 0.35);
+    }
+    60% {
+      transform: translateY(3px) scale(0.975);
+      box-shadow: 0 6px 16px -14px rgba(0, 0, 0, 0.45), 0 3px 8px -8px rgba(0, 0, 0, 0.3);
     }
   }
 
   .animate-floating-press {
-    animation: floating-press 3.6s ease-in-out infinite;
+    animation: floating-press 3.2s ease-in-out infinite;
     will-change: transform, box-shadow;
   }
 
