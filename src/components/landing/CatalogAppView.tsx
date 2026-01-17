@@ -216,6 +216,27 @@ function AnimatedPlanButton({ onClick, disabled }: { onClick: () => void; disabl
 }
 
 // Swipe Hint Animation - shows hand gesture hint
+function HandPointerIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+    >
+      <path 
+        d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v6M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L2.3 15a2 2 0 0 1 .3-2.8 2 2 0 0 1 2.8.3L6 13V6" 
+        stroke="currentColor" 
+        strokeWidth="1.5" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        fill="rgba(255,255,255,0.1)"
+      />
+    </svg>
+  );
+}
+
 function SwipeHintAnimation() {
   const [show, setShow] = useState(true);
   
@@ -248,22 +269,44 @@ function SwipeHintAnimation() {
         onAnimationComplete={() => setShow(false)}
       >
         {/* Hand icon */}
-        <motion.svg 
-          width="32" 
-          height="32" 
-          viewBox="0 0 24 24" 
-          fill="none"
-          className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]"
-        >
-          <path 
-            d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v6M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-5.9-2.4L2.3 15a2 2 0 0 1 .3-2.8 2 2 0 0 1 2.8.3L6 13V6" 
-            stroke="currentColor" 
-            strokeWidth="1.5" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-            fill="rgba(255,255,255,0.1)"
+        <HandPointerIcon className="drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]" />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function TopBarOnboardingHint({ onDone }: { onDone: () => void }) {
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="absolute top-1/2 -translate-y-1/2"
+        animate={{
+          x: ["6%", "26%", "46%", "66%", "82%"],
+        }}
+        transition={{ duration: 4.2, ease: "easeInOut" }}
+        onAnimationComplete={onDone}
+      >
+        <div className="relative">
+          <motion.div
+            className="absolute -top-9 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full bg-white/90 text-[10px] text-charcoal font-semibold shadow-lg"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
+            Нажмите для выбора
+          </motion.div>
+          <motion.div
+            className="absolute -inset-3 rounded-full border border-white/60"
+            animate={{ scale: [1, 1.35, 1.6], opacity: [0.5, 0.2, 0] }}
+            transition={{ duration: 0.9, repeat: Infinity, repeatDelay: 0.4 }}
           />
-        </motion.svg>
+          <HandPointerIcon className="text-white/85 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" />
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -684,6 +727,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [callExpanded, setCallExpanded] = useState(false);
+  const [showTopBarHint, setShowTopBarHint] = useState(false);
 
   const filteredModels = useMemo(() => applyCatalogFilter(ERA_MODELS, filter), [filter]);
   const safeIndex = Math.min(currentModelIndex, filteredModels.length - 1);
@@ -704,6 +748,18 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       img.src = src;
     });
   }, [allPhotos]);
+
+  // One-time onboarding hint for top bar
+  useEffect(() => {
+    const key = "era.catalog.topbar.hint.v1";
+    if (typeof window === "undefined") return;
+    if (!localStorage.getItem(key)) {
+      setShowTopBarHint(true);
+      localStorage.setItem(key, "1");
+      const timer = setTimeout(() => setShowTopBarHint(false), 5200);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const goToModel = useCallback((dir: 1 | -1) => {
     triggerHaptic();
@@ -819,9 +875,14 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: "spring", damping: 20, stiffness: 200, delay: 0.1 }}
         >
-          <div className="mx-3 w-full rounded-2xl bg-white/10 backdrop-blur-xl border border-white/15"
+          <div className="mx-3 w-full rounded-2xl bg-white/10 backdrop-blur-xl border border-white/15 relative"
             style={{ transform: "translate3d(0, 0, 0)" }}
           >
+            <AnimatePresence>
+              {showTopBarHint && (
+                <TopBarOnboardingHint onDone={() => setShowTopBarHint(false)} />
+              )}
+            </AnimatePresence>
             <div className="flex items-center justify-between px-3 py-3">
               {/* Left: Filter tabs */}
               <div className="flex items-center gap-0.5 flex-shrink-0">
