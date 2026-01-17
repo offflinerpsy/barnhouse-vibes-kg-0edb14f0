@@ -48,7 +48,8 @@ import {
   Plus,
   Check,
   Layers,
-  Grid3X3
+  Grid3X3,
+  ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1655,25 +1656,44 @@ export function Catalog() {
               <p className="text-white/60 text-sm mb-6 max-w-xs mx-auto">
                 12 проектов от 18 до 204 м² — одноэтажные, двухэтажные и бизнес-решения
               </p>
-              <motion.button
-                onClick={() => setCatalogOpen(true)}
-                className="inline-flex items-center gap-3 bg-primary text-charcoal font-semibold px-8 py-4 rounded-2xl shadow-lg"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                animate={{
-                  boxShadow: [
-                    "0 0 0 0 rgba(var(--primary-rgb), 0)",
-                    "0 0 0 12px rgba(var(--primary-rgb), 0.15)",
-                    "0 0 0 0 rgba(var(--primary-rgb), 0)"
-                  ]
-                }}
-                transition={{ 
-                  boxShadow: { duration: 2, repeat: Infinity, repeatDelay: 1 }
-                }}
-              >
-                <Grid3X3 className="h-5 w-5" />
-                <span>Открыть каталог</span>
-              </motion.button>
+              <div className="mx-auto w-full max-w-[360px] rounded-3xl overflow-hidden bg-secondary/95 shadow-[0_18px_45px_-25px_rgba(0,0,0,0.7)] text-left">
+                <div className="relative w-full aspect-[4/3] bg-secondary">
+                  <img
+                    src="/catalog/covers/model-1.webp"
+                    alt="Модульный барнхаус"
+                    className="absolute inset-0 w-full h-full object-contain"
+                    loading="lazy"
+                  />
+                  <div className="absolute top-3 left-3 bg-charcoal text-white text-xs font-medium px-3 py-1.5 rounded-full">
+                    Модульные дома
+                  </div>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-foreground leading-tight">
+                      Готовые проекты барнхаусов
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Более 50 проектов модульных домов с возможностью индивидуальной планировки
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-xs bg-card text-muted-foreground px-3 py-1.5 rounded-full">от 25 м²</span>
+                    <span className="text-xs bg-card text-muted-foreground px-3 py-1.5 rounded-full">от 30 дней</span>
+                    <span className="text-xs bg-card text-muted-foreground px-3 py-1.5 rounded-full">под ключ</span>
+                  </div>
+
+                  <motion.button
+                    onClick={() => setCatalogOpen(true)}
+                    className="w-full group bg-charcoal text-white font-semibold py-4 px-6 rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-black/20"
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span className="text-sm tracking-wide">Открыть каталог проектов</span>
+                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </motion.button>
+                </div>
+              </div>
             </motion.div>
           </div>
         </section>
