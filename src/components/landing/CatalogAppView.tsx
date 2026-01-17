@@ -288,7 +288,7 @@ function TopBarOnboardingHint({ onDone }: { onDone: () => void }) {
         animate={{
           x: ["6%", "26%", "46%", "66%", "82%"],
         }}
-        transition={{ duration: 4.2, ease: "easeInOut" }}
+        transition={{ duration: 3.0, ease: "easeInOut" }}
         onAnimationComplete={onDone}
       >
         <div className="relative">
