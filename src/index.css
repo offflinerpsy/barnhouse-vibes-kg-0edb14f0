@@ -232,6 +232,25 @@
     will-change: transform, box-shadow;
   }
 
+  .animate-floating-press::after {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: -10px;
+    height: 14px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0));
+    filter: blur(6px);
+    opacity: 0.45;
+    transform: scale(0.95);
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+  }
+
+  .animate-floating-press {
+    position: relative;
+  }
+
   /* Safe Area Insets для iPhone/iPad */
   .safe-area-inset-top {
     padding-top: env(safe-area-inset-top);

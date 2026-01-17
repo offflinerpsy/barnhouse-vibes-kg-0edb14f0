@@ -1666,11 +1666,6 @@ export function Catalog() {
                   />
                 </div>
                 <div className="p-5 space-y-4">
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-foreground leading-tight">
-                      Наши проекты
-                    </h3>
-                  </div>
 
                   <motion.button
                     onClick={() => setCatalogOpen(true)}
