@@ -883,6 +883,7 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
       <motion.div 
         className="absolute inset-0" 
         onPanEnd={handlePanEnd}
+        style={{ touchAction: "pan-y", overscrollBehaviorX: "contain" }}
       >
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
@@ -917,27 +918,27 @@ export default function CatalogAppViewV2({ onClose }: CatalogAppViewV2Props) {
         <motion.button 
           aria-label="Предыдущая" 
           onClick={() => { triggerHaptic(); goToModel(-1); }} 
-          className="absolute left-2 z-20 top-1/2 -translate-y-1/2"
+          className="absolute left-2 z-20 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 backdrop-blur-sm"
           whileTap={{ scale: 0.9, x: -3 }}
         >
           <motion.div
             animate={{ x: [0, -4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ChevronLeft className="h-9 w-9 text-white/80 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" strokeWidth={2} />
+            <ChevronLeft className="h-12 w-12 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" strokeWidth={2} />
           </motion.div>
         </motion.button>
         <motion.button 
           aria-label="Следующая" 
           onClick={() => { triggerHaptic(); goToModel(1); }} 
-          className="absolute right-2 z-20 top-1/2 -translate-y-1/2"
+          className="absolute right-2 z-20 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/30 backdrop-blur-sm"
           whileTap={{ scale: 0.9, x: 3 }}
         >
           <motion.div
             animate={{ x: [0, 4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <ChevronRight className="h-9 w-9 text-white/80 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" strokeWidth={2} />
+            <ChevronRight className="h-12 w-12 text-white/90 drop-shadow-[0_2px_10px_rgba(0,0,0,0.6)]" strokeWidth={2} />
           </motion.div>
         </motion.button>
 
