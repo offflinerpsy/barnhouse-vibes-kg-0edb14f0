@@ -75,7 +75,6 @@ export function Header() {
         {/* Top bar with contacts - visible on desktop */}
         <div className={`hidden lg:flex items-center justify-between text-sm border-b border-border/50 pb-2 mb-2 transition-all ${isScrolled ? 'h-0 opacity-0 overflow-hidden pb-0 mb-0 border-0' : 'h-auto opacity-100'}`}>
           <div className="flex items-center gap-6 text-muted-foreground">
-            <span>г. Бишкек, Ул. Байтик Баатыра 61</span>
             <span>Ежедневно: 10:00 - 19:00</span>
           </div>
           <div className="flex items-center gap-4">

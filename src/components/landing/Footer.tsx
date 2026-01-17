@@ -16,7 +16,7 @@
  * =============================================================================
  */
 
-import { Phone, Mail, MapPin, Send, MessageCircle } from "lucide-react";
+import { Phone, Mail, Send, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { FooterSkyline } from "./FooterSkyline";
 
@@ -171,10 +171,6 @@ export function Footer() {
                 <Mail className="h-5 w-5 group-hover:scale-110 transition-transform" />
                 info@eraconcepthome.kg
               </a>
-              <div className="flex items-start gap-3 text-white/70">
-                <MapPin className="h-5 w-5 flex-shrink-0 mt-0.5" />
-                <span>г. Бишкек, Ул. Байтик Баатыра 61</span>
-              </div>
             </div>
           </div>
         </div>

@@ -15,7 +15,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Phone, MapPin, Send } from "lucide-react";
+import { MessageCircle, Phone, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -108,17 +108,6 @@ export function Contact() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <MapPin className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Адрес</div>
-                  <span className="text-lg font-medium text-foreground">
-                    г. Бишкек, Ул. Байтик Баатыра 61
-                  </span>
-                </div>
-              </div>
             </motion.div>
 
             {/* Messenger buttons */}
